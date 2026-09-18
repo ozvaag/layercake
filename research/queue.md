@@ -12,6 +12,7 @@
 - Eurostat's NUTS-2024 recode of Portugal from 2023: PT1D (Oeste e Vale do Tejo) folded into Centro — printed as a discontinuity, not repaired.
 
 ## Natural
+- Reservoir storage: MITECO's BD-Embalses.zip is an Access database behind a 302 (needs a browser + mdbtools or a converted CSV); SNIRH for Portugal. The state variable the drought decrees watch — still the biggest missing layer for the water-law argument.
 - Reservoir storage per basin (MITECO Boletín Hidrológico; SNIRH) — the state variable the drought decrees actually watch. Not read.
 - ERA5-Land via a CDS key would replace MERRA-2 at 0.1°; keep the aggregate shape.
 - Heat stress is a Tmax-day count; a crop-specific index (olive flowering window, citrus) is a later refinement.

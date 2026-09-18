@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+title: "Layercake — a place, its layers, its years"
+message: "If you use Layercake or a study built with it, please cite it as below, and cite each data source as its licence asks."
+type: software
+authors:
+  - name: "Ozvåag LLC"
+  - family-names: Oswood
+    given-names: Carter
+repository-code: "https://github.com/ozvaag/layercake"
+url: "https://layercake.pages.dev"
+license: MIT
+version: 0.1.0
+date-released: "2026-09-19"
+abstract: >-
+  An open engine and study format for reading geographic factors against each
+  other over time: a physical frame (relief, drainage, basins), a gridded field
+  (reanalysis climate), marks on places (regional statistics), dated instruments
+  with a scope (law, plans, infrastructure) and national series, on one sheet
+  and one year axis, with every figure carrying its source. Studies are
+  reproducible folders built by one command from open, keyless sources.
+keywords: [geography, climate, policy, agriculture, public-health, reproducible-research, atlas]
