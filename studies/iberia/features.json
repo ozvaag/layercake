@@ -412,7 +412,7 @@
    "class": "sea",
    "name": "GOLFO DE CÁDIZ",
    "lon": -7.3,
-   "lat": 36.5,
+   "lat": 36.62,
    "tilt": 0,
    "size": 2
   },
@@ -451,8 +451,8 @@
   {
    "class": "strait",
    "name": "Estrecho de Gibraltar",
-   "lon": -5.6,
-   "lat": 35.9,
+   "lon": -5.75,
+   "lat": 36.02,
    "tilt": 0,
    "size": 1
   },
