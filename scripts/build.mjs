@@ -118,10 +118,10 @@ const trade = layers.trade?.data;
 // cause. A researcher deletes what is trivial and keeps what is worth a look.
 const findings = [];
 const pct = (v) => Math.round(v) + '%';
+const wy = (study.hydro_year_start_month || 10) === 1 ? 'year' : 'water year';
 if (field && ys.length) {
   const yrs = readings.years;
-  const wy = (study.hydro_year_start_month || 10) === 1 ? 'year' : 'water year';
-  findings.push({ kind: 'field', text: `Driest ${wy} ${readings.driest} (${pct(yrs[readings.driest].P_pct)} of normal), wettest ${readings.wettest} (${pct(yrs[readings.wettest].P_pct)}); most heat-stress days in ${readings.hottest} (${yrs[readings.hottest].D35} per grid point against a normal of ${yrs[readings.hottest].D35_n}).` });
+    findings.push({ kind: 'field', text: `Driest ${wy} ${readings.driest} (${pct(yrs[readings.driest].P_pct)} of normal), wettest ${readings.wettest} (${pct(yrs[readings.wettest].P_pct)}); most heat-stress days in ${readings.hottest} (${yrs[readings.hottest].D35} per grid point against a normal of ${yrs[readings.hottest].D35_n}).` });
   // runs of dry years
   let run = [], best = []; for (let y = Y0; y <= Y1; y++) { if (yrs[y] && yrs[y].P_pct < 90) { run.push(y); if (run.length > best.length) best = [...run]; } else run = []; }
   if (best.length >= 2) findings.push({ kind: 'field', text: `Longest run of dry ${wy}s (under 90% of normal): ${best[0]}–${best[best.length - 1]}, ${best.length} years, averaging ${pct(best.reduce((a, y) => a + yrs[y].P_pct, 0) / best.length)} of normal.` });
