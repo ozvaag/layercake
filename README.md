@@ -21,6 +21,8 @@ shapes of factor and nothing else:
 | `events` | a dated instrument with a scope | laws, decrees, plans, dams | ticks on the axis; rings on the scoped places |
 | `series` | a national figure per year | exports, producer prices | a lane on the axis and a row in the cartouche |
 
+The frame is physical: relief (Terrarium), the drainage (HydroRIVERS), coast, lakes, bathymetry, named rivers and surveyed peaks (Natural Earth), and a hand-placed `features.json` of ranges, plateaus, basins, capes, seas, wetlands, reservoirs, peaks and one schematic canal — each class in its own cartographic register.
+
 Everything joins on **one frame** (`geo/frame.json`) and **one year axis**
 (`study.years`). No region outlines, no political lines: a place is a point,
 a grid cell is a dot, the coast and the rivers are the only lines.
@@ -35,6 +37,8 @@ source into the layer file shapes in `SCHEMA.md`,
 | script | does |
 |---|---|
 | `scripts/geo.mjs` | Natural Earth 10m land, coast, rivers, lakes, admin-0 mask, admin-1 label points → `studies/<id>/geo/frame.json` |
+| `scripts/relief.mjs` | Terrarium terrain tiles (AWS Open Data, z8) → hypsometric tint + hillshade PNG rendered in the page's own Albers projection (`scripts/proj.mjs`, `scripts/png.mjs`) |
+| `scripts/hydro.mjs` | HydroRIVERS v1.0 Europe shapefile (`scripts/shp.mjs`) → every reach of Strahler order ≥ 4 touching the landmass, with order and discharge |
 | `scripts/harvest-climate.mjs` | NASA POWER daily (MERRA-2) → per-point per-year P, ET₀ (Hargreaves), D35, D40, Tmean; hydrological + calendar year; 1991–2020 normals |
 | `scripts/harvest-crops.mjs` | Eurostat `apro_cpshr` NUTS-2 crop production and area |
 | `scripts/harvest-trade.mjs` | Eurostat Comext HS exports/imports + `apri_ap_crpouta` producer prices |

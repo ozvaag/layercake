@@ -112,8 +112,9 @@ export function polylabel(ring, precision = 0.01) {
 export const pointInRings = (p, rs) => rs.some((r) => pointToRing(p[0], p[1], r) > 0);
 
 async function main() {
-  const [land, coast, rivers, lakes, admin0, admin1] = await Promise.all([
+  const [land, coast, rivers, lakes, admin0, admin1, riversEU, lakesEU, bK, bJ, bI, peaks] = await Promise.all([
     ne('ne_10m_land'), ne('ne_10m_coastline'), ne('ne_10m_rivers_lake_centerlines'), ne('ne_10m_lakes'), ne('ne_10m_admin_0_countries'), ne('ne_10m_admin_1_states_provinces'),
+    ne('ne_10m_rivers_europe'), ne('ne_10m_lakes_europe'), ne('ne_10m_bathymetry_K_200'), ne('ne_10m_bathymetry_J_1000'), ne('ne_10m_bathymetry_I_2000'), ne('ne_10m_geography_regions_elevation_points'),
   ]);
   const TOL = 0.004;
   const out = { window: W, generated: new Date().toISOString().slice(0, 10), source: 'Natural Earth 1:10m (public domain)' };
@@ -132,6 +133,23 @@ async function main() {
     if (rs[0]) out.mask[cc] = simplify(rs[0], TOL).map(r4);
   }
   out.rivers = out.rivers.filter((l) => l.pts.some((p) => pointInRings(p, maskRings())));
+  // Named rivers for labels: base + Europe supplement, the longest in-window
+  // line per name that touches the land, laid west→east so text reads forward.
+  const NAME_FIX = { Zncara: 'Záncara', Tagus: 'Tejo', Mio: 'Miño' };
+  const named = {};
+  for (const f of [...rivers.features, ...riversEU.features]) {
+    if (f.properties.featurecla && /Lake Centerline/.test(f.properties.featurecla)) continue;
+    let nm = f.properties.name_en || f.properties.name || ''; nm = NAME_FIX[nm] || nm; nm = nm.charAt(0).toUpperCase() + nm.slice(1); if (!nm || nm === '?') continue;
+    for (const l of lines(f.geometry).flatMap(clipLine)) { if (l.filter((p) => pointInRings(p, maskRings())).length < l.length * 0.6) continue; const sl = simplify(l, TOL).map(r4); if (!named[nm] || sl.length > named[nm].pts.length) named[nm] = { name: nm, rank: f.properties.scalerank, pts: sl }; }
+  }
+  out.named_rivers = Object.values(named).map((r) => ({ ...r, pts: r.pts[0][0] > r.pts[r.pts.length - 1][0] ? [...r.pts].reverse() : r.pts }));
+  // The full network (HydroRIVERS) is built by scripts/hydro.mjs into geo/rivers.json; the page draws both.
+  out.lakes.push(...lakesEU.features.flatMap((f) => rings(f.geometry).map((r) => ({ name: f.properties.name || '', ring: clipRing(r, W) }))).filter((l) => l.ring).map((l) => ({ name: l.name, ring: simplify(l.ring, TOL / 2).map(r4) })).filter((l) => ringArea(l.ring) > 0.0003));
+  // Bathymetry tints: each Natural Earth file is the area DEEPER than its depth.
+  out.bathy = {};
+  for (const [k, g] of [['200', bK], ['1000', bJ], ['2000', bI]]) out.bathy[k] = g.features.flatMap((f) => rings(f.geometry)).map((r) => clipRing(r, W)).filter(Boolean).map((r) => simplify(r, TOL * 2).map(r4)).filter((r) => ringArea(r) > 0.01);
+  // Peaks with a surveyed elevation (Natural Earth), inside the land.
+  out.peaks = peaks.features.filter((f) => f.geometry && inWin(f.geometry.coordinates) && pointInRings(f.geometry.coordinates, maskRings())).map((f) => ({ name: f.properties.name, elev: f.properties.elevation, lon: r4(f.geometry.coordinates)[0], lat: r4(f.geometry.coordinates)[1] }));
   // Admin-1 interior points: where a region's mark sits. Not drawn as lines.
   out.admin1 = {};
   for (const f of admin1.features) {
@@ -143,6 +161,7 @@ async function main() {
   }
   const dir = join(ROOT, 'studies', study.id); mkdirSync(join(dir, 'geo'), { recursive: true });
   writeFileSync(join(dir, 'geo/frame.json'), JSON.stringify(out));
+  console.log(`named rivers ${out.named_rivers.length} · bathy ${Object.values(out.bathy).map((b) => b.length).join('/')} · peaks ${out.peaks.length}`);
   console.log(`land ${out.land.length} rings · coast ${out.coast.length} · rivers ${out.rivers.length} · lakes ${out.lakes.length} · mask ${Object.keys(out.mask).join(',')} · admin1 ${Object.keys(out.admin1).length}`);
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) main().catch((e) => { console.error(e); process.exit(1); });

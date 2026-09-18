@@ -105,14 +105,19 @@ const bundle = {
 mkdirSync(join(ROOT, 'web/data'), { recursive: true });
 const js = `// ${study.title} — © ${new Date().getFullYear()} Ozvåag LLC. Sources are named inside; every figure carries its origin.\nwindow.STUDY=${JSON.stringify(bundle)};`;
 writeFileSync(join(ROOT, 'web/data', study.id + '.js'), js);
-const geoJs = `window.STUDY_GEO=${JSON.stringify({ window: geo.window, land: geo.land, coast: geo.coast, rivers: geo.rivers, lakes: geo.lakes, source: geo.source })};`;
+// The physical sheet: frame + HydroRIVERS network + hand-placed features + relief legend.
+const net = existsSync(join(DIR, 'geo/rivers.json')) ? JSON.parse(readFileSync(join(DIR, 'geo/rivers.json'), 'utf8')) : null;
+const feats = existsSync(join(DIR, 'features.json')) ? JSON.parse(readFileSync(join(DIR, 'features.json'), 'utf8')) : { features: [], peaks: [] };
+const relief = existsSync(join(DIR, 'geo/relief.json')) ? JSON.parse(readFileSync(join(DIR, 'geo/relief.json'), 'utf8')) : null;
+const peakSeen = new Set(); const peaks = [...(geo.peaks || []), ...(feats.peaks || [])].filter((p) => { const k = p.name.toLowerCase(); if (peakSeen.has(k)) return false; peakSeen.add(k); return true; });
+const geoJs = `window.STUDY_GEO=${JSON.stringify({ window: geo.window, land: geo.land, coast: geo.coast, rivers: geo.rivers, named_rivers: geo.named_rivers || [], lakes: geo.lakes, bathy: geo.bathy || {}, peaks, features: feats.features, feature_note: feats.note, network: net ? { source: net.source, min_order: net.min_order, reaches: net.reaches } : null, relief, source: geo.source })};`;
 writeFileSync(join(ROOT, 'web/data/geo.js'), geoJs);
 // Hash-stamp the asset URLs in index.html (the Atlas's rule: CF's browser-cache TTL outlives a deploy).
 const h = (s) => createHash('sha256').update(s).digest('hex').slice(0, 12);
 const idx = join(ROOT, 'web/index.html');
 if (existsSync(idx)) {
   let html = readFileSync(idx, 'utf8');
-  html = html.replace(/data\/geo\.js(\?v=[0-9a-f]+)?/g, `data/geo.js?v=${h(geoJs)}`).replace(new RegExp(`data/${study.id}\\.js(\\?v=[0-9a-f]+)?`, 'g'), `data/${study.id}.js?v=${h(js)}`).replace(/atlas\.css(\?v=[0-9a-f]+)?/g, `atlas.css?v=${h(readFileSync(join(ROOT, 'web/atlas.css'), 'utf8'))}`);
+  html = html.replace(/data\/geo\.js(\?v=[0-9a-f]+)?/g, `data/geo.js?v=${h(geoJs)}`).replace(/data\/relief\.png(\?v=[0-9a-f]+)?/g, `data/relief.png?v=${existsSync(join(ROOT, 'web/data/relief.png')) ? h(readFileSync(join(ROOT, 'web/data/relief.png'))) : '0'}`).replace(new RegExp(`data/${study.id}\\.js(\\?v=[0-9a-f]+)?`, 'g'), `data/${study.id}.js?v=${h(js)}`).replace(/atlas\.css(\?v=[0-9a-f]+)?/g, `atlas.css?v=${h(readFileSync(join(ROOT, 'web/atlas.css'), 'utf8'))}`);
   writeFileSync(idx, html);
 }
 console.log(`built ${study.id}: ${Object.keys(places).length} places · field ${field ? field.points.length : 0} pts · marks ${Object.keys(marks).length} places × ${regionalCrops.size} regional crops (${folded} rows folded by alias, ${dropped} dropped: islands/NUTS-1/extra-regio) · events ${events.length} · trade ${trade ? trade.trade.length : 0} · ${(js.length / 1024).toFixed(0)} KB`);

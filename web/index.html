@@ -16,18 +16,42 @@ body{max-width:1180px}
 @media (max-width:900px){ #sheet{position:static} }
 #sheet .land{fill:var(--paper-deep); stroke:none}
 #sheet .coast{fill:none; stroke:var(--ink); stroke-width:.9; stroke-linejoin:round}
-#sheet .river{fill:none; stroke:var(--sea); stroke-width:1.1; stroke-linecap:round; stroke-linejoin:round; opacity:.95}
-#sheet .river.big{stroke-width:1.6}
-#sheet .lake{fill:var(--sea); stroke:none}
+#sheet .river{fill:none; stroke:#4A6C71; stroke-width:1.2; stroke-linecap:round; stroke-linejoin:round; opacity:.95}
+#sheet .river.big{stroke-width:1.7}
+#sheet .lake{fill:#AFC3C5; stroke:#4A6C71; stroke-width:.4}
+#sheet .bathy200{fill:#D3DCDB} #sheet .bathy1000{fill:#C9D4D4} #sheet .bathy2000{fill:#BFCCCD}
+#sheet .relief{opacity:.92}
+#sheet.plain .relief, #sheet.plain .physnames{display:none}
+#sheet.nonames .physnames{display:none}
+#sheet .net{fill:none; stroke:#4A6C71; stroke-linecap:round; stroke-linejoin:round}
+#sheet .net.o4{stroke-width:.45; opacity:.7} #sheet .net.o5{stroke-width:.7; opacity:.85} #sheet .net.o6{stroke-width:1} #sheet .net.o7{stroke-width:1.45}
+#sheet .rlabel{font-style:italic; font-size:8.5px; fill:#2F4A4E; letter-spacing:0}
+#sheet .rlabel.big{font-size:10px}
+#sheet .f-range{font-size:9px; letter-spacing:.24em; text-transform:uppercase; fill:#5C4A36; text-anchor:middle}
+#sheet .f-range.s3{font-size:11px; letter-spacing:.32em} #sheet .f-range.s1{font-size:7.5px; letter-spacing:.12em; text-transform:none; font-style:italic}
+#sheet .f-plateau, #sheet .f-basin{font-size:9px; letter-spacing:.28em; text-transform:uppercase; fill:#7A6A52; text-anchor:middle; opacity:.85}
+#sheet .f-plateau.s1, #sheet .f-basin.s1{font-size:8px; letter-spacing:.1em; text-transform:none; font-style:italic}
+#sheet .f-sea, #sheet .f-strait{font-size:9px; letter-spacing:.3em; text-transform:uppercase; fill:#5F7477; text-anchor:middle; font-style:italic}
+#sheet .f-sea.s1, #sheet .f-strait{font-size:7.5px; letter-spacing:.16em}
+#sheet .f-coast{font-size:7.5px; letter-spacing:.14em; fill:#5F7477; text-anchor:middle; font-style:italic}
+#sheet .f-cape{font-size:7px; fill:var(--ink-soft); font-style:italic}
+#sheet .f-wetland{font-size:7px; fill:#4A6B62; font-style:italic; text-anchor:middle}
+#sheet .f-reservoir{font-size:6.8px; fill:#3F5A5E; text-anchor:middle}
+#sheet .f-peak{font-size:6.8px; fill:#4A3A2A}
+#sheet .peak{fill:#4A3A2A}
+#sheet .wet{fill:none; stroke:#4A6B62; stroke-width:.5; stroke-dasharray:1.2 1.2}
+#sheet .res{fill:#8FA6A8; stroke:#3F5A5E; stroke-width:.4}
+#sheet .canal{fill:none; stroke:var(--sepia); stroke-width:.9; stroke-dasharray:3 2}
+#sheet .f-canal{font-size:6.8px; fill:var(--sepia); font-style:italic}
 #sheet .grat{fill:none; stroke:var(--rule); stroke-width:.4; stroke-dasharray:2 3}
 #sheet .fade{fill:var(--paper)}
 #sheet text{font-family:inherit}
 #sheet .rname{font-style:italic; font-size:9.5px; fill:var(--ink-soft)}
 #sheet .pname{font-size:9px; letter-spacing:.14em; text-transform:uppercase; fill:var(--ink-soft); pointer-events:none}
 #sheet .dot{stroke-width:.6}
-#sheet .dot.wet{fill:var(--verdigris); fill-opacity:.55; stroke:var(--verdigris)}
-#sheet .dot.dry{fill:var(--oxblood); fill-opacity:.5; stroke:var(--oxblood)}
-#sheet .dot.hot{fill:var(--oxblood); fill-opacity:.45; stroke:none}
+#sheet .dot.wet{fill:var(--verdigris); fill-opacity:.36; stroke:var(--verdigris); stroke-opacity:.6}
+#sheet .dot.dry{fill:var(--oxblood); fill-opacity:.34; stroke:var(--oxblood); stroke-opacity:.6}
+#sheet .dot.hot{fill:var(--oxblood); fill-opacity:.38; stroke:none}
 #sheet .ring{fill:none; stroke:var(--ink); stroke-width:.5; opacity:.55}
 #sheet .mark{fill:var(--sepia); fill-opacity:.5; stroke:var(--sepia); stroke-width:.8; cursor:pointer}
 #sheet .mark.on{fill-opacity:.8; stroke:var(--ink); stroke-width:1.2}
@@ -35,6 +59,7 @@ body{max-width:1180px}
 #sheet .hit{fill:transparent; cursor:pointer}
 #sheet .scope{fill:none; stroke:var(--ink); stroke-width:1; stroke-dasharray:3 3}
 #sheet .scope-all{fill:none; stroke:var(--ink); stroke-width:1.2; stroke-dasharray:5 4}
+#sheet .legend-t{font-size:7px; fill:var(--ink-soft); font-variant-numeric:lining-nums}
 #sheet .cartouche-t{font-size:10px; letter-spacing:.22em; text-transform:uppercase; fill:var(--ink-soft)}
 .margin{font-size:13.5px}
 .margin .yr{font-size:64px; line-height:1; font-weight:600; letter-spacing:-.02em; font-variant-numeric:lining-nums; margin:0}
@@ -106,6 +131,10 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
   </div>
   <span class="ctl-l">Harvest</span>
   <select id="cropSel"></select>
+  <span class="ctl-l">Sheet</span>
+  <div class="chips" id="sheetChips">
+    <button data-s="physical" class="on">Physical</button><button data-s="nonames">No names</button><button data-s="plain">Plain</button>
+  </div>
   <button class="play" id="play">Play ▸</button>
   <span class="ctl-l" id="yrHint"></span>
 </div>
@@ -122,7 +151,7 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
   <ul id="sources"></ul>
 </section>
 
-<script src="data/geo.js?v=13df924f1219"></script>
+<script src="data/geo.js?v=4b4812f0d288"></script>
 <script src="data/iberia.js?v=752510107a3f"></script>
 <script>
 (function(){
@@ -153,25 +182,44 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
 
   // ── the sheet ──
   const sheet = $('#sheet'); sheet.setAttribute('viewBox', `0 0 ${VW} ${VH}`);
+  const rot = (tilt) => -(tilt || 0);   // a baseline rising to the east is a negative SVG rotation
   function drawBase() {
     let s = '';
+    // The sea, tinted by depth (Natural Earth bathymetry: each ring is the area deeper than its depth).
+    s += (G.bathy['200'] || []).map((r) => `<path class="bathy200" d="${path(r, true)}"/>`).join('') + (G.bathy['1000'] || []).map((r) => `<path class="bathy1000" d="${path(r, true)}"/>`).join('') + (G.bathy['2000'] || []).map((r) => `<path class="bathy2000" d="${path(r, true)}"/>`).join('');
     // graticule every 2°
     for (let lon = Math.ceil(W.lon[0] / 2) * 2; lon <= W.lon[1]; lon += 2) { const pts = []; for (let lat = W.lat[0]; lat <= W.lat[1] + .01; lat += .5) pts.push([lon, Math.min(lat, W.lat[1])]); s += `<path class="grat" d="${path(pts)}"/>`; }
     for (let lat = Math.ceil(W.lat[0] / 2) * 2; lat <= W.lat[1]; lat += 2) { const pts = []; for (let lon = W.lon[0]; lon <= W.lon[1] + .01; lon += .5) pts.push([Math.min(lon, W.lon[1]), lat]); s += `<path class="grat" d="${path(pts)}"/>`; }
     s += `<g class="landg">${G.land.map((r) => `<path class="land" d="${path(r, true)}"/>`).join('')}</g>`;
+    // The ground: hypsometric tint + hillshade, rendered by scripts/relief.mjs in this same projection.
+    if (G.relief) s += `<image class="relief" href="data/relief.png?v=dc74e05e6738" x="0" y="0" width="${VW}" height="${VH}" preserveAspectRatio="none"/>`;
+    // The drainage: HydroRIVERS reaches weighted by Strahler order, then Natural Earth's named rivers on top.
+    if (G.network) { const byO = {}; for (const r of G.network.reaches) (byO[r.o] = byO[r.o] || []).push(path(r.pts)); s += `<g class="netg">${Object.entries(byO).map(([o, ds]) => `<path class="net o${o}" d="${ds.join('')}"/>`).join('')}</g>`; }
     s += G.lakes.map((l) => `<path class="lake" d="${path(l.ring, true)}"/>`).join('');
     s += G.rivers.map((r) => `<path class="river${r.rank <= 6 ? ' big' : ''}" d="${path(r.pts)}"/>`).join('');
     s += `<g class="coastg">${G.coast.map((l) => `<path class="coast" d="${path(l)}"/>`).join('')}</g>`;
     // The land north of the Pyrenees is not the study's: it fades, it is not cut.
-    // A line from the Bay of Biscay to the Gulf of Lion, and paper laid over it in steps.
     const A = [-1.85, 43.38], B = [3.6, 42.42]; const steps = 14;
-    for (let i = 0; i < steps; i++) { const d0 = i * .075, d1 = 3; const q = [[A[0], A[1] + d0], [B[0], B[1] + d0], [B[0], B[1] + d1], [A[0], A[1] + d1]]; s += `<path class="fade" opacity="${(0.09).toFixed(2)}" d="${path(q, true)}"/>`; }
-    // river names, along the lower reach
-    const named = {}; G.rivers.forEach((r) => { if (!r.name || r.rank > 7) return; const k = r.name.replace(/Tejo|Tagus/, 'Tajo'); if (!named[k] || r.pts.length > named[k].pts.length) named[k] = r; });
-    for (const [nm, r] of Object.entries(named)) { const p = P(r.pts[Math.floor(r.pts.length * 0.45)]); s += `<text class="rname" x="${p[0] + 4}" y="${p[1] - 3}">${esc(nm === 'Tajo' ? 'Tajo · Tejo' : nm === 'Duero' ? 'Duero · Douro' : nm === 'Zncara' ? 'Záncara' : nm)}</text>`; }
-    const py = P([0.5, 42.9]); s += `<text class="rname" x="${py[0]}" y="${py[1]}" text-anchor="middle" style="letter-spacing:.3em;font-style:normal;font-size:9px">PYRENEES</text>`;
-    const cart = `<g class="cart"><text class="cartouche-t" x="${VW - 10}" y="${VH - 34}" text-anchor="end">${esc(S.title)} · ${Y0}–${Y1}</text><text class="cartouche-t" x="${VW - 10}" y="${VH - 20}" text-anchor="end">no political line is drawn · land, coast, rivers: Natural Earth</text><text class="cartouche-t" x="${VW - 10}" y="${VH - 6}" text-anchor="end">© ${new Date().getFullYear()} Ozvåag LLC</text></g>`;
-    sheet.innerHTML = s + '<g id="fieldg"></g><g id="marksg"></g><g id="scopeg"></g><g id="labelg"></g>' + cart;
+    for (let i = 0; i < steps; i++) { const d0 = i * .075, d1 = 3; const q = [[A[0], A[1] + d0], [B[0], B[1] + d0], [B[0], B[1] + d1], [A[0], A[1] + d1]]; s += `<path class="fade" opacity="0.09" d="${path(q, true)}"/>`; }
+    // ── the physical names ──
+    let n = '<g class="physnames">';
+    // rivers: text along the line, once per name (Tajo·Tejo and Miño·Minho are one river each)
+    const SKIP = new Set(['Tejo', 'Minho', 'Garonne']); const RN = { Tajo: 'Tajo · Tejo', Miño: 'Miño · Minho', Duero: 'Duero · Douro', Guadiana: 'Guadiana' };
+    (G.named_rivers || []).forEach((r, i) => { if (SKIP.has(r.name) || r.pts.length < 4) return; const id = 'rv' + i; n += `<defs><path id="${id}" d="${path(r.pts)}"/></defs><text class="rlabel${r.rank <= 7 ? ' big' : ''}" dy="-2"><textPath href="#${id}" startOffset="${r.rank <= 7 ? 42 : 50}%" text-anchor="middle">${esc(RN[r.name] || r.name)}</textPath></text>`; });
+    for (const f of G.features) {
+      if (f.class === 'canal') { n += `<path class="canal" d="${path(f.pts)}"/>`; const m = P(f.pts[Math.floor(f.pts.length / 2)]); n += `<text class="f-canal" x="${m[0] + 4}" y="${m[1]}">${esc(f.name)}</text>`; continue; }
+      const [x, y] = P([f.lon, f.lat]); const cls = `f-${f.class}${f.size ? ' s' + f.size : ''}`;
+      if (f.class === 'range' || f.class === 'plateau' || f.class === 'basin' || f.class === 'sea' || f.class === 'strait' || f.class === 'coast') n += `<text class="${cls}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${rot(f.tilt)})">${esc(f.name)}</text>`;
+      else if (f.class === 'cape') n += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r=".8" fill="var(--ink)"/><text class="${cls}" x="${(x + (f.anchor === 'end' ? -3 : f.anchor === 'start' ? 3 : 0)).toFixed(1)}" y="${(y + (f.anchor === 'middle' ? -3 : 2.5)).toFixed(1)}" text-anchor="${f.anchor || 'start'}">${esc(f.name)}</text>`;
+      else if (f.class === 'wetland') n += `<circle class="wet" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4"/><text class="${cls}" x="${x.toFixed(1)}" y="${(y + 9).toFixed(1)}">${esc(f.name)}</text>`;
+      else if (f.class === 'reservoir') n += `<rect class="res" x="${(x - 2).toFixed(1)}" y="${(y - 2).toFixed(1)}" width="4" height="4" transform="rotate(45 ${x.toFixed(1)} ${y.toFixed(1)})"/><text class="${cls}" x="${x.toFixed(1)}" y="${(y + 8).toFixed(1)}">${esc(f.name)}</text>`;
+    }
+    for (const p of G.peaks) { const [x, y] = P([p.lon, p.lat]); n += `<path class="peak" d="M${(x - 2.6).toFixed(1)} ${(y + 2).toFixed(1)}L${x.toFixed(1)} ${(y - 2.6).toFixed(1)}L${(x + 2.6).toFixed(1)} ${(y + 2).toFixed(1)}Z"/><text class="f-peak" x="${(x + 3.5).toFixed(1)}" y="${(y + 2.5).toFixed(1)}">${esc(p.name)} ${fmt(p.elev)}</text>`; }
+    n += '</g>';
+    let leg = '';
+    if (G.relief) { const R = G.relief.ramp; const x0 = 12, y0 = VH - 26, w = 16, h = 7; leg += `<g class="physnames"><text class="legend-t" x="${x0}" y="${y0 - 4}" style="letter-spacing:.18em;text-transform:uppercase">Elevation, m</text>`; R.forEach(([m, c], i) => { leg += `<rect x="${x0 + i * w}" y="${y0}" width="${w}" height="${h}" fill="rgb(${c.map(Math.round).join(',')})" stroke="var(--rule)" stroke-width=".3"/>`; if (i % 2 === 0 || i === R.length - 1) leg += `<text class="legend-t" x="${x0 + i * w}" y="${y0 + h + 8}">${m}</text>`; }); leg += `<rect x="${x0 + R.length * w + 8}" y="${y0}" width="${w}" height="${h}" class="bathy1000"/><text class="legend-t" x="${x0 + R.length * w + 8}" y="${y0 + h + 8}">sea, by depth</text></g>`; }
+    const cart = leg + `<g class="cart"><text class="cartouche-t" x="${VW - 10}" y="${VH - 34}" text-anchor="end">${esc(S.title)} · ${Y0}–${Y1}</text><text class="cartouche-t" x="${VW - 10}" y="${VH - 20}" text-anchor="end">no political line is drawn · relief, drainage, coast: Terrarium · HydroRIVERS · Natural Earth</text><text class="cartouche-t" x="${VW - 10}" y="${VH - 6}" text-anchor="end">© ${new Date().getFullYear()} Ozvåag LLC</text></g>`;
+    sheet.innerHTML = s + n + '<g id="fieldg"></g><g id="marksg"></g><g id="scopeg"></g><g id="labelg"></g>' + cart;
   }
 
   // field metrics: value, normal, mode
@@ -316,6 +364,7 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
 
   // ── wiring ──
   $('#fieldChips').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; state.field = b.dataset.f; [...$('#fieldChips').children].forEach((c) => c.classList.toggle('on', c === b)); render(); });
+  $('#sheetChips').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; [...$('#sheetChips').children].forEach((c) => c.classList.toggle('on', c === b)); sheet.classList.toggle('plain', b.dataset.s === 'plain'); sheet.classList.toggle('nonames', b.dataset.s === 'nonames'); });
   cropSel.addEventListener('change', () => { state.crop = cropSel.value; render(); });
   sheet.addEventListener('click', (e) => { const t = e.target.closest('[data-p]'); if (!t) return; state.place = state.place === t.dataset.p ? null : t.dataset.p; state.event = null; render(); });
   strip.addEventListener('click', (e) => { const tk = e.target.closest('[data-e]'); if (tk) { const ev = S.events.find((x) => x.id === tk.dataset.e); state.event = state.event === ev.id ? null : ev.id; state.place = null; if (state.event) state.year = Math.min(Y1, Math.max(Y0, ev.year)); render(); return; } const h = e.target.closest('[data-y]'); if (h) { state.year = +h.dataset.y; render(); } });
@@ -337,7 +386,7 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
     S.crop_source ? `<li><b>Harvest.</b> ${esc(S.crop_source.name)} — ${esc(S.crop_source.licence)}, Eurostat last updated ${esc(String(S.crop_source.updated).slice(0, 10))}, fetched ${S.crop_source.fetched_at}. Regional rows exist for ${S.regional_crops.map((c) => esc(S.crop_names[c]).replace(/ \(.*$/, '')).join(', ')}; olives, citrus, grapes, other fruit and vegetables are published for ES and PT nationally only. ${esc(S.place_note)} <a href="${esc(S.crop_source.url)}" target="_blank" rel="noopener">source ↗</a></li>` : '',
     S.trade ? S.trade.sources.map((s) => `<li><b>Market.</b> ${esc(s.name)} — ${esc(s.licence)}, fetched ${s.fetched_at}. <a href="${esc(s.url)}" target="_blank" rel="noopener">source ↗</a></li>`).join('') : '',
     `<li><b>Law.</b> ${S.events.length} instruments, hand-curated with a citation each. Confidence: ${Object.entries(S.confidence_tiers).map(([k, v]) => `<i>${k}</i> — ${esc(v)}`).join('; ')}. Counts: ${['read', 'cited', 'recalled'].map((t) => `${S.events.filter((e) => e.confidence === t).length} ${t}`).join(', ')}. Portugal's Diário da República is a JavaScript application and cannot be checked by script; its citations are marked.</li>`,
-    `<li><b>Frame.</b> ${esc(G.source)}. No political boundary is drawn; the land north of the Pyrenees fades rather than ends. Regions are marked at an interior point, not outlined.</li>`,
+    `<li><b>Frame.</b> Coast, lakes, bathymetry, named rivers and surveyed peaks: ${esc(G.source)}. Drainage: ${esc(G.network ? G.network.source : '—')}, Strahler order ≥ ${G.network ? G.network.min_order : '—'} (${G.network ? fmt(G.network.reaches.length) : 0} reaches), line weight by order. Relief: ${esc(G.relief ? G.relief.source : '—')}. Physical names: ${esc(G.feature_note || '')} No political boundary is drawn; the land north of the Pyrenees fades rather than ends. Regions are marked at an interior point, not outlined.</li>`,
     `<li><b>Engine.</b> A study is a manifest naming layers of three kinds — a <i>field</i> (values on grid points), <i>marks</i> (values on places), <i>events</i> (dated instruments with a scope) — on one frame and one year axis. This page renders any study of that shape.</li>`,
   ].join('');
   drawBase(); readHash(); render();
