@@ -19,7 +19,7 @@ for (const ft of g.features) {
   const p = ft.properties; const cc = p.ISO_A2_EH && p.ISO_A2_EH !== '-99' ? p.ISO_A2_EH : p.ISO_A2; if (!cc || cc === '-99') continue;
   const rings = (ft.geometry.type === 'Polygon' ? [ft.geometry.coordinates[0]] : ft.geometry.coordinates.map((x) => x[0])).map((r) => simplify(r, 0.04)).filter((r) => r.length >= 4 && area(r) > 0.02).map((r) => r.map(([x, y]) => [Math.round(x * 100) / 100, Math.round(y * 100) / 100]));
   if (!rings.length) continue;
-  const c = countries[cc] || (countries[cc] = { name: p.NAME_EN || p.NAME, continent: p.CONTINENT, rings: [] }); c.rings.push(...rings);
+  const c = countries[cc] || (countries[cc] = { name: p.NAME_EN || p.NAME, continent: p.CONTINENT, iso3: p.ISO_A3_EH && p.ISO_A3_EH !== '-99' ? p.ISO_A3_EH : p.ISO_A3, un: p.UN_A3 && p.UN_A3 !== '-99' ? String(+p.UN_A3) : null, rings: [] }); c.rings.push(...rings);
 }
 for (const c of Object.values(countries)) {
   const big = c.rings.reduce((a, b) => area(b) > area(a) ? b : a); c.anchor = polylabel(big, 0.05).map((v) => Math.round(v * 100) / 100);

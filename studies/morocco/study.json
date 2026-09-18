@@ -1,0 +1,17 @@
+{
+  "id": "morocco",
+  "title": "Morocco",
+  "subtitle": "A non-EU study, one command — rain, heat, national harvest, indicators, water law, 2000–2025",
+  "years": [2000, 2025],
+  "normal": [1991, 2020],
+  "hydro_year_start_month": 9,
+  "frame": { "window": { "lon": [-13.8, -0.4], "lat": [27.0, 36.5] }, "mask": ["MA"], "admin1_countries": ["MA"], "fade": null, "river_scalerank": 9, "exclude_boxes": [] },
+  "layers": [
+    { "id": "rain", "kind": "field", "file": "natural/climate.json", "ink": "sea", "label": "Rain", "unit": "mm, hydrological year" },
+    { "id": "heat", "kind": "field", "file": "natural/climate.json", "ink": "oxblood", "label": "Heat stress", "unit": "days ≥ 35 °C" },
+    { "id": "faostat", "kind": "marks", "file": "food/faostat.json", "ink": "sepia", "label": "Harvest (national)", "unit": "thousand tonnes" },
+    { "id": "worldbank", "kind": "series", "file": "series/worldbank.json", "ink": "ink", "label": "Indicators", "unit": "per indicator" },
+    { "id": "policy", "kind": "events", "file": "policy/instruments.json", "ink": "verdigris", "label": "Law", "unit": "instrument, dated" }
+  ],
+  "worldbank": ["SP.POP.TOTL", "NV.AGR.TOTL.ZS", "AG.LND.IRIG.AG.ZS", "ER.H2O.FWAG.ZS", "AG.YLD.CREL.KG", "AG.LND.AGRI.ZS"]
+}

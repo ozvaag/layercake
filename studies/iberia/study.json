@@ -95,6 +95,22 @@
       "ink": "verdigris",
       "label": "Law",
       "unit": "instrument, dated"
+    },
+    {
+      "id": "faostat",
+      "kind": "marks",
+      "file": "food/faostat.json",
+      "ink": "sepia",
+      "label": "Harvest (national)",
+      "unit": "thousand tonnes"
+    },
+    {
+      "id": "worldbank",
+      "kind": "series",
+      "file": "series/worldbank.json",
+      "ink": "ink",
+      "label": "Indicators",
+      "unit": "per indicator"
     }
   ],
   "hydro_year_start_month": 10,
@@ -160,5 +176,10 @@
       "pl": "cork, HS 4501–4504",
       "label": "Cork (HS 4501–4504)"
     }
-  }
+  },
+  "notes": [
+    "The three layers are read against each other, never merged: a dry year on the field, an instrument on the strip and a fall in the harvest are three facts from three sources on one axis, and the page prints the correlation without claiming the cause.",
+    "What the data said first: the driest hydrological year was 2005 (63% of normal) and the wettest 2010; 2022 carried the most days at or above 35 °C. Portugal's olive harvest rose from 174 kt in 2000 to 1,376 kt in 2021 — the Alqueva irrigation perimeter in one number. In Andalucía in 2022 the irrigated crops fell first: rice at 87 kt against a mean of 298, maize at 50 against 225.",
+    "Eurostat publishes olives, citrus and grapes for Spain and Portugal nationally only; the regional marks are cereals, maize, rice, sunflower and potatoes. FAOSTAT's national series fill two Spanish olive years Eurostat lacks. Thirty-seven instruments are on file, fourteen resolved at their publisher; Portugal's gazette cannot be checked by script."
+  ]
 }

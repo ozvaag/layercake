@@ -13,6 +13,10 @@ layers: [{ id, kind: field|marks|events|series, file, ink, label, unit }]
 hydro_year_start_month: 10       the water year's first month (1 = calendar year)
 fade: { from:[lon,lat], to:[lon,lat] } | null   land beyond this line fades (Iberia: the Pyrenees)
 market: { <crop>: { hs:[…], price, pl, label? } }  ties a crop to its HS products and price code
+worldbank: [indicator codes]     for scripts/harvest-worldbank.mjs (defaults if absent)
+faostat_items: { itemCode: name } for scripts/harvest-faostat.mjs (defaults if absent)
+notes: [paragraphs]              printed under the title — the author's reading of the plate
+private: true                    build, but keep off the site's registry
 ```
 `mask` = the admin-0 rings whose mainland defines "inside the study" (grid
 points, marks). Borders are used for that and never drawn.

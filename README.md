@@ -7,7 +7,7 @@ when* — and Layercake writes a study manifest, previews the frame, fetches a
 first field live, and (after five commands on your machine) renders a plate:
 one sheet, one time axis, every figure with its source.
 
-**Studies:** `studies/iberia/` (rain, law and harvest on one peninsula, 2000–2025) · `studies/italy/` (begun from the builder's own output, the proof the printed commands work) · `studies/_smoke/` (own-CSV fixture, private).
+**Studies:** `studies/morocco/` (non-EU, built with one command: field, FAOSTAT, World Bank, African drainage) · `studies/iberia/` (rain, law and harvest on one peninsula, 2000–2025) · `studies/italy/` (begun from the builder's own output, the proof the printed commands work) · `studies/_smoke/` (own-CSV fixture, private).
 
 | page | what |
 |---|---|
@@ -40,10 +40,9 @@ Everything joins on **one frame** (`geo/frame.json`) and **one year axis**
 (`study.years`). No region outlines, no political lines: a place is a point,
 a grid cell is a dot, the coast and the rivers are the only lines.
 
-To pose a new question: copy `studies/iberia/` → `studies/<id>/`, edit
-`study.json` (window, mask, years, normal, layers), write one reader per
-source into the layer file shapes in `SCHEMA.md`,
-`node scripts/build.mjs studies/<id>/study.json`.
+To pose a new question: the builder at `/builder` writes `study.json`,
+`places.json` and `instruments.json`; then `node scripts/run.mjs studies/<id>/study.json`.
+Or copy a study folder and edit by hand — `SCHEMA.md` is the contract.
 
 ## Scripts
 
@@ -54,6 +53,9 @@ source into the layer file shapes in `SCHEMA.md`,
 | `scripts/hydro.mjs` | HydroRIVERS v1.0 Europe shapefile (`scripts/shp.mjs`) → every reach of Strahler order ≥ 4 touching the landmass, with order and discharge |
 | `scripts/places-from-frame.mjs` | proposes `places.json`: Natural Earth admin-1 units grouped by their region, matched to Eurostat NUTS-2 labels (EU); unmatched listed for a person |
 | `scripts/harvest-own.mjs` | your CSVs in `studies/<id>/own/` (marks, series, events) → JSON in the study's shapes |
+| `scripts/run.mjs` | **the one command**: runs, in order, only what the manifest asks for; every step re-runnable alone; raw responses cached |
+| `scripts/harvest-faostat.mjs` | FAOSTAT bulk file (34 MB, cached, streamed) → national harvests for ~28 crops, any country |
+| `scripts/harvest-worldbank.mjs` | World Bank API → any national indicator per year (`study.worldbank` list) |
 | `scripts/harvest-climate.mjs` | NASA POWER daily (MERRA-2) → per-point per-year P, ET₀ (Hargreaves), D35, D40, Tmean; hydrological + calendar year; 1991–2020 normals |
 | `scripts/harvest-crops.mjs` | Eurostat `apro_cpshr` NUTS-2 crop production and area |
 | `scripts/harvest-trade.mjs` | Eurostat Comext HS exports/imports + `apri_ap_crpouta` producer prices |

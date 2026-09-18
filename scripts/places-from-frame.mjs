@@ -41,7 +41,11 @@ for (const cc of study.frame.mask) {
     // try each unit on its own (Bolzano / Trento inside Trentino-Alto Adige)
     let any = false;
     for (const [c, u] of us) { const h = labels.length ? find(u.name) : null; if (h) { const pl = places[h.code] || (places[h.code] = { name: h.label.replace(/ \(NUTS \d+\)/, ''), country: cc, units: [] }); pl.units.push(c); any = true; } }
-    if (!any) unmatched[`${cc}:${region}`] = us.map(([c, u]) => `${c} ${u.name}`);
+    if (any) continue;
+    // No statistical region list to match (outside the EU, or no label answered): the
+    // frame's own regions become the places, coded by Natural Earth's region code.
+    if (!labels.length) { const rc = us[0][1].region_code; const code = rc || `${cc}-${norm(region).replace(/ /g, '-').slice(0, 24)}`; places[code] = { name: region, country: cc, units: us.map(([c]) => c) }; continue; }
+    unmatched[`${cc}:${region}`] = us.map(([c, u]) => `${c} ${u.name}`);
   }
   console.log(`${cc}: ${units.length} units → ${Object.values(places).filter((p) => p.country === cc).length} places, ${Object.keys(unmatched).filter((k) => k.startsWith(cc + ':')).length} unmatched`);
 }

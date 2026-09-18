@@ -64,8 +64,8 @@ body{max-width:1180px}
 .margin{font-size:13.5px}
 .margin .yr{font-size:64px; line-height:1; font-weight:600; letter-spacing:-.02em; font-variant-numeric:lining-nums; margin:0}
 .margin .hy{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-soft); margin:2px 0 12px}
-.margin dl{margin:0 0 14px; display:grid; grid-template-columns:auto 1fr; gap:3px 12px; font-variant-numeric:lining-nums}
-.margin dt{font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-soft); padding-top:3px}
+.margin dl{margin:0 0 14px; display:grid; grid-template-columns:88px minmax(0,1fr); gap:3px 12px; font-variant-numeric:lining-nums}
+.margin dt{font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-soft); padding-top:3px; overflow-wrap:anywhere}
 .margin dd{margin:0}
 .margin dd b{font-weight:600}
 .margin .k{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align:-1px}
@@ -94,6 +94,22 @@ body{max-width:1180px}
 .yearbar button.play{background:var(--ink); color:var(--paper)}
 .yearbar .hint{font-size:11.5px; color:var(--ink-soft); letter-spacing:.06em}
 .chips button[title]{position:relative}
+
+.notes{max-width:860px; margin:10px 0 0; font-size:14.5px}
+.notes p{margin:6px 0}
+.notes .k{font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-soft); display:block; margin-bottom:2px}
+@media print{
+  @page{size:A3 landscape; margin:12mm}
+  body{max-width:none; padding:0; border:0; background:#fff; font-size:11px}
+  .controls, .yearbar, details.read, .chips, select, button, .play{display:none !important}
+  .study{grid-template-columns:1fr 300px; gap:14px}
+  #sheet{position:static; border:1px solid #000}
+  #strip{page-break-inside:avoid; margin-top:8px}
+  .sources{font-size:9.5px; margin-top:10px}
+  .margin{font-size:11px}
+  a{color:inherit; text-decoration:none}
+}
+.printbtn{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:uppercase; border:1px solid var(--ink); background:none; padding:6px 10px; cursor:pointer; color:var(--ink)}
 .controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:14px 0 6px; font-size:12px; letter-spacing:.06em}
 .chips{display:flex; gap:0; border:1px solid var(--ink)}
 .chips button{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:uppercase; background:none; border:0; border-right:1px solid var(--ink); padding:6px 11px; cursor:pointer; color:var(--ink)}
@@ -134,6 +150,7 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
   <h1 id="title">— <small id="subtitle"></small></h1>
   <div class="edition" id="edition"></div>
   <p class="reading" id="reading"></p>
+  <div class="notes" id="notes"></div>
 </header>
 
 <details class="read" open>
@@ -152,6 +169,7 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
   <button id="nextYr" title="next year (→)">▶</button>
   <button class="play" id="play">Play ▸</button>
   <span class="hint" id="yrHint"></span>
+  <button class="printbtn" id="printBtn" title="print this plate — A3 landscape">Print the plate</button>
 </div>
 
 <div class="controls">
@@ -179,7 +197,7 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
   <ul id="sources"></ul>
 </section>
 
-<script src="data/studies.js?v=420729790501"></script>
+<script src="data/studies.js?v=fd1bcf2dae22"></script>
 
 <script>
 function runStudy(){
@@ -323,7 +341,7 @@ function runStudy(){
     const natNames = Object.values(S.national_names || {}).join(' + ');
     if (crop && Object.keys(S.national).length) h += `<dt><span class="k sep"></span>Harvest</dt><dd><b>${fmt(v, 0)}</b> ${unitOf(crop)} ${esc(S.crop_names[crop] || crop).toLowerCase().replace(/ \(.*$/, '')}, ${esc(natNames)}${v != null && m ? ` · ${fmt(v / m * 100)}% of the ${Y0}–${Y1} mean` : v == null ? ' · <i>a country is missing this year</i>' : ''}<br><span style="color:var(--ink-soft)">${cropSplit(crop, y)}</span>${S.regional_crops.includes(crop) ? '' : '<br><i>national series only — the source publishes no regional row for this crop here</i>'}</dd>`;
     else if (crop && S.regional_crops.includes(crop)) { const tot = Object.keys(S.places).reduce((t, pl) => { const vv = S.marks[pl]?.[crop]?.[y]?.p; return vv == null ? t : t + vv; }, 0); h += `<dt><span class="k sep"></span>${esc(S.crop_names[crop] || crop)}</dt><dd><b>${fmt(tot, 1)}</b> ${unitOf(crop)} across the marked places</dd>`; }
-    if (state.own && S.own && S.own.series.length) { const sr = S.own.series.find((x) => x.id === state.own); if (sr) h += `<dt>${esc(sr.label)}</dt><dd><b>${fmt(sr.values[y], 1)}</b> ${esc(sr.unit || '')}</dd>`; }
+    if (state.own && S.own && S.own.series.length) { const sr = S.own.series.find((x) => x.id === state.own); if (sr) h += `<dt>Series</dt><dd><b>${fmt(sr.values[y], 1)}</b> ${esc(sr.unit || '')}<br><span style="color:var(--ink-soft)">${esc(sr.label)}${sr.source ? ' · ' + esc(sr.source) : ''}</span></dd>`; }
     if (crop && MARKET[crop]) { const ex = exportsOf(crop, y); h += `<dt>Market</dt><dd>exports of ${esc(MARKET[crop].pl)} <b>${eur(ex)}</b><br><span style="color:var(--ink-soft)">${exportsSplit(crop, y)}</span>${MARKET[crop].price && S.trade.prices[MARKET[crop].price] ? `<br>producer price ${esc(S.trade.prices[MARKET[crop].price]).replace(/,.*$/, '')}: ${Object.keys(S.national_names).map((cc, i) => `${i ? '' : '<b>'}${cc} €${fmt(priceOf(crop, y, cc), 1)}${i ? '' : '</b>'}`).join(' · ')} ${esc(S.trade.prices[MARKET[crop].price]).replace(/^.*€/, '€')}` : ''}</dd>`; }
     const ev = S.events.filter((e) => e.year === y);
     h += `<dt><span class="k ink"></span>Law</dt><dd>${ev.length ? ev.map((e) => `<div class="ev" data-e="${e.id}"><span class="kind">${esc(e.kind)} · ${esc(e.country)}</span>${esc(e.title)}</div>`).join('') : '<i>no instrument dated this year on file</i>'}</dd>`;
@@ -378,7 +396,7 @@ function runStudy(){
       if (!vals.length) s += `<text class="nodata" x="${LEFT + 4}" y="${t + hgt / 2}">no series</text>`;
       for (const y of YEARS) { const v = ser[y]; if (v == null) continue; s += `<rect class="bar harv${y === state.year ? ' on' : ''}" x="${(X(y) - BW * .32).toFixed(1)}" y="${yy(v).toFixed(1)}" width="${(BW * .64).toFixed(1)}" height="${(t + hgt - 4 - yy(v)).toFixed(1)}"><title>${y}: ${fmt(v, 1)} ${esc(unitOf(crop))}</title></rect>`; } }
     // own series lane (only when the study carries one)
-    if (S.own && S.own.series.length && state.own) { const sr = S.own.series.find((x) => x.id === state.own); const [t, hgt] = lane(4); s += `<text class="lane-l" x="6" y="${t + 12}">Yours</text><text class="lane-u" x="6" y="${t + 24}">${esc(sr.label).slice(0, 22)}</text><text class="lane-u" x="6" y="${t + 36}">${esc(sr.unit || '')}</text>`; const vals = YEARS.map((y) => sr.values[y]).filter((v) => v != null); const mx = Math.max(1e-9, ...vals); const yy = (v) => t + hgt - 4 - v / mx * (hgt - 12); const pts = YEARS.filter((y) => sr.values[y] != null).map((y) => [X(y), yy(sr.values[y])]); s += `<path class="price" d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('')}"/>` + YEARS.filter((y) => sr.values[y] != null).map((y) => `<circle class="price-d" cx="${X(y).toFixed(1)}" cy="${yy(sr.values[y]).toFixed(1)}" r="2"><title>${y}: ${fmt(sr.values[y], 2)} ${esc(sr.unit || '')}</title></circle>`).join(''); }
+    if (S.own && S.own.series.length && state.own) { const sr = S.own.series.find((x) => x.id === state.own); const [t, hgt] = lane(4); s += `<text class="lane-l" x="6" y="${t + 12}">Series</text><text class="lane-u" x="6" y="${t + 24}">${esc(sr.label).slice(0, 22)}</text><text class="lane-u" x="6" y="${t + 36}">${esc(sr.unit || '')}</text>`; const vals = YEARS.map((y) => sr.values[y]).filter((v) => v != null); const mx = Math.max(1e-9, ...vals); const yy = (v) => t + hgt - 4 - v / mx * (hgt - 12); const pts = YEARS.filter((y) => sr.values[y] != null).map((y) => [X(y), yy(sr.values[y])]); s += `<path class="price" d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('')}"/>` + YEARS.filter((y) => sr.values[y] != null).map((y) => `<circle class="price-d" cx="${X(y).toFixed(1)}" cy="${yy(sr.values[y]).toFixed(1)}" r="2"><title>${y}: ${fmt(sr.values[y], 2)} ${esc(sr.unit || '')}</title></circle>`).join(''); }
     // 4 market: export value (bars, ES + PT) and producer price (line, ES)
     { const [t, hgt] = lane(3); const crop = state.crop, m = crop ? MARKET[crop] : null;
       s += `<text class="lane-l" x="6" y="${t + 12}">Market</text><text class="lane-u" x="6" y="${t + 24}">${m ? 'exports ' + esc(m.pl).slice(0, 18) : 'no product mapped'}</text><text class="lane-u" x="6" y="${t + 36}">${m && m.price ? 'line: ' + CC0 + ' price' : ''}</text>`;
@@ -398,6 +416,7 @@ function runStudy(){
   }
 
   function render() { drawField(); drawMarks(); drawScope(); drawMargin(); drawStrip(); writeHash(); $('#yrBig').textContent = state.year; $('#yrHint').textContent = `${FIELD[state.field]?.unit || 'ground layer off'} · ← → keys step years`; }
+  $('#printBtn').addEventListener('click', () => window.print());
   $('#prevYr').addEventListener('click', () => { if (state.year > Y0) { state.year--; render(); } });
   $('#nextYr').addEventListener('click', () => { if (state.year < Y1) { state.year++; render(); } });
 
@@ -418,19 +437,22 @@ function runStudy(){
   if (!hasHarvest) { cropSel.style.display = 'none'; cropSel.previousElementSibling.style.display = 'none'; }
   // own series: a select beside Harvest, only when a study carries any
   const ownSeries = (S.own && S.own.series) || [];
-  if (ownSeries.length) { const lab = document.createElement('span'); lab.className = 'ctl-l'; lab.textContent = 'Your series'; const sel = document.createElement('select'); sel.id = 'ownSel'; sel.innerHTML = ownSeries.map((x) => `<option value="${esc(x.id)}">${esc(x.label)}${x.unit ? ' (' + esc(x.unit) + ')' : ''}</option>`).join(''); cropSel.parentNode.insertBefore(lab, $('#sheetChips').previousElementSibling); cropSel.parentNode.insertBefore(sel, $('#sheetChips').previousElementSibling); state.own = ownSeries[0].id; sel.addEventListener('change', () => { state.own = sel.value; render(); }); }
+  if (ownSeries.length) { const lab = document.createElement('span'); lab.className = 'ctl-l'; lab.textContent = 'Series'; const sel = document.createElement('select'); sel.id = 'ownSel'; sel.innerHTML = ownSeries.map((x) => `<option value="${esc(x.id)}">${esc(x.label)}${x.unit ? ' (' + esc(x.unit) + ')' : ''}</option>`).join(''); cropSel.parentNode.insertBefore(lab, $('#sheetChips').previousElementSibling); cropSel.parentNode.insertBefore(sel, $('#sheetChips').previousElementSibling); state.own = ownSeries[0].id; sel.addEventListener('change', () => { state.own = sel.value; render(); }); }
   cropSel.innerHTML = `<optgroup label="By region">${reg.map((c) => `<option value="${c}">${esc(S.crop_names[c])}</option>`).join('')}</optgroup><optgroup label="National only (ES, PT)">${nat.map((c) => `<option value="${c}">${esc(S.crop_names[c])}</option>`).join('')}</optgroup>${Object.keys(MARKET).filter((c) => !S.crop_names[c]).length ? `<optgroup label="Exports only (no production series)">${Object.keys(MARKET).filter((c) => !S.crop_names[c]).map((c) => `<option value="${c}">${esc(MARKET[c].label || MARKET[c].pl)}</option>`).join('')}</optgroup>` : ''}`;
   Object.keys(MARKET).filter((c) => !S.crop_names[c]).forEach((c) => { S.crop_names[c] = (MARKET[c].label || MARKET[c].pl) + ' (exports only — no production row)'; });
   state.crop = nat.includes('O1000') ? 'O1000' : (reg[0] || nat[0] || Object.keys(MARKET)[0] || null); if (state.crop) cropSel.value = state.crop;
   document.title = `${S.title} — Layercake`; $('#title').firstChild.textContent = S.title + ' '; $('#subtitle').textContent = S.subtitle;
   $('#edition').innerHTML = `<span>Built <b>${S.built}</b></span><span>Field <b>${S.field ? S.field.points.length : 0}</b> points · ${S.field?.step}°</span><span>Places <b>${Object.keys(S.places).length}</b></span><span>Instruments <b>${S.events.length}</b></span><span>Trade rows <b>${S.trade ? S.trade.trade.length : 0}</b></span><span>Normal <b>${S.normal[0]}–${S.normal[1]}</b></span>`;
+  if (S.notes && S.notes.length) $('#notes').innerHTML = `<span class="k">Notes</span>` + S.notes.map((n) => `<p>${esc(n)}</p>`).join('');
   const rd = S.readings; if (rd.driest) $('#reading').textContent = `From the field: the driest hydrological year was ${rd.driest} (${rd.years[rd.driest].P_pct}% of normal), the wettest ${rd.wettest} (${rd.years[rd.wettest].P_pct}%), and ${rd.hottest} carried the most days at or above 35 °C (${fmt(rd.years[rd.hottest].D35, 1)} per grid point against a normal of ${fmt(rd.years[rd.hottest].D35_n, 1)}).`;
   $('#sources').innerHTML = [
     S.field ? `<li><b>Natural.</b> ${esc(S.field.source.name)} — ${esc(S.field.source.licence)}, fetched ${S.field.source.fetched_at}. Hydrological year ${esc(S.field.hydro_year)}. ET₀: ${esc(S.field.et0_method)}. Normals ${S.field.normal_period[0]}–${S.field.normal_period[1]}. A reanalysis is a model fitted to observations, not a rain gauge; "% of normal" is the grid point against its own 30-year mean. <a href="${esc(S.field.source.url)}" target="_blank" rel="noopener">source ↗</a></li>` : '',
+    S.fao_source ? `<li><b>Harvest, national.</b> ${esc(S.fao_source.name)} — ${esc(S.fao_source.licence)}, fetched ${S.fao_source.fetched_at}. National totals only; crops marked “FAOSTAT” in the Harvest list. <a href="${esc(S.fao_source.url)}" target="_blank" rel="noopener">source ↗</a></li>` : '',
+    S.own && S.own.worldbank ? `<li><b>Series.</b> ${esc(S.own.worldbank.name)} — ${esc(S.own.worldbank.licence)}, fetched ${S.own.worldbank.fetched_at}; one series per indicator per country, in the Series list. <a href="${esc(S.own.worldbank.url)}" target="_blank" rel="noopener">source ↗</a></li>` : '',
     S.crop_source ? `<li><b>Harvest.</b> ${esc(S.crop_source.name)} — ${esc(S.crop_source.licence)}, Eurostat last updated ${esc(String(S.crop_source.updated).slice(0, 10))}, fetched ${S.crop_source.fetched_at}. Regional rows exist for ${S.regional_crops.map((c) => esc(S.crop_names[c]).replace(/ \(.*$/, '')).join(', ')}; olives, citrus, grapes, other fruit and vegetables are published for ES and PT nationally only. ${esc(S.place_note)} <a href="${esc(S.crop_source.url)}" target="_blank" rel="noopener">source ↗</a></li>` : '',
     S.trade ? S.trade.sources.map((s) => `<li><b>Market.</b> ${esc(s.name)} — ${esc(s.licence)}, fetched ${s.fetched_at}. <a href="${esc(s.url)}" target="_blank" rel="noopener">source ↗</a></li>`).join('') : '',
     `<li><b>Law.</b> ${S.events.length} instruments, hand-curated with a citation each. Confidence: ${Object.entries(S.confidence_tiers).map(([k, v]) => `<i>${k}</i> — ${esc(v)}`).join('; ')}. Counts: ${['read', 'cited', 'recalled'].map((t) => `${S.events.filter((e) => e.confidence === t).length} ${t}`).join(', ')}. Publishers behind a JavaScript wall cannot be checked by script; those citations are marked.</li>`,
-    S.own && (S.own.marks || S.own.series.length || S.own.events) ? `<li><b>Your data.</b> ${[S.own.marks && 'marks (' + esc(S.own.marks.name) + ')', S.own.series.length && S.own.series.length + ' series (' + esc(S.own.series_source.name) + ')', S.own.events && 'events (' + esc(S.own.events.name) + ')'].filter(Boolean).join(', ')} — read by scripts/harvest-own.mjs from CSV in the study's own/ folder.</li>` : '',
+    S.own && (S.own.marks || S.own.series_source || S.own.events) ? `<li><b>Your data.</b> ${[S.own.marks && 'marks (' + esc(S.own.marks.name) + ')', S.own.series_source && S.own.series.filter((x) => x.source !== 'World Bank').length + ' series (' + esc(S.own.series_source.name) + ')', S.own.events && 'events (' + esc(S.own.events.name) + ')'].filter(Boolean).join(', ')} — read by scripts/harvest-own.mjs from CSV in the study's own/ folder.</li>` : '',
     `<li><b>Frame.</b> Coast, lakes, bathymetry, named rivers and surveyed peaks: ${esc(G.source)}. Drainage: ${esc(G.network ? G.network.source : '—')}, Strahler order ≥ ${G.network ? G.network.min_order : '—'} (${G.network ? fmt(G.network.reaches.length) : 0} reaches), line weight by order. Relief: ${esc(G.relief ? G.relief.source : '—')}. Physical names: ${esc(G.feature_note || '')} No political boundary is drawn${S.fade ? '; ' + esc(S.fade.note || 'land beyond the study fades rather than ends') : ''}. Regions are marked at an interior point, not outlined.</li>`,
     `<li><b>Engine.</b> A study is a manifest naming layers of three kinds — a <i>field</i> (values on grid points), <i>marks</i> (values on places), <i>events</i> (dated instruments with a scope) — on one frame and one year axis. This page renders any study of that shape.</li>`,
   ].join('');

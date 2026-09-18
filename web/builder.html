@@ -113,9 +113,9 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
 </section>
 
 <section class="q" id="q4">
-  <div><span class="k">4 · Take it</span><h2>Your files</h2><p class="why">Three small files describe your study. Five commands on a laptop with Node fetch the data, draw the ground and the rivers, and check every figure. The result is a page like the Iberia example — yours to host anywhere.</p></div>
+  <div><span class="k">4 · Take it</span><h2>Your files</h2><p class="why">Three small files describe your study. One command on a laptop with Node fetches the data, draws the ground and the rivers, and checks every figure. The result is a page like the Iberia example — yours to host anywhere.</p></div>
   <div>
-    <div class="next"><div><b>Download</b>the three files below</div><div><b>Run</b>the commands — they print progress and refuse a study that cannot be traced to a source</div><div><b>Open</b><code>web/study.html?s=your-id</code>, or deploy it</div></div>
+    <div class="next"><div><b>Download</b>the three files below</div><div><b>Run</b>one command — it prints each step and refuses a study that cannot be traced to a source</div><div><b>Open</b><code>web/study.html?s=your-id</code>, or deploy it</div></div>
     <div class="row" style="margin-top:14px"><a class="go" id="dlStudy" download="study.json">study.json ↓</a><a class="go alt" id="dlPlaces" download="places.json">places.json ↓</a><a class="go alt" id="dlInst" download="instruments.json">instruments.json ↓</a></div>
     <label>Then, on your machine <button class="copy" id="copyCli">copy</button></label>
     <pre id="cli"></pre>
@@ -128,8 +128,8 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
   </div>
 </section>
 
-<script src="data/world.js?v=31524cdbce15"></script>
-<script src="data/studies.js?v=420729790501"></script>
+<script src="data/world.js?v=d5cd7d14214d"></script>
+<script src="data/studies.js?v=fd1bcf2dae22"></script>
 <script>
 (function(){
   const WD = window.WORLD; const $ = (s) => document.querySelector(s); const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -149,6 +149,8 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
     { id: 'heat', kind: 'field', file: 'natural/climate.json', ink: 'oxblood', label: 'Heat stress', unit: 'days ≥ 35 °C', src: 'same file as Rain', desc: 'A second view of the same climate file: days at or above 35 °C against normal.', reader: null, on: true, avail: () => true },
     { id: 'crops', kind: 'marks', file: 'food/crops.json', ink: 'sepia', label: 'Harvest', unit: 'thousand tonnes, NUTS-2', src: 'Eurostat apro_cpshr · EU/EEA only', desc: 'What each region grew, and on how much land. Some crops are only published nationally; the build says which.', reader: 'harvest-crops.mjs', on: true, avail: (s) => [...s].every((c) => EU.has(c)) },
     { id: 'trade', kind: 'series', file: 'food/trade.json', ink: 'sepia', label: 'Exports', unit: '€, HS4', src: 'Eurostat Comext + producer prices · EU/EEA only', desc: 'What was sold abroad and at what farm-gate price — the market side, per country.', reader: 'harvest-trade.mjs', on: true, avail: (s) => [...s].every((c) => EU.has(c)) },
+    { id: 'faostat', kind: 'marks', file: 'food/faostat.json', ink: 'sepia', label: 'Harvest (national)', unit: 'thousand tonnes', src: 'FAOSTAT bulk · worldwide · no key', desc: 'What each country grew, every year, for ~28 crops — national totals from the FAO. The worldwide answer where Eurostat does not reach.', reader: 'harvest-faostat.mjs', on: true, avail: () => true },
+    { id: 'worldbank', kind: 'series', file: 'series/worldbank.json', ink: 'ink', label: 'Indicators', unit: 'per indicator', src: 'World Bank API · worldwide · no key', desc: 'National figures per year: population, GDP per head, farming\u2019s share of the economy, irrigated land, water withdrawal, cereal yield. Add any indicator code to the manifest.', reader: 'harvest-worldbank.mjs', on: true, avail: () => true },
     { id: 'policy', kind: 'events', file: 'policy/instruments.json', ink: 'verdigris', label: 'Law', unit: 'instrument, dated', src: 'you · hand-curated · cited', desc: 'Laws, plans, decrees, dams — anything with a date, the places it touched and a citation. You write these; the build insists on the citation.', reader: 'check-sources.mjs', on: true, avail: () => true },
     { id: 'own-marks', kind: 'marks', file: 'own/marks.csv', ink: 'sepia', label: 'Your places', unit: 'your unit', src: 'CSV · any place on Earth', desc: 'Values on places you name.', shape: 'place,name,lat,lon,year,value\nsite-1,Alqueva,38.2,-7.5,2012,1375', on: false, avail: () => true },
     { id: 'own-series', kind: 'series', file: 'own/series.csv', ink: 'ink', label: 'Your series', unit: 'your unit', src: 'CSV', desc: 'One national or study-wide figure per year.', shape: 'series,year,value\nolive-oil-exports-eur,2012,1870000000', on: false, avail: () => true },
@@ -205,7 +207,7 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
     const mj = JSON.stringify(study, null, 2); $('#manifest').textContent = mj; $('#extras').textContent = JSON.stringify(places, null, 2) + '\n\n' + JSON.stringify(inst, null, 2);
     const blob = (o) => URL.createObjectURL(new Blob([JSON.stringify(o, null, 2)], { type: 'application/json' })); $('#dlStudy').href = blob(study); $('#dlPlaces').href = blob(places); $('#dlInst').href = blob(inst);
     const readers = [...new Set(LAYERS.filter((L) => L.on && L.avail(sel) && L.reader).map((L) => L.reader))];
-    $('#cli').textContent = `git clone https://github.com/ozvaag/layercake && cd layercake\nmkdir -p studies/${id}/policy && mv ~/Downloads/study.json ~/Downloads/places.json studies/${id}/ && mv ~/Downloads/instruments.json studies/${id}/policy/\nnode scripts/geo.mjs studies/${id}/study.json        # frame: coast, rivers, lakes, admin-1 units\nnode scripts/places-from-frame.mjs studies/${id}/study.json   # proposes places.json from the frame's regions (EU: matched to NUTS-2)\nnode scripts/relief.mjs studies/${id}/study.json     # ground\nnode scripts/hydro.mjs studies/${id}/study.json      # drainage (downloads HydroRIVERS for the continent once)\n${readers.map((r) => `node scripts/${r} studies/${id}/study.json`).join('\n')}\n${LAYERS.some((L) => L.on && L.id.startsWith('own-')) ? `node scripts/harvest-own.mjs studies/${id}/study.json     # your CSVs in studies/${id}/own/ → JSON\n` : ''}node scripts/build.mjs studies/${id}/study.json      # validates, bundles, registers\n# then open web/study.html?s=${id} locally, or ./deploy.sh`;
+    $('#cli').textContent = `git clone https://github.com/ozvaag/layercake && cd layercake\nmkdir -p studies/${id}/policy && mv ~/Downloads/study.json ~/Downloads/places.json studies/${id}/ && mv ~/Downloads/instruments.json studies/${id}/policy/\nnode scripts/run.mjs studies/${id}/study.json\n# one command: frame → places → relief → drainage → ${readers.map((r) => r.replace(/^harvest-|\.mjs$/g, '')).join(' → ')}${LAYERS.some((L) => L.on && L.id.startsWith('own-')) ? ' → your CSVs' : ''} → build\n# then open web/study.html?s=${id} locally, or ./deploy.sh  (each step is also its own script under scripts/)`;
   }
   $('#copyCli').addEventListener('click', async () => { try { await navigator.clipboard.writeText($('#cli').textContent); $('#copyCli').textContent = 'copied'; setTimeout(() => $('#copyCli').textContent = 'copy', 1500); } catch (e) { $('#copyCli').textContent = 'select & copy'; } });
   autoWindow(); render();

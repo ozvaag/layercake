@@ -36,6 +36,10 @@ for (const [code, p] of Object.entries(placesFile.places)) {
 const alias = placesFile.aliases || {};
 const resolvePlace = (g) => places[g] ? g : alias[g] && places[alias[g]] ? alias[g] : null;
 
+// ── FAOSTAT (national only) and World Bank (series) ──
+const fao = existsSync(join(DIR, 'food/faostat.json')) ? JSON.parse(readFileSync(join(DIR, 'food/faostat.json'), 'utf8')) : null;
+const wb = existsSync(join(DIR, 'series/worldbank.json')) ? JSON.parse(readFileSync(join(DIR, 'series/worldbank.json'), 'utf8')) : null;
+
 // ── own data (scripts/harvest-own.mjs) ──
 const ownMarks = existsSync(join(DIR, 'own/marks.json')) ? JSON.parse(readFileSync(join(DIR, 'own/marks.json'), 'utf8')) : null;
 const ownSeries = existsSync(join(DIR, 'own/series.json')) ? JSON.parse(readFileSync(join(DIR, 'own/series.json'), 'utf8')) : null;
@@ -74,6 +78,7 @@ if (crops) for (const r of crops.rows) {
 // grapes, fruit and vegetables at national level only for ES/PT).
 const regionalCrops = new Set(); Object.values(marks).forEach((m) => Object.entries(m).forEach(([c, ys]) => { if (Object.values(ys).some((v) => v.p != null)) regionalCrops.add(c); }));
 const cropNames = { ...(crops?.crops || {}) }; const markUnits = {};
+if (fao) { for (const r of fao.rows) { (national[r.geo] = national[r.geo] || {})[r.crop] = national[r.geo][r.crop] || {}; national[r.geo][r.crop][r.year] = { p: r.production_kt ?? null, a: r.area_kha ?? null }; } for (const [c, n] of Object.entries(fao.crops)) { if (fao.rows.some((r) => r.crop === c && r.production_kt != null)) { cropNames[c] = n + ' — FAOSTAT'; markUnits[c] = 'kt'; } } }
 if (ownMarks) { for (const r of ownMarks.rows) { const m = (marks[r.place] = marks[r.place] || {}); const c = (m[r.series] = m[r.series] || {}); c[r.year] = { p: r.value, a: null }; regionalCrops.add(r.series); } for (const [id, sdef] of Object.entries(ownMarks.series)) { cropNames[id] = sdef.label; markUnits[id] = sdef.unit; } }
 
 // ── field ──
@@ -102,6 +107,7 @@ if (ys.length) {
 
 const trade = layers.trade?.data;
 
+if (crops && !Object.keys(placesFile.places).length && !fao) warnings.push('no places and no FAOSTAT: the harvest layer is national only from Eurostat');
 if (errors.length) { console.error('BUILD FAILED\n' + errors.join('\n')); process.exit(1); }
 warnings.forEach((w) => console.warn('warn:', w));
 
@@ -110,10 +116,12 @@ const bundle = {
   layers: study.layers.map((L) => ({ id: L.id, kind: L.kind, ink: L.ink, label: L.label, unit: L.unit })),
   places, national_names: placesFile.national, place_note: placesFile.note,
   field, marks, national, regional_crops: [...regionalCrops], crop_names: cropNames, mark_units: markUnits, mark_unit_default: crops ? 'kt' : '', crop_source: crops?.source || null,
-  own: { marks: ownMarks ? ownMarks.source : null, series: ownSeries ? ownSeries.series : [], series_source: ownSeries ? ownSeries.source : null, events: ownEvents ? ownEvents.source : null },
+  own: { marks: ownMarks ? ownMarks.source : null, series: [...(ownSeries ? ownSeries.series : []), ...(wb ? wb.series : [])], series_source: ownSeries ? ownSeries.source : null, events: ownEvents ? ownEvents.source : null, worldbank: wb ? wb.source : null },
+  fao_source: fao ? fao.source : null,
   trade: trade ? { products: trade.products, prices: trade.prices, sources: trade.sources, trade: trade.trade, price: trade.price } : null,
   events, event_kinds: kinds, confidence_tiers: pol?.confidence_tiers || { recalled: 'written from knowledge, with a citation; nothing opened', cited: 'the citation resolved to an act of that name and date at the publisher', read: 'the source text was read and the summary checked against it' }, readings,
   fade: study.frame.fade || null, market: study.market || {}, hydro_year_start_month: study.hydro_year_start_month || 10,
+  notes: study.notes || [],
 };
 mkdirSync(join(ROOT, 'web/data'), { recursive: true });
 const js = `// ${study.title} — © ${new Date().getFullYear()} Ozvåag LLC. Sources are named inside; every figure carries its origin.\nwindow.STUDY=${JSON.stringify(bundle)};`;

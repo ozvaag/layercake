@@ -2,30 +2,140 @@
   "id": "italy",
   "title": "Italy",
   "subtitle": "Begun from the builder — rain, heat, harvest and market, 2000–2025",
-  "years": [2000, 2025],
-  "normal": [1991, 2020],
+  "years": [
+    2000,
+    2025
+  ],
+  "normal": [
+    1991,
+    2020
+  ],
   "hydro_year_start_month": 10,
   "frame": {
-    "window": { "lon": [6.0, 19.1], "lat": [36.1, 47.7] },
-    "mask": ["IT"],
-    "admin1_countries": ["IT"],
+    "window": {
+      "lon": [
+        6.0,
+        19.1
+      ],
+      "lat": [
+        36.1,
+        47.7
+      ]
+    },
+    "mask": [
+      "IT"
+    ],
+    "admin1_countries": [
+      "IT"
+    ],
     "fade": null,
     "river_scalerank": 9,
     "exclude_boxes": []
   },
   "layers": [
-    { "id": "rain", "kind": "field", "file": "natural/climate.json", "ink": "sea", "label": "Rain", "unit": "mm, hydrological year" },
-    { "id": "heat", "kind": "field", "file": "natural/climate.json", "ink": "oxblood", "label": "Heat stress", "unit": "days ≥ 35 °C" },
-    { "id": "crops", "kind": "marks", "file": "food/crops.json", "ink": "sepia", "label": "Harvest", "unit": "thousand tonnes, NUTS-2" },
-    { "id": "trade", "kind": "series", "file": "food/trade.json", "ink": "sepia", "label": "Exports", "unit": "€, HS4" },
-    { "id": "policy", "kind": "events", "file": "policy/instruments.json", "ink": "verdigris", "label": "Law", "unit": "instrument, dated" }
+    {
+      "id": "rain",
+      "kind": "field",
+      "file": "natural/climate.json",
+      "ink": "sea",
+      "label": "Rain",
+      "unit": "mm, hydrological year"
+    },
+    {
+      "id": "heat",
+      "kind": "field",
+      "file": "natural/climate.json",
+      "ink": "oxblood",
+      "label": "Heat stress",
+      "unit": "days ≥ 35 °C"
+    },
+    {
+      "id": "crops",
+      "kind": "marks",
+      "file": "food/crops.json",
+      "ink": "sepia",
+      "label": "Harvest",
+      "unit": "thousand tonnes, NUTS-2"
+    },
+    {
+      "id": "trade",
+      "kind": "series",
+      "file": "food/trade.json",
+      "ink": "sepia",
+      "label": "Exports",
+      "unit": "€, HS4"
+    },
+    {
+      "id": "policy",
+      "kind": "events",
+      "file": "policy/instruments.json",
+      "ink": "verdigris",
+      "label": "Law",
+      "unit": "instrument, dated"
+    },
+    {
+      "id": "faostat",
+      "kind": "marks",
+      "file": "food/faostat.json",
+      "ink": "sepia",
+      "label": "Harvest (national)",
+      "unit": "thousand tonnes"
+    },
+    {
+      "id": "worldbank",
+      "kind": "series",
+      "file": "series/worldbank.json",
+      "ink": "ink",
+      "label": "Indicators",
+      "unit": "per indicator"
+    }
   ],
   "market": {
-    "O1000": { "hs": ["1509"], "price": "08100000", "pl": "olive oil" },
-    "W1000": { "hs": ["2204"], "price": "06490000", "pl": "wine" },
-    "C1100": { "hs": ["1001"], "price": "01120000", "pl": "wheat" },
-    "C2000": { "hs": ["1006"], "price": "01600000", "pl": "rice" },
-    "T0000": { "hs": ["0805"], "price": "06210000", "pl": "citrus" },
-    "V0000_S0000": { "hs": ["0702"], "price": "04121000", "pl": "tomatoes" }
-  }
+    "O1000": {
+      "hs": [
+        "1509"
+      ],
+      "price": "08100000",
+      "pl": "olive oil"
+    },
+    "W1000": {
+      "hs": [
+        "2204"
+      ],
+      "price": "06490000",
+      "pl": "wine"
+    },
+    "C1100": {
+      "hs": [
+        "1001"
+      ],
+      "price": "01120000",
+      "pl": "wheat"
+    },
+    "C2000": {
+      "hs": [
+        "1006"
+      ],
+      "price": "01600000",
+      "pl": "rice"
+    },
+    "T0000": {
+      "hs": [
+        "0805"
+      ],
+      "price": "06210000",
+      "pl": "citrus"
+    },
+    "V0000_S0000": {
+      "hs": [
+        "0702"
+      ],
+      "price": "04121000",
+      "pl": "tomatoes"
+    }
+  },
+  "notes": [
+    "This study was begun from the builder's own output and built with the printed commands, as a check that they work; its instruments are a beginning, not a record.",
+    "On the sheet the rice marks sit where rice is grown — the Po plain, Piemonte and Lombardia — and in 2022, the year the basin's drought emergency was declared, the national rice harvest reads 85% of its mean with 16 heat days per grid point against a normal of 6."
+  ]
 }

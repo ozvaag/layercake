@@ -1,0 +1,97 @@
+{
+ "layer": "policy",
+ "kind": "events",
+ "note": "Four instruments to show the shape; confidence `recalled` throughout — written from knowledge with a citation, nothing opened.",
+ "kinds": {
+  "water": "water law, basin plans",
+  "drought": "drought programme or emergency",
+  "agri": "agricultural strategy",
+  "infra": "infrastructure"
+ },
+ "instruments": [
+  {
+   "id": "ma-plan-maroc-vert-2008",
+   "date": "2008-04-22",
+   "country": "MA",
+   "kind": "agri",
+   "title": "Plan Maroc Vert",
+   "citation": "Ministère de l'Agriculture, Plan Maroc Vert, launched at the Meknès agricultural fair, April 2008",
+   "summary": "The 2008–2020 agricultural strategy: high-value export crops (citrus, olives, early vegetables) under 'Pillar I', smallholder support under 'Pillar II', and a national programme to convert irrigation to drip. Olive plantings roughly doubled over its life.",
+   "scope": {
+    "regions": [
+     "all"
+    ],
+    "basins": []
+   },
+   "source_url": "https://www.agriculture.gov.ma/",
+   "confidence": "recalled",
+   "verified_at": null,
+   "source_state": "dead",
+   "checked_at": "2026-09-18"
+  },
+  {
+   "id": "ma-loi-eau-2016",
+   "date": "2016-08-10",
+   "country": "MA",
+   "kind": "water",
+   "title": "Water law 36-15",
+   "citation": "Loi n° 36-15 relative à l'eau, promulgated by Dahir n° 1-16-113 of 10 August 2016 (BO n° 6506)",
+   "summary": "Replaces the 1995 water law: basin agencies (ABH) as the planning unit, participatory management, desalination and reuse recognised, groundwater contracts.",
+   "scope": {
+    "regions": [
+     "all"
+    ],
+    "basins": [
+     "all"
+    ]
+   },
+   "source_url": "http://www.sgg.gov.ma/",
+   "confidence": "recalled",
+   "verified_at": null,
+   "source_state": "wall",
+   "checked_at": "2026-09-18"
+  },
+  {
+   "id": "ma-pnaepi-2020",
+   "date": "2020-01-13",
+   "country": "MA",
+   "kind": "infra",
+   "title": "National drinking-water and irrigation supply programme 2020–2027",
+   "citation": "Programme National d'Approvisionnement en Eau Potable et d'Irrigation 2020–2027, agreement signed before the King, 13 January 2020 (≈115 bn MAD)",
+   "summary": "Dams, inter-basin transfers, desalination (Agadir, Casablanca), reuse and irrigation modernisation, launched as the 2018–2022 drought deepened.",
+   "scope": {
+    "regions": [
+     "all"
+    ],
+    "basins": [
+     "all"
+    ]
+   },
+   "source_url": "https://www.equipement.gov.ma/",
+   "confidence": "recalled",
+   "verified_at": null,
+   "source_state": "dead",
+   "checked_at": "2026-09-18"
+  },
+  {
+   "id": "ma-generation-green-2020",
+   "date": "2020-02-13",
+   "country": "MA",
+   "kind": "agri",
+   "title": "Génération Green 2020–2030",
+   "citation": "Stratégie Génération Green 2020–2030, presented 13 February 2020",
+   "summary": "Successor to Plan Maroc Vert: a rural middle class, digital agriculture, water efficiency and soil as the stated priorities.",
+   "scope": {
+    "regions": [
+     "all"
+    ],
+    "basins": []
+   },
+   "source_url": "https://www.agriculture.gov.ma/",
+   "confidence": "recalled",
+   "verified_at": null,
+   "source_state": "dead",
+   "checked_at": "2026-09-18"
+  }
+ ]
+}

@@ -1,0 +1,115 @@
+{
+ "note": "Proposed by scripts/places-from-frame.mjs from Natural Earth admin-1 regions matched to Eurostat NUTS-2 labels. Check the units of each place; move anything under `unmatched` by hand; add `aliases` for older NUTS codes the source still uses.",
+ "places": {
+  "MA-guelmim-es-semara": {
+   "name": "Guelmim - Es-Semara",
+   "country": "MA",
+   "units": [
+    "MA-14"
+   ]
+  },
+  "MA-laayoune-boujdour-sakia-": {
+   "name": "Laâyoune - Boujdour - Sakia El Hamra",
+   "country": "MA",
+   "units": [
+    "MA-15"
+   ]
+  },
+  "MA-tanger-tetouan": {
+   "name": "Tanger - Tétouan",
+   "country": "MA",
+   "units": [
+    "MA-01"
+   ]
+  },
+  "MA-oriental": {
+   "name": "Oriental",
+   "country": "MA",
+   "units": [
+    "MA-04"
+   ]
+  },
+  "MA-meknes-tafilalet": {
+   "name": "Meknès - Tafilalet",
+   "country": "MA",
+   "units": [
+    "MA-06"
+   ]
+  },
+  "MA-souss-massa-draa": {
+   "name": "Souss - Massa - Draâ",
+   "country": "MA",
+   "units": [
+    "MA-13"
+   ]
+  },
+  "MA-taza-al-hoceima-taounate": {
+   "name": "Taza - Al Hoceima - Taounate",
+   "country": "MA",
+   "units": [
+    "MA-03"
+   ]
+  },
+  "MA-gharb-chrarda-beni-hssen": {
+   "name": "Gharb - Chrarda - Béni Hssen",
+   "country": "MA",
+   "units": [
+    "MA-02"
+   ]
+  },
+  "MA-rabat-sale-zemmour-zaer": {
+   "name": "Rabat - Salé - Zemmour - Zaer",
+   "country": "MA",
+   "units": [
+    "MA-07"
+   ]
+  },
+  "MA-chaouia-ouardigha": {
+   "name": "Chaouia - Ouardigha",
+   "country": "MA",
+   "units": [
+    "MA-09"
+   ]
+  },
+  "MA-grand-casablanca": {
+   "name": "Grand Casablanca",
+   "country": "MA",
+   "units": [
+    "MA-08"
+   ]
+  },
+  "MA-doukkala-abda": {
+   "name": "Doukkala - Abda",
+   "country": "MA",
+   "units": [
+    "MA-10"
+   ]
+  },
+  "MA-marrakech-tensift-al-hao": {
+   "name": "Marrakech - Tensift - Al Haouz",
+   "country": "MA",
+   "units": [
+    "MA-11"
+   ]
+  },
+  "MA-fes-boulemane": {
+   "name": "Fès - Boulemane",
+   "country": "MA",
+   "units": [
+    "MA-05"
+   ]
+  },
+  "MA-tadla-azilal": {
+   "name": "Tadla - Azilal",
+   "country": "MA",
+   "units": [
+    "MA-12"
+   ]
+  }
+ },
+ "aliases": {},
+ "national": {
+  "MA": "Morocco"
+ },
+ "unmatched": {}
+}
