@@ -65,8 +65,8 @@ body{max-width:1180px}
     <p id="selHint" style="margin:0 0 6px;color:var(--ink-soft);font-size:12.5px">Click a country. Click more to make a region. Drag to spin, scroll to zoom.</p>
     <div class="chips" id="selChips"></div>
     <p class="win" id="selWin"></p>
-    <a class="go" id="startBtn" href="builder.html" aria-disabled="true">Start a study here →</a>
-    <a class="go alt" id="openBtn" href="study.html" style="display:none">Open the study →</a>
+    <a class="go" id="startBtn" href="builder" aria-disabled="true">Start a study here →</a>
+    <a class="go alt" id="openBtn" href="study" style="display:none">Open the study →</a>
     <h2 style="margin-top:26px">How a study is made</h2>
     <p style="margin:0;font-size:12.5px;color:var(--ink-soft)">Three questions, in order. The builder asks them and writes the manifest; the readers fetch the data; the engine draws it.</p>
   </aside>
@@ -134,15 +134,15 @@ body{max-width:1180px}
     for (const cc in paths) paths[cc].classList.toggle('sel', sel.has(cc));
     const ccs = [...sel]; $('#selChips').innerHTML = ccs.map((cc) => `<span class="chip" data-cc="${cc}"><b>${cc}</b> ${WD.countries[cc].name} ×</span>`).join('');
     if (ccs.length) { let x0 = 180, y0 = 90, x1 = -180, y1 = -90; ccs.forEach((cc) => { const b = WD.countries[cc].bbox; x0 = Math.min(x0, b[0]); y0 = Math.min(y0, b[1]); x1 = Math.max(x1, b[2]); y1 = Math.max(y1, b[3]); }); $('#selWin').textContent = `window ≈ ${x0.toFixed(1)}° to ${x1.toFixed(1)}° E, ${y0.toFixed(1)}° to ${y1.toFixed(1)}° N (edit in the builder)`; } else $('#selWin').textContent = '';
-    $('#startBtn').setAttribute('aria-disabled', ccs.length ? 'false' : 'true'); $('#startBtn').href = 'builder.html?cc=' + ccs.join(',');
+    $('#startBtn').setAttribute('aria-disabled', ccs.length ? 'false' : 'true'); $('#startBtn').href = 'builder?cc=' + ccs.join(',');
     const match = Object.entries(ST).find(([id, s]) => s.countries && s.countries.length === ccs.length && s.countries.every((c) => sel.has(c)));
-    $('#openBtn').style.display = match ? '' : 'none'; if (match) { $('#openBtn').href = 'study.html?s=' + match[0]; $('#openBtn').textContent = `Open “${match[1].title}” →`; }
+    $('#openBtn').style.display = match ? '' : 'none'; if (match) { $('#openBtn').href = 'study?s=' + match[0]; $('#openBtn').textContent = `Open “${match[1].title}” →`; }
     $('#selHint').textContent = ccs.length ? 'Shift-click adds a neighbour; click a chip to remove it.' : 'Click a country. Click more to make a region. Drag to spin, scroll to zoom.';
     draw();
   }
   $('#selChips').addEventListener('click', (e) => { const c = e.target.closest('[data-cc]'); if (c) { sel.delete(c.dataset.cc); update(); } });
   // studies list
-  $('#studies').innerHTML = Object.entries(ST).map(([id, s]) => `<a class="card" href="study.html?s=${id}"><h3>${s.title}</h3><p>${s.subtitle || ''}</p><p class="n">${(s.countries || []).join(' + ')} · ${s.years[0]}–${s.years[1]} · ${s.counts.field} grid points · ${s.counts.places} places · ${s.counts.events} instruments · built ${s.built}</p></a>`).join('') + `<a class="card" href="builder.html" style="border-style:dashed"><h3>+ a new study</h3><p>Pick a place on the globe, or open the builder and type the countries.</p></a>`;
+  $('#studies').innerHTML = Object.entries(ST).map(([id, s]) => `<a class="card" href="study?s=${id}"><h3>${s.title}</h3><p>${s.subtitle || ''}</p><p class="n">${(s.countries || []).join(' + ')} · ${s.years[0]}–${s.years[1]} · ${s.counts.field} grid points · ${s.counts.places} places · ${s.counts.events} instruments · built ${s.built}</p></a>`).join('') + `<a class="card" href="builder" style="border-style:dashed"><h3>+ a new study</h3><p>Pick a place on the globe, or open the builder and type the countries.</p></a>`;
   draw();
 })();
 </script>
