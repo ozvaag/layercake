@@ -82,6 +82,18 @@ body{max-width:1180px}
 .ev{padding:5px 0; border-bottom:1px dotted var(--rule); cursor:pointer}
 .ev:hover{color:var(--oxblood)}
 .ev .kind{font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft); margin-right:6px}
+
+.read{border:1px solid var(--ink); padding:10px 14px; margin-top:14px; font-size:13px}
+.read summary{cursor:pointer; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink); font-weight:600}
+.read .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px 18px; margin-top:8px}
+.read p{margin:0}
+.read b{font-weight:600}
+.yearbar{display:flex; align-items:center; gap:12px; margin:14px 0 0; flex-wrap:wrap}
+.yearbar .yv{font-size:30px; font-weight:600; font-variant-numeric:lining-nums; min-width:84px; line-height:1}
+.yearbar button{font:inherit; font-size:12px; letter-spacing:.16em; text-transform:uppercase; border:1px solid var(--ink); background:none; padding:7px 12px; cursor:pointer; color:var(--ink)}
+.yearbar button.play{background:var(--ink); color:var(--paper)}
+.yearbar .hint{font-size:11.5px; color:var(--ink-soft); letter-spacing:.06em}
+.chips button[title]{position:relative}
 .controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:14px 0 6px; font-size:12px; letter-spacing:.06em}
 .chips{display:flex; gap:0; border:1px solid var(--ink)}
 .chips button{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:uppercase; background:none; border:0; border-right:1px solid var(--ink); padding:6px 11px; cursor:pointer; color:var(--ink)}
@@ -124,19 +136,35 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
   <p class="reading" id="reading"></p>
 </header>
 
-<div class="controls">
-  <span class="ctl-l">Field</span>
-  <div class="chips" id="fieldChips">
-    <button data-f="rain" class="on">Rain</button><button data-f="heat">Heat</button><button data-f="bal">Balance</button><button data-f="none">Off</button>
+<details class="read" open>
+  <summary>How to read this sheet</summary>
+  <div class="grid">
+    <p><b>The dots</b> are grid points of the ground layer. Bigger means further from normal; <span class="k verd" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--verdigris)"></span> wetter or above, <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--oxblood)"></span> drier or hotter. Hover one for its figures.</p>
+    <p><b>The brown marks</b> are regions' harvests for the year; the dashed ring is that region's average. Click one to open the region in the margin.</p>
+    <p><b>The strip below</b> is the same years for every layer — rain, heat, harvest, market, and every instrument as a tick. Click a year to move the sheet; click a tick to read the instrument.</p>
+    <p><b>The margin</b> prints the year's figures with their sources. Nothing on this page is drawn without one.</p>
   </div>
-  <span class="ctl-l">Harvest</span>
-  <select id="cropSel"></select>
-  <span class="ctl-l">Sheet</span>
-  <div class="chips" id="sheetChips">
-    <button data-s="physical" class="on">Physical</button><button data-s="nonames">No names</button><button data-s="plain">Plain</button>
-  </div>
+</details>
+
+<div class="yearbar">
+  <button id="prevYr" title="previous year (←)">◀</button>
+  <span class="yv" id="yrBig">—</span>
+  <button id="nextYr" title="next year (→)">▶</button>
   <button class="play" id="play">Play ▸</button>
-  <span class="ctl-l" id="yrHint"></span>
+  <span class="hint" id="yrHint"></span>
+</div>
+
+<div class="controls">
+  <span class="ctl-l" title="the natural layer, on a grid of points">Ground</span>
+  <div class="chips" id="fieldChips">
+    <button data-f="rain" class="on" title="rain as % of the 1991–2020 normal">Rain</button><button data-f="heat" title="days at or above 35 °C; the ring is the normal">Heat</button><button data-f="bal" title="rain minus evaporation demand, against normal">Water balance</button><button data-f="none" title="hide the ground layer">Off</button>
+  </div>
+  <span class="ctl-l" title="what the land grew; regional where the source publishes it">Harvest</span>
+  <select id="cropSel"></select>
+  <span class="ctl-l" title="how the ground is drawn">Sheet</span>
+  <div class="chips" id="sheetChips">
+    <button data-s="physical" class="on" title="relief, rivers and names">Physical</button><button data-s="nonames" title="relief and rivers, no names">No names</button><button data-s="plain" title="a bare sheet for the data">Plain</button>
+  </div>
 </div>
 
 <div class="study">
@@ -314,7 +342,7 @@ function runStudy(){
         const b = avg(before), a = avg(nxt); if (b && a) h += `<p class="cite">${esc(S.crop_names[state.crop])}, ES + PT: three years before ${fmt(b)} kt/yr, three after ${fmt(a)} kt/yr (${a >= b ? '+' : ''}${fmt((a / b - 1) * 100)}%). Correlation is not attribution; the strip below shows the rain that ran alongside.</p>`;
         h += '</div>'; }
     }
-    if (!state.place && !state.event) h += `<div class="panel"><p class="sub">Click a harvest mark for its region · a tick on the axis for an instrument · a year to move the sheet.</p><p class="sub"><span class="k verd"></span>wetter / above · <span class="k ox"></span>drier / hotter · <span class="k sep"></span>harvest (dashed ring = the ${Y0}–${Y1} mean) · <span class="k ring"></span>normal</p></div>`;
+    if (!state.place && !state.event) h += `<div class="panel"><p class="sub"><b style="color:var(--ink)">Try:</b> click a brown harvest mark on the sheet to open its region here · click a tick on the strip below to read an instrument · press ▶ to run the years.</p><p class="sub"><span class="k verd"></span>wetter / above normal · <span class="k ox"></span>drier / hotter · <span class="k sep"></span>harvest (dashed ring = the ${Y0}–${Y1} mean) · <span class="k ring"></span>normal</p></div>`;
     $('#margin').innerHTML = h;
   }
 
@@ -359,7 +387,9 @@ function runStudy(){
     strip.innerHTML = s;
   }
 
-  function render() { drawField(); drawMarks(); drawScope(); drawMargin(); drawStrip(); writeHash(); $('#yrHint').textContent = `${state.year} · ${FIELD[state.field]?.unit || 'field off'}`; }
+  function render() { drawField(); drawMarks(); drawScope(); drawMargin(); drawStrip(); writeHash(); $('#yrBig').textContent = state.year; $('#yrHint').textContent = `${FIELD[state.field]?.unit || 'ground layer off'} · ← → keys step years`; }
+  $('#prevYr').addEventListener('click', () => { if (state.year > Y0) { state.year--; render(); } });
+  $('#nextYr').addEventListener('click', () => { if (state.year < Y1) { state.year++; render(); } });
 
   // ── wiring ──
   $('#fieldChips').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; state.field = b.dataset.f; [...$('#fieldChips').children].forEach((c) => c.classList.toggle('on', c === b)); render(); });

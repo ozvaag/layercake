@@ -21,7 +21,15 @@ for (const ft of g.features) {
   if (!rings.length) continue;
   const c = countries[cc] || (countries[cc] = { name: p.NAME_EN || p.NAME, continent: p.CONTINENT, rings: [] }); c.rings.push(...rings);
 }
-for (const c of Object.values(countries)) { const big = c.rings.reduce((a, b) => area(b) > area(a) ? b : a); c.anchor = polylabel(big, 0.05).map((v) => Math.round(v * 100) / 100); let x0 = 180, y0 = 90, x1 = -180, y1 = -90; c.rings.forEach((r) => r.forEach(([x, y]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); })); c.bbox = [x0, y0, x1, y1]; }
+for (const c of Object.values(countries)) {
+  const big = c.rings.reduce((a, b) => area(b) > area(a) ? b : a); c.anchor = polylabel(big, 0.05).map((v) => Math.round(v * 100) / 100);
+  const bb = (rs) => { let x0 = 180, y0 = 90, x1 = -180, y1 = -90; rs.forEach((r) => r.forEach(([x, y]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); })); return [x0, y0, x1, y1]; };
+  c.bbox = bb(c.rings);
+  // The mainland box: the largest ring plus any ring within 3° of it — so Portugal
+  // is Portugal, not the Azores, and Spain does not reach the Canaries unless asked.
+  const mb = bb([big]); const near = c.rings.filter((r) => { const b = bb([r]); return b[2] >= mb[0] - 3 && b[0] <= mb[2] + 3 && b[3] >= mb[1] - 3 && b[1] <= mb[3] + 3; });
+  c.mainland = bb(near); c.has_far = near.length < c.rings.length;
+}
 const js = `window.WORLD=${JSON.stringify({ source: 'Natural Earth 1:50m admin-0 (public domain)', countries })};`;
 mkdirSync(join(ROOT, 'web/data'), { recursive: true }); writeFileSync(join(ROOT, 'web/data/world.js'), js);
 console.log(Object.keys(countries).length, 'countries,', (js.length / 1024).toFixed(0), 'KB');

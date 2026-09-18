@@ -46,6 +46,20 @@ body{max-width:1180px}
 .step h3{margin:2px 0 6px; font-size:19px; font-weight:600}
 .step p{margin:0; font-size:13.5px}
 .step code{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--paper-deep); padding:1px 4px}
+
+.howto{display:grid; grid-template-columns:repeat(3,1fr); gap:0; border:1px solid var(--ink); margin:16px 0 0}
+@media (max-width:700px){ .howto{grid-template-columns:1fr} }
+.howto div{padding:12px 14px; border-right:1px solid var(--ink); font-size:13px}
+.howto div:last-child{border-right:0}
+.howto b{display:block; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:3px}
+.howto span{font-size:14.5px}
+.lead{font-size:16px; line-height:1.45; margin:12px 0 0; max-width:820px}
+.lead b{font-weight:600}
+.margin .big{font-size:22px; font-weight:600; margin:0 0 4px; line-height:1.2}
+.margin .quiet{color:var(--ink-soft); font-size:12.5px; margin:0 0 10px}
+.eg{border:1px dashed var(--rule); padding:10px 12px; margin-top:18px; font-size:12.5px}
+.eg a{color:var(--oxblood)}
+.who{font-size:13.5px; max-width:820px; margin:8px 0 0}
 .foot{margin-top:34px; font-size:12px; color:var(--ink-soft); border-top:1px solid var(--rule); padding-top:10px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px}
 .foot a{color:var(--ink-soft)}
 </style>
@@ -54,24 +68,26 @@ body{max-width:1180px}
 <header class="plate-head">
   <p class="kicker">Open source · MIT · © Ozvåag LLC</p>
   <h1>Layercake <small>a place, its layers, its years</small></h1>
-  <div class="edition"><span>Studies <b id="nStudies">0</b></span><span>Countries on the globe <b id="nCountries">0</b></span><span>Layer kinds <b>field · marks · events · series</b></span><span><a href="https://github.com/ozvaag/layercake" style="color:inherit">github.com/ozvaag/layercake</a></span></div>
-  <p class="reading" style="font-style:italic;color:var(--ink-soft);margin:8px 0 0;font-size:13.5px">Research that lives on a map usually has three things happening at once — the ground (rain, heat, soil), the rules (laws, plans, subsidies) and the outcome (what grew, what sold, who moved). Layercake puts them on one sheet and one time axis so they can be read against each other, with every figure carrying its source. Spin the globe, click where you work, and start a study.</p>
+  <p class="lead">Put your research on a map that moves through time. <b>Pick the place. Add the layers — climate, law, harvest, your own data. Set the years.</b> Layercake draws them on one sheet and one time axis so they can be read against each other, and every figure keeps its source. Free, open, and the files stay yours.</p>
+  <div class="howto"><div><b>1 · Click where you work</b><span>One country, or several to make a region.</span></div><div><b>2 · Answer three questions</b><span>Where, what, when. The builder writes the files.</span></div><div><b>3 · Read the plate</b><span>Scrub the years; the ground, the law and the harvest answer together.</span></div></div>
+  <div class="edition" style="margin-top:12px"><span>Studies <b id="nStudies">0</b></span><span>Countries on the globe <b id="nCountries">0</b></span><span><a href="https://github.com/ozvaag/layercake" style="color:inherit">github.com/ozvaag/layercake</a></span></div>
 </header>
 
 <div class="hero">
   <svg id="globe" role="img" aria-label="A globe of countries; click one or more to choose the place of a study"></svg>
   <aside class="margin">
-    <h2>Your place</h2>
-    <p id="selHint" style="margin:0 0 6px;color:var(--ink-soft);font-size:12.5px">Click a country. Click more to make a region. Drag to spin, scroll to zoom.</p>
+    <p class="big" id="selTitle">Where do you work?</p>
+    <p class="quiet" id="selHint">Click a country on the globe. Drag to spin it, scroll to zoom.</p>
     <div class="chips" id="selChips"></div>
     <p class="win" id="selWin"></p>
     <a class="go" id="startBtn" href="builder" aria-disabled="true">Start a study here →</a>
     <a class="go alt" id="openBtn" href="study" style="display:none">Open the study →</a>
-    <h2 style="margin-top:26px">How a study is made</h2>
-    <p style="margin:0;font-size:12.5px;color:var(--ink-soft)">Three questions, in order. The builder asks them and writes the manifest; the readers fetch the data; the engine draws it.</p>
+    <div class="eg"><b>Not sure yet?</b> Open the example — <a href="study?s=iberia#/y/2005">Iberia in 2005</a>, the driest year on record — and press ▶ to watch twenty-six years go by. Or <a href="builder?cc=IT">try the builder with Italy</a> and fetch a first field in under a minute.</div>
   </aside>
 </div>
 
+<h2 class="section">Who it is for</h2>
+<p class="who">Anyone whose question has a <i>where</i>, a <i>what</i> and a <i>when</i>: a PhD on irrigation law and olive yields, a report on heat and hospital admissions by region, a history of a river basin's dams. You do not need to code to see your first field; you need Node on a laptop to build the full plate — five commands, all printed for you.</p>
 <h2 class="section">The three questions</h2>
 <div class="steps">
   <div class="step"><span class="k">1 · Place</span><h3>Where?</h3><p>One country or several — the <code>mask</code>. The frame draws land, coast, relief and every river from open sources; no political line is drawn. The window is the mask's bounding box plus a margin.</p></div>
@@ -84,7 +100,7 @@ body{max-width:1180px}
 
 <div class="foot"><span>Frame: Natural Earth · Terrarium (AWS Open Data) · HydroRIVERS. Field: NASA POWER (MERRA-2). Harvest and market: Eurostat. Instruments: hand-curated, cited.</span><span>© <span id="yr"></span> Ozvåag LLC · <a href="https://github.com/ozvaag/layercake/blob/main/SCHEMA.md">the schema</a></span></div>
 
-<script src="data/world.js?v=33bc3611d893"></script>
+<script src="data/world.js?v=31524cdbce15"></script>
 <script src="data/studies.js?v=c47bbfc2e6ee"></script>
 <script>
 (function(){
@@ -139,11 +155,11 @@ body{max-width:1180px}
   function update() {
     for (const cc in paths) paths[cc].classList.toggle('sel', sel.has(cc));
     const ccs = [...sel]; $('#selChips').innerHTML = ccs.map((cc) => `<span class="chip" data-cc="${cc}"><b>${cc}</b> ${WD.countries[cc].name} ×</span>`).join('');
-    if (ccs.length) { let x0 = 180, y0 = 90, x1 = -180, y1 = -90; ccs.forEach((cc) => { const b = WD.countries[cc].bbox; x0 = Math.min(x0, b[0]); y0 = Math.min(y0, b[1]); x1 = Math.max(x1, b[2]); y1 = Math.max(y1, b[3]); }); $('#selWin').textContent = `window ≈ ${x0.toFixed(1)}° to ${x1.toFixed(1)}° E, ${y0.toFixed(1)}° to ${y1.toFixed(1)}° N (edit in the builder)`; } else $('#selWin').textContent = '';
+    if (ccs.length) { let x0 = 180, y0 = 90, x1 = -180, y1 = -90; ccs.forEach((cc) => { const b = WD.countries[cc].mainland || WD.countries[cc].bbox; x0 = Math.min(x0, b[0]); y0 = Math.min(y0, b[1]); x1 = Math.max(x1, b[2]); y1 = Math.max(y1, b[3]); }); $('#selWin').textContent = `window ≈ ${x0.toFixed(1)}° to ${x1.toFixed(1)}° E, ${y0.toFixed(1)}° to ${y1.toFixed(1)}° N (mainland; islands are an option in the builder)`; } else $('#selWin').textContent = '';
     $('#startBtn').setAttribute('aria-disabled', ccs.length ? 'false' : 'true'); $('#startBtn').href = 'builder?cc=' + ccs.join(',');
     const match = Object.entries(ST).find(([id, s]) => s.countries && s.countries.length === ccs.length && s.countries.every((c) => sel.has(c)));
     $('#openBtn').style.display = match ? '' : 'none'; if (match) { $('#openBtn').href = 'study?s=' + match[0]; $('#openBtn').textContent = `Open “${match[1].title}” →`; }
-    $('#selHint').textContent = ccs.length ? 'Shift-click adds a neighbour; click a chip to remove it.' : 'Click a country. Click more to make a region. Drag to spin, scroll to zoom.';
+    $('#selHint').textContent = ccs.length ? 'Shift-click a neighbour to make a region; click a chip to remove it.' : 'Click a country on the globe. Drag to spin it, scroll to zoom.'; $('#selTitle').textContent = ccs.length ? (ccs.length === 1 ? WD.countries[ccs[0]].name : ccs.length + ' countries') : 'Where do you work?';
     draw();
   }
   $('#selChips').addEventListener('click', (e) => { const c = e.target.closest('[data-cc]'); if (c) { sel.delete(c.dataset.cc); update(); } });

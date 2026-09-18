@@ -9,6 +9,21 @@
 <link rel="stylesheet" href="atlas.css?v=1b892092ee72">
 <style>
 body{max-width:1180px}
+
+.stepper{display:flex; gap:0; border:1px solid var(--ink); margin-top:14px; position:sticky; top:0; background:var(--paper); z-index:2}
+.stepper a{flex:1; padding:8px 12px; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-soft); text-decoration:none; border-right:1px solid var(--ink); text-align:center}
+.stepper a:last-child{border-right:0}
+.stepper a b{color:var(--ink); font-weight:600}
+.tech{display:inline-block; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft); border:1px solid var(--rule); padding:0 5px; margin-left:6px; vertical-align:middle; font-family:ui-monospace,Menlo,monospace}
+.plain{font-size:14.5px; margin:0 0 10px}
+.own{border:1px dashed var(--ink); padding:12px 14px; margin-top:14px; font-size:13px}
+.own b{font-weight:600}
+details{margin-top:10px} summary{cursor:pointer; font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-soft)}
+.copy{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:uppercase; border:1px solid var(--ink); background:none; padding:4px 9px; cursor:pointer; color:var(--ink); margin-left:8px}
+.next{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:8px}
+@media (max-width:700px){ .next{grid-template-columns:1fr} }
+.next div{border-top:2px solid var(--ink); padding-top:8px; font-size:13px}
+.next b{display:block; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:3px}
 .q{display:grid; grid-template-columns:300px minmax(0,1fr); gap:26px; border-top:2px solid var(--ink); padding:16px 0 26px; margin-top:10px}
 @media (max-width:900px){ .q{grid-template-columns:1fr} body{padding:22px 16px 40px} h1{font-size:34px} }
 .q .k{font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-soft)}
@@ -54,55 +69,66 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
 <body>
 <header class="plate-head">
   <p class="kicker"><a href="./" style="color:inherit;text-decoration:none">Layercake</a> · the builder</p>
-  <h1>Build a study <small>three questions, in order — then the manifest is yours</small></h1>
+  <h1>Build a study <small>three questions, in order — then the files are yours</small></h1>
+  <nav class="stepper"><a href="#q1"><b>1</b> Where</a><a href="#q2"><b>2</b> What</a><a href="#q3"><b>3</b> When</a><a href="#q4"><b>4</b> Take it</a></nav>
 </header>
 
 <section class="q" id="q1">
-  <div><span class="k">1 · Place</span><h2>Where?</h2><p class="why">The mask is the land your study is about; the window is the sheet around it. Add neighbours to make a region. Political lines are used only to know what is inside — never drawn.</p></div>
+  <div><span class="k">1 · Place</span><h2>Where?</h2><p class="why">The land your study is about, and the sheet around it. Add neighbours to make a region. Borders are used only to know what is inside — they are never drawn.</p></div>
   <div>
-    <label>Countries in the mask</label>
+    <p class="plain">Which countries is your study about? <span class="tech">mask</span></p>
+    <label>Countries</label>
     <div class="chips" id="chips"></div>
     <div class="row"><div style="flex:1 1 260px"><input type="text" id="ccSearch" placeholder="type a country name or ISO code and press Enter…" list="ccList"><datalist id="ccList"></datalist></div></div>
-    <label>Window (degrees) — auto from the mask, edit if you like</label>
-    <div class="row"><div><label>lon west</label><input type="number" id="lon0" step="0.1"></div><div><label>lon east</label><input type="number" id="lon1" step="0.1"></div><div><label>lat south</label><input type="number" id="lat0" step="0.1"></div><div><label>lat north</label><input type="number" id="lat1" step="0.1"></div><div><label>margin</label><input type="number" id="pad" step="0.1" value="0.6"></div></div>
+    <p class="plain" style="margin-top:14px">How far should the sheet reach? <span class="tech">window</span> <span style="color:var(--ink-soft);font-size:12.5px">— set from your countries; change it to show more sea or a neighbour's coast</span></p>
+    <div class="row"><div><label>lon west</label><input type="number" id="lon0" step="0.1"></div><div><label>lon east</label><input type="number" id="lon1" step="0.1"></div><div><label>lat south</label><input type="number" id="lat0" step="0.1"></div><div><label>lat north</label><input type="number" id="lat1" step="0.1"></div><div><label>margin</label><input type="number" id="pad" step="0.1" value="0.6"></div><div><label>islands</label><label style="font-size:12.5px;letter-spacing:0;text-transform:none;color:var(--ink);margin:0;display:flex;align-items:center;gap:6px;height:32px"><input type="checkbox" id="far" style="width:auto"> include far islands and overseas parts</label></div></div>
+    <p class="status" id="farNote"></p>
     <svg id="frame" role="img" aria-label="Preview of the study frame"></svg>
     <p class="status" id="frameNote"></p>
   </div>
 </section>
 
 <section class="q" id="q2">
-  <div><span class="k">2 · Data</span><h2>What?</h2><p class="why">Every layer is one of four shapes. Readers exist for the open sources below; your own data comes in as CSV in the same shape and is drawn the same way.</p></div>
-  <div class="cards" id="cards"></div>
+  <div><span class="k">2 · Data</span><h2>What?</h2><p class="why">Tick the layers you want on the sheet. The first five come from open sources and are fetched for you; the last three are yours, as a spreadsheet saved as CSV.</p></div>
+  <div>
+    <p class="plain">Every layer is one of four shapes: a <b>field</b> (values on a grid, like rain), <b>marks</b> (values on places, like a region's harvest), <b>events</b> (things with a date, like a law), or a <b>series</b> (one figure per year, like exports).</p>
+    <div class="cards" id="cards"></div>
+    <div class="own"><b>Have your own data?</b> Most research does. Save a sheet as CSV with the columns shown on the cards above — a place, a year and a value is enough for marks; a date, a title and a citation is enough for events. Anything you cannot map to those shapes is a good question to ask on GitHub.</div>
+  </div>
 </section>
 
 <section class="q" id="q3">
-  <div><span class="k">3 · Years</span><h2>When?</h2><p class="why">One axis for every layer. The normal period is what "% of normal" means; WMO uses 1991–2020. The hydrological year is named by the year it ends.</p></div>
+  <div><span class="k">3 · Years</span><h2>When?</h2><p class="why">One axis for every layer. "Normal" is what a year is compared against — the WMO standard is 1991–2020. A water year runs October to September in most of the Mediterranean; pick January for a plain calendar year.</p></div>
   <div>
+    <p class="plain">Which years, and what counts as normal?</p>
     <div class="row"><div><label>from</label><input type="number" id="y0" value="2000"></div><div><label>to</label><input type="number" id="y1" value="2025"></div><div><label>normal from</label><input type="number" id="n0" value="1991"></div><div><label>normal to</label><input type="number" id="n1" value="2020"></div><div><label>water year starts</label><select id="hm"><option value="10">October</option><option value="1">January</option><option value="7">July</option><option value="9">September</option></select></div></div>
     <label>Name of the study</label>
     <input type="text" id="name" placeholder="e.g. Po valley — nitrates, pigs and water law">
     <input type="text" id="sub" placeholder="one line under the title" style="margin-top:6px">
-    <h3 style="font-size:15px;margin:18px 0 4px">Preview the field now <span style="font-weight:400;color:var(--ink-soft);font-size:12.5px">— NASA POWER answers the browser directly; a coarse grid over your mask for your years, no build step</span></h3>
+    <h3 style="font-size:15px;margin:18px 0 4px">See a first field now <span style="font-weight:400;color:var(--ink-soft);font-size:12.5px">— rain and heat for your countries and years, fetched from NASA straight into this page. Nothing to install; about half a minute.</span></h3>
     <button class="go alt" id="previewBtn">Fetch a first field ▸</button>
     <span class="status" id="pvStatus"></span>
     <div class="yr" id="yrRow" style="display:none"><b id="yrLab"></b><input type="range" id="yrRange"><span id="yrRead" style="font-size:12.5px;color:var(--ink-soft)"></span></div>
   </div>
 </section>
 
-<section class="q">
-  <div><span class="k">4 · Your manifest</span><h2>Take it</h2><p class="why">Three files and five commands. The readers run on your machine (Node 20+), cache every raw response, and the build refuses a study whose numbers cannot be traced.</p></div>
+<section class="q" id="q4">
+  <div><span class="k">4 · Take it</span><h2>Your files</h2><p class="why">Three small files describe your study. Five commands on a laptop with Node fetch the data, draw the ground and the rivers, and check every figure. The result is a page like the Iberia example — yours to host anywhere.</p></div>
   <div>
-    <div class="out">
-      <div><label>study.json</label><pre id="manifest"></pre></div>
-      <div><label>places.json (skeleton) · instruments.json (template)</label><pre id="extras"></pre></div>
-    </div>
-    <div class="row"><a class="go" id="dlStudy" download="study.json">study.json ↓</a><a class="go alt" id="dlPlaces" download="places.json">places.json ↓</a><a class="go alt" id="dlInst" download="instruments.json">instruments.json ↓</a></div>
-    <label>Then, on your machine</label>
+    <div class="next"><div><b>Download</b>the three files below</div><div><b>Run</b>the commands — they print progress and refuse a study that cannot be traced to a source</div><div><b>Open</b><code>web/study.html?s=your-id</code>, or deploy it</div></div>
+    <div class="row" style="margin-top:14px"><a class="go" id="dlStudy" download="study.json">study.json ↓</a><a class="go alt" id="dlPlaces" download="places.json">places.json ↓</a><a class="go alt" id="dlInst" download="instruments.json">instruments.json ↓</a></div>
+    <label>Then, on your machine <button class="copy" id="copyCli">copy</button></label>
     <pre id="cli"></pre>
+    <details><summary>Show the files</summary>
+      <div class="out">
+        <div><label>study.json</label><pre id="manifest"></pre></div>
+        <div><label>places.json (skeleton) · instruments.json (template)</label><pre id="extras"></pre></div>
+      </div>
+    </details>
   </div>
 </section>
 
-<script src="data/world.js?v=33bc3611d893"></script>
+<script src="data/world.js?v=31524cdbce15"></script>
 <script src="data/studies.js?v=c47bbfc2e6ee"></script>
 <script>
 (function(){
@@ -113,17 +139,17 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
   $('#ccSearch').addEventListener('keydown', (e) => { if (e.key !== 'Enter') return; const v = e.target.value.trim(); const cc = WD.countries[v.toUpperCase()] ? v.toUpperCase() : Object.keys(WD.countries).find((k) => WD.countries[k].name.toLowerCase() === v.toLowerCase()); if (cc) { sel.add(cc); e.target.value = ''; autoWindow(); render(); } });
   $('#chips').addEventListener('click', (e) => { const c = e.target.closest('[data-cc]'); if (c) { sel.delete(c.dataset.cc); autoWindow(); render(); } });
   ['lon0', 'lon1', 'lat0', 'lat1', 'y0', 'y1', 'n0', 'n1', 'hm', 'name', 'sub'].forEach((id) => $('#' + id).addEventListener('input', render));
-  $('#pad').addEventListener('input', () => { autoWindow(); render(); });
-  function autoWindow() { if (!sel.size) return; const pad = +$('#pad').value || 0; let x0 = 180, y0 = 90, x1 = -180, y1 = -90; sel.forEach((cc) => { const b = WD.countries[cc].bbox; x0 = Math.min(x0, b[0]); y0 = Math.min(y0, b[1]); x1 = Math.max(x1, b[2]); y1 = Math.max(y1, b[3]); }); $('#lon0').value = (x0 - pad).toFixed(1); $('#lon1').value = (x1 + pad).toFixed(1); $('#lat0').value = Math.max(-89, y0 - pad).toFixed(1); $('#lat1').value = Math.min(89, y1 + pad).toFixed(1); }
+  $('#pad').addEventListener('input', () => { autoWindow(); render(); }); $('#far').addEventListener('change', () => { autoWindow(); render(); });
+  function autoWindow() { if (!sel.size) return; const pad = +$('#pad').value || 0; const far = $('#far').checked; let x0 = 180, y0 = 90, x1 = -180, y1 = -90; sel.forEach((cc) => { const b = far ? WD.countries[cc].bbox : (WD.countries[cc].mainland || WD.countries[cc].bbox); x0 = Math.min(x0, b[0]); y0 = Math.min(y0, b[1]); x1 = Math.max(x1, b[2]); y1 = Math.max(y1, b[3]); }); $('#lon0').value = (x0 - pad).toFixed(1); $('#lon1').value = (x1 + pad).toFixed(1); $('#lat0').value = Math.max(-89, y0 - pad).toFixed(1); $('#lat1').value = Math.min(89, y1 + pad).toFixed(1); }
   const win = () => ({ lon: [+$('#lon0').value, +$('#lon1').value], lat: [+$('#lat0').value, +$('#lat1').value] });
 
   // ── layer catalogue ──
   const LAYERS = [
-    { id: 'rain', kind: 'field', file: 'natural/climate.json', ink: 'sea', label: 'Rain', unit: 'mm, hydrological year', src: 'NASA POWER (MERRA-2) · worldwide · no key', desc: 'Precipitation, reference evapotranspiration (Hargreaves), heat-stress days and mean temperature on a grid, per year, with normals.', reader: 'harvest-climate.mjs', on: true, avail: () => true },
+    { id: 'rain', kind: 'field', file: 'natural/climate.json', ink: 'sea', label: 'Rain', unit: 'mm, hydrological year', src: 'NASA POWER (MERRA-2) · worldwide · no key', desc: 'How much it rained and how hot it got, on a grid of points, every year — with what is normal for each point. (Precipitation, ET₀, days ≥ 35 °C, mean temperature.)', reader: 'harvest-climate.mjs', on: true, avail: () => true },
     { id: 'heat', kind: 'field', file: 'natural/climate.json', ink: 'oxblood', label: 'Heat stress', unit: 'days ≥ 35 °C', src: 'same file as Rain', desc: 'A second view of the same climate file: days at or above 35 °C against normal.', reader: null, on: true, avail: () => true },
-    { id: 'crops', kind: 'marks', file: 'food/crops.json', ink: 'sepia', label: 'Harvest', unit: 'thousand tonnes, NUTS-2', src: 'Eurostat apro_cpshr · EU/EEA only', desc: 'Crop production and area by region. Regional coverage varies by crop; the build prints what is regional and what is national only.', reader: 'harvest-crops.mjs', on: true, avail: (s) => [...s].every((c) => EU.has(c)) },
-    { id: 'trade', kind: 'series', file: 'food/trade.json', ink: 'sepia', label: 'Exports', unit: '€, HS4', src: 'Eurostat Comext + producer prices · EU/EEA only', desc: 'Exports and imports by HS product, and producer prices — the market side, national by nature.', reader: 'harvest-trade.mjs', on: true, avail: (s) => [...s].every((c) => EU.has(c)) },
-    { id: 'policy', kind: 'events', file: 'policy/instruments.json', ink: 'verdigris', label: 'Law', unit: 'instrument, dated', src: 'you · hand-curated · cited', desc: 'Dated instruments with a scope (regions, basins) and a citation. The build fails without a date, a citation and a confidence tier; a script checks the URLs but only a person raises the tier.', reader: 'check-sources.mjs', on: true, avail: () => true },
+    { id: 'crops', kind: 'marks', file: 'food/crops.json', ink: 'sepia', label: 'Harvest', unit: 'thousand tonnes, NUTS-2', src: 'Eurostat apro_cpshr · EU/EEA only', desc: 'What each region grew, and on how much land. Some crops are only published nationally; the build says which.', reader: 'harvest-crops.mjs', on: true, avail: (s) => [...s].every((c) => EU.has(c)) },
+    { id: 'trade', kind: 'series', file: 'food/trade.json', ink: 'sepia', label: 'Exports', unit: '€, HS4', src: 'Eurostat Comext + producer prices · EU/EEA only', desc: 'What was sold abroad and at what farm-gate price — the market side, per country.', reader: 'harvest-trade.mjs', on: true, avail: (s) => [...s].every((c) => EU.has(c)) },
+    { id: 'policy', kind: 'events', file: 'policy/instruments.json', ink: 'verdigris', label: 'Law', unit: 'instrument, dated', src: 'you · hand-curated · cited', desc: 'Laws, plans, decrees, dams — anything with a date, the places it touched and a citation. You write these; the build insists on the citation.', reader: 'check-sources.mjs', on: true, avail: () => true },
     { id: 'own-marks', kind: 'marks', file: 'own/marks.csv', ink: 'sepia', label: 'Your places', unit: 'your unit', src: 'CSV · any place on Earth', desc: 'Values on places you name.', shape: 'place,name,lat,lon,year,value\nsite-1,Alqueva,38.2,-7.5,2012,1375', on: false, avail: () => true },
     { id: 'own-series', kind: 'series', file: 'own/series.csv', ink: 'ink', label: 'Your series', unit: 'your unit', src: 'CSV', desc: 'One national or study-wide figure per year.', shape: 'series,year,value\nolive-oil-exports-eur,2012,1870000000', on: false, avail: () => true },
     { id: 'own-events', kind: 'events', file: 'own/events.csv', ink: 'verdigris', label: 'Your events', unit: 'dated', src: 'CSV', desc: 'Anything with a date and a place: a strike, a dam, a fire, a survey.', shape: 'id,date,title,citation,source_url,lat,lon,scope\nfire-2017,2017-06-17,Pedrógão Grande fire,CTI report 2017,https://…,39.92,-8.28,PT16', on: false, avail: () => true },
@@ -169,6 +195,7 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
   // ── the manifest ──
   const slug = (s) => (s || 'my-study').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'my-study';
   function render() {
+    const farOnes = [...sel].filter((cc) => WD.countries[cc].has_far).map((cc) => WD.countries[cc].name); $('#farNote').textContent = farOnes.length ? `${farOnes.join(', ')} ${farOnes.length > 1 ? 'have' : 'has'} islands or territories far from the mainland; the sheet is drawn around the mainland unless you tick the box.` : '';
     $('#chips').innerHTML = [...sel].map((cc) => `<span class="chip" data-cc="${cc}"><b>${cc}</b> ${esc(WD.countries[cc].name)} ×</span>`).join('') || '<span style="color:var(--ink-soft);font-size:12.5px">none yet</span>';
     renderCards(); drawFrame();
     const id = slug($('#name').value); const W = win();
@@ -180,6 +207,7 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
     const readers = [...new Set(LAYERS.filter((L) => L.on && L.avail(sel) && L.reader).map((L) => L.reader))];
     $('#cli').textContent = `git clone https://github.com/ozvaag/layercake && cd layercake\nmkdir -p studies/${id}/policy && mv ~/Downloads/study.json ~/Downloads/places.json studies/${id}/ && mv ~/Downloads/instruments.json studies/${id}/policy/\nnode scripts/geo.mjs studies/${id}/study.json        # frame: coast, rivers, lakes, admin-1 units → fill places.json\nnode scripts/relief.mjs studies/${id}/study.json     # ground\nnode scripts/hydro.mjs studies/${id}/study.json      # drainage (downloads HydroRIVERS for the continent once)\n${readers.map((r) => `node scripts/${r} studies/${id}/study.json`).join('\n')}\nnode scripts/build.mjs studies/${id}/study.json      # validates, bundles, registers\n# then open web/study.html?s=${id} locally, or ./deploy.sh`;
   }
+  $('#copyCli').addEventListener('click', async () => { try { await navigator.clipboard.writeText($('#cli').textContent); $('#copyCli').textContent = 'copied'; setTimeout(() => $('#copyCli').textContent = 'copy', 1500); } catch (e) { $('#copyCli').textContent = 'select & copy'; } });
   autoWindow(); render();
 })();
 </script>
