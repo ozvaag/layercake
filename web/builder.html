@@ -10,6 +10,17 @@
 <style>
 body{max-width:1180px}
 
+
+.inst{border:1px solid var(--rule); padding:12px 14px; margin-top:14px}
+.inst h3{margin:0 0 4px; font-size:15px; font-weight:600}
+.inst table{width:100%; border-collapse:collapse; font-size:12.5px; margin-top:8px}
+.inst th{text-align:left; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-soft); font-weight:400; padding:4px 6px; border-bottom:1px solid var(--rule)}
+.inst td{padding:4px 6px; border-bottom:1px dotted var(--rule); vertical-align:top}
+.inst td button{font:inherit; font-size:11px; border:1px solid var(--rule); background:none; cursor:pointer; color:var(--ink-soft); padding:1px 6px}
+.inst .form{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px 10px; margin-top:8px}
+.inst .form label{margin:0 0 2px}
+.inst .form .wide{grid-column:1/-1}
+.inst .tier{font-size:11px; color:var(--ink-soft)}
 .stepper{display:flex; gap:0; border:1px solid var(--ink); margin-top:14px; position:sticky; top:0; background:var(--paper); z-index:2}
 .stepper a{flex:1; padding:8px 12px; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-soft); text-decoration:none; border-right:1px solid var(--ink); text-align:center}
 .stepper a:last-child{border-right:0}
@@ -94,6 +105,22 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
   <div>
     <p class="plain">Every layer is one of four shapes: a <b>field</b> (values on a grid, like rain), <b>marks</b> (values on places, like a region's harvest), <b>events</b> (things with a date, like a law), or a <b>series</b> (one figure per year, like exports).</p>
     <div class="cards" id="cards"></div>
+    <div class="inst" id="instBox">
+      <h3>Instruments — the dated layer <span style="font-weight:400;color:var(--ink-soft);font-size:12.5px">laws, plans, decrees, dams, programmes. A date, a title and a citation are required; a person marks confidence later.</span></h3>
+      <div class="form">
+        <div><label>date</label><input type="date" id="i_date"></div>
+        <div><label>kind</label><select id="i_kind"><option value="water">water</option><option value="drought">drought</option><option value="agri">agri</option><option value="climate">climate</option><option value="infra">infra</option><option value="forest">forest</option><option value="event">event</option></select></div>
+        <div><label>country</label><select id="i_cc"></select></div>
+        <div class="wide"><label>title</label><input type="text" id="i_title" placeholder="e.g. Water Framework Directive"></div>
+        <div class="wide"><label>citation — act number and date, or the document</label><input type="text" id="i_cite" placeholder="e.g. Directive 2000/60/EC, OJ L 327"></div>
+        <div class="wide"><label>source URL (optional — a script will check it; only a person raises confidence)</label><input type="text" id="i_url" placeholder="https://…"></div>
+        <div class="wide"><label>summary — one or two sentences of what it did</label><input type="text" id="i_sum"></div>
+        <div class="wide"><label>scope — regions it touched <span class="tier" id="i_scopeNote">(all, or pick)</span></label><div class="chips" id="i_regions"><span class="chip on" data-r="all"><b>all</b></span></div></div>
+        <div class="wide"><label>basins it touched (optional, names separated by ;)</label><input type="text" id="i_basins" placeholder="Tejo; Guadiana"></div>
+      </div>
+      <div class="row" style="margin-top:8px"><button class="go alt" id="i_add">Add instrument</button><span class="status" id="i_status"></span></div>
+      <table id="i_table"><thead><tr><th>date</th><th>kind</th><th>title</th><th>citation</th><th>scope</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
     <div class="own"><b>Have your own data?</b> Most research does. Save a sheet as CSV with the columns shown on the cards above — a place, a year and a value is enough for marks; a date, a title and a citation is enough for events. Anything you cannot map to those shapes is a good question to ask on GitHub.</div>
   </div>
 </section>
@@ -199,6 +226,21 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
     for (const p of field.pts) { const v = p.hy && p.hy[y]; const [x, yy] = P(p); if (!v || p.mean == null) { s += `<circle class="pt" cx="${x.toFixed(1)}" cy="${yy.toFixed(1)}" r="1"/>`; continue; } const pct = v[0] / p.mean * 100, d = pct - 100; const r = cell * .9 * Math.min(1, Math.sqrt(Math.abs(d) / 60)); s += `<circle class="dot ${d >= 0 ? 'wet' : 'dry'}" cx="${x.toFixed(1)}" cy="${yy.toFixed(1)}" r="${Math.max(.8, r).toFixed(1)}"><title>${p[1]}°N ${p[0]}°E · ${y}: ${v[0]} mm, ${Math.round(pct)}% of the span mean · ${v[1]} days ≥ 35 °C</title></circle>`; sumP += v[0]; sumM += p.mean; n++; d35 += v[1]; }
     g.innerHTML = s; $('#yrRead').textContent = n ? `rain ${Math.round(sumP / sumM * 100)}% of the span mean over ${n} points · ${(d35 / n).toFixed(1)} days ≥ 35 °C per point` : 'no data for this year'; }
 
+  // ── instruments: the dated layer, authored here ──
+  const INST = []; let REGIONS = {}; let regionsFor = '';
+  const KINDS = { water: 'water law, basin plans', drought: 'drought decree or emergency', agri: 'agricultural policy', climate: 'climate framework law', infra: 'infrastructure', forest: 'forest and land', event: 'a dated event' };
+  async function loadRegions() { const key = [...sel].sort().join(','); if (key === regionsFor) return; regionsFor = key; REGIONS = {}; const eu = [...sel].filter((c) => EU.has(c)); if (eu.length) { try { const j = await (await fetch('https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/apro_cpshr?crops=C0000&strucpro=AR_THS_HA&time=2020')).json(); for (const [code, label] of Object.entries(j.dimension.geo.category.label)) if (code.length === 4 && eu.includes(code.slice(0, 2))) REGIONS[code] = label.replace(/ \(NUTS \d+\)/, ''); } catch (e) {} } renderRegionChips(); }
+  const instScope = new Set(['all']);
+  function renderRegionChips() { const codes = Object.keys(REGIONS).sort(); $('#i_regions').innerHTML = `<span class="chip ${instScope.has('all') ? 'on' : ''}" data-r="all"><b>all</b></span>` + codes.map((c) => `<span class="chip ${instScope.has(c) ? 'on' : ''}" data-r="${c}" title="${esc(REGIONS[c])}"><b>${c}</b> ${esc(REGIONS[c]).slice(0, 18)}</span>`).join(''); $('#i_scopeNote').textContent = codes.length ? `(${codes.length} NUTS-2 regions from Eurostat; outside the EU, name basins instead)` : '(all — regions become available after the build outside the EU)'; }
+  $('#i_regions').addEventListener('click', (e) => { const c = e.target.closest('[data-r]'); if (!c) return; const r = c.dataset.r; if (r === 'all') { instScope.clear(); instScope.add('all'); } else { instScope.delete('all'); if (instScope.has(r)) instScope.delete(r); else instScope.add(r); if (!instScope.size) instScope.add('all'); } renderRegionChips(); });
+  function renderInst() { $('#i_cc').innerHTML = [...sel].map((c) => `<option value="${c}">${c}</option>`).join('') + (sel.size > 1 ? `<option value="${[...sel].join('+')}">${[...sel].join('+')}</option>` : '') + '<option value="EU">EU</option>'; $('#i_table tbody').innerHTML = INST.map((i, k) => `<tr><td>${esc(i.date)}</td><td>${esc(i.kind)}</td><td>${esc(i.title)}</td><td style="color:var(--ink-soft)">${esc(i.citation)}</td><td>${esc((i.scope.regions || []).join(' '))}${i.scope.basins?.length ? ' · ' + esc(i.scope.basins.join('; ')) : ''}</td><td><button data-del="${k}">remove</button></td></tr>`).join('') || '<tr><td colspan="6" style="color:var(--ink-soft)">none yet — the study builds without any; add them now or edit policy/instruments.json later</td></tr>'; }
+  $('#i_table').addEventListener('click', (e) => { const b = e.target.closest('[data-del]'); if (b) { INST.splice(+b.dataset.del, 1); render(); } });
+  $('#i_add').addEventListener('click', () => { const date = $('#i_date').value, title = $('#i_title').value.trim(), cite = $('#i_cite').value.trim(); const st = $('#i_status'); if (!date || !title || !cite) { st.textContent = 'a date, a title and a citation are required'; return; } const id = slug(`${$('#i_cc').value}-${title}-${date.slice(0, 4)}`); INST.push({ id, date, country: $('#i_cc').value, kind: $('#i_kind').value, title, citation: cite, summary: $('#i_sum').value.trim(), scope: { regions: [...instScope], basins: $('#i_basins').value.split(';').map((x) => x.trim()).filter(Boolean) }, source_url: $('#i_url').value.trim() || null, confidence: 'recalled', verified_at: null }); ['i_title', 'i_cite', 'i_url', 'i_sum', 'i_basins'].forEach((k) => $('#' + k).value = ''); st.textContent = `added — ${INST.length} on file`; render(); });
+  // a draft survives a reload (this browser only)
+  const DRAFT = 'layercake-builder-draft';
+  function saveDraft() { try { localStorage.setItem(DRAFT, JSON.stringify({ sel: [...sel], name: $('#name').value, sub: $('#sub').value, y0: $('#y0').value, y1: $('#y1').value, n0: $('#n0').value, n1: $('#n1').value, hm: $('#hm').value, win: win(), far: $('#far').checked, layers: LAYERS.filter((L) => L.on).map((L) => L.id), inst: INST })); } catch (e) {} }
+  function loadDraft() { try { const d = JSON.parse(localStorage.getItem(DRAFT) || 'null'); if (!d || new URLSearchParams(location.search).get('cc')) return; d.sel.forEach((c) => WD.countries[c] && sel.add(c)); $('#name').value = d.name || ''; $('#sub').value = d.sub || ''; ['y0', 'y1', 'n0', 'n1', 'hm'].forEach((k) => { if (d[k]) $('#' + k).value = d[k]; }); $('#far').checked = !!d.far; if (d.win) { $('#lon0').value = d.win.lon[0]; $('#lon1').value = d.win.lon[1]; $('#lat0').value = d.win.lat[0]; $('#lat1').value = d.win.lat[1]; } if (d.layers) LAYERS.forEach((L) => L.on = d.layers.includes(L.id)); if (d.inst) INST.push(...d.inst); return true; } catch (e) { return false; } }
+
   // ── the manifest ──
   const slug = (s) => (s || 'my-study').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'my-study';
   function render() {
@@ -208,7 +250,8 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
     const id = slug($('#name').value); const W = win();
     const study = { id, title: $('#name').value || 'My study', subtitle: $('#sub').value || '', years: [+$('#y0').value, +$('#y1').value], normal: [+$('#n0').value, +$('#n1').value], hydro_year_start_month: +$('#hm').value, frame: { window: { lon: W.lon.map((v) => +v.toFixed(1)), lat: W.lat.map((v) => +v.toFixed(1)) }, mask: [...sel], admin1_countries: [...sel], fade: null, river_scalerank: 9, exclude_boxes: [] }, market: {}, layers: LAYERS.filter((L) => L.on && L.avail(sel)).map(({ id, kind, file, ink, label, unit }) => ({ id, kind, file, ink, label, unit })) };
     const places = { note: 'The marks layer’s atoms. Map each place code to the Natural Earth admin-1 units (iso_3166_2) it is made of; scripts/geo.mjs lists the units it found under geo/frame.json → admin1. Eurostat NUTS-2 codes for EU masks.', places: {}, aliases: {}, national: Object.fromEntries([...sel].map((cc) => [cc, WD.countries[cc].name])) };
-    const inst = { layer: 'policy', kind: 'events', kinds: { water: 'water law, basin plans', drought: 'drought decree or emergency', climate: 'climate framework law', agri: 'agricultural policy', infra: 'infrastructure' }, instruments: [{ id: 'example-2015', date: '2015-01-01', country: [...sel][0] || 'XX', kind: 'water', title: 'Replace me', citation: 'Act number and date', summary: 'One or two sentences of what it did.', scope: { regions: ['all'], basins: [] }, source_url: null, confidence: 'recalled', verified_at: null }] };
+    const inst = { layer: 'policy', kind: 'events', note: 'Written by the builder. confidence `recalled` until a person opens the source and raises it to `cited` or `read`.', kinds: KINDS, instruments: INST.length ? INST : [] };
+    renderInst(); loadRegions(); saveDraft();
     const mj = JSON.stringify(study, null, 2); $('#manifest').textContent = mj; $('#extras').textContent = JSON.stringify(places, null, 2) + '\n\n' + JSON.stringify(inst, null, 2);
     LAST = { study, places, instruments: inst };
     const blob = (o) => URL.createObjectURL(new Blob([JSON.stringify(o, null, 2)], { type: 'application/json' })); $('#dlStudy').href = blob(study); $('#dlPlaces').href = blob(places); $('#dlInst').href = blob(inst);
@@ -230,7 +273,7 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
   });
   $('#copyCli').addEventListener('click', async () => { try { await navigator.clipboard.writeText($('#cli').textContent); $('#copyCli').textContent = 'copied'; setTimeout(() => $('#copyCli').textContent = 'copy', 1500); } catch (e) { $('#copyCli').textContent = 'select & copy'; } });
   $('#loadFile').addEventListener('change', async (e) => { const f = e.target.files[0]; if (!f) return; try { const st = JSON.parse(await f.text()); sel.clear(); (st.frame?.mask || []).forEach((cc) => { if (WD.countries[cc]) sel.add(cc); }); if (st.frame?.window) { $('#lon0').value = st.frame.window.lon[0]; $('#lon1').value = st.frame.window.lon[1]; $('#lat0').value = st.frame.window.lat[0]; $('#lat1').value = st.frame.window.lat[1]; } if (st.years) { $('#y0').value = st.years[0]; $('#y1').value = st.years[1]; } if (st.normal) { $('#n0').value = st.normal[0]; $('#n1').value = st.normal[1]; } if (st.hydro_year_start_month) $('#hm').value = st.hydro_year_start_month; $('#name').value = st.title || ''; $('#sub').value = st.subtitle || ''; const ids = new Set((st.layers || []).map((l) => l.id)); LAYERS.forEach((L) => L.on = ids.has(L.id)); render(); $('#frameNote').textContent += ` Loaded ${f.name}.`; } catch (err) { $('#frameNote').textContent = 'That file is not a study.json: ' + err.message; } });
-  autoWindow(); render();
+  const restored = loadDraft(); if (!restored || sel.size === 0) autoWindow(); render(); if (restored) $('#frameNote').textContent += ' Your last draft was restored from this browser.';
 })();
 </script>
 </body>
