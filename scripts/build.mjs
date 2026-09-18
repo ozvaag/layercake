@@ -11,6 +11,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
+import { polylabel } from './geo.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const studyPath = process.argv[2] || join(ROOT, 'studies/iberia/study.json');
@@ -129,9 +130,11 @@ writeFileSync(join(ROOT, 'web/data', study.id + '.js'), js);
 // The physical sheet: frame + HydroRIVERS network + hand-placed features + relief legend.
 const net = existsSync(join(DIR, 'geo/rivers.json')) ? JSON.parse(readFileSync(join(DIR, 'geo/rivers.json'), 'utf8')) : null;
 const feats = existsSync(join(DIR, 'features.json')) ? JSON.parse(readFileSync(join(DIR, 'features.json'), 'utf8')) : { features: [], peaks: [] };
+const basinsFile = existsSync(join(DIR, 'geo/basins.json')) ? JSON.parse(readFileSync(join(DIR, 'geo/basins.json'), 'utf8')) : null;
+const basins = basinsFile ? { source: basinsFile.source, level: basinsFile.level, basins: basinsFile.basins.map((b) => ({ ...b, label: polylabel(b.ring, 0.02).map((v) => Math.round(v * 1e3) / 1e3) })) } : null;
 const relief = existsSync(join(DIR, 'geo/relief.json')) ? JSON.parse(readFileSync(join(DIR, 'geo/relief.json'), 'utf8')) : null;
 const peakSeen = new Set(); const peaks = [...(geo.peaks || []), ...(feats.peaks || [])].filter((p) => { const k = p.name.toLowerCase(); if (peakSeen.has(k)) return false; peakSeen.add(k); return true; });
-const geoJs = `window.STUDY_GEO=${JSON.stringify({ window: geo.window, land: geo.land, coast: geo.coast, rivers: geo.rivers, named_rivers: geo.named_rivers || [], lakes: geo.lakes, bathy: geo.bathy || {}, peaks, features: feats.features, feature_note: feats.note, network: net ? { source: net.source, min_order: net.min_order, reaches: net.reaches } : null, relief, source: geo.source })};`;
+const geoJs = `window.STUDY_GEO=${JSON.stringify({ window: geo.window, land: geo.land, coast: geo.coast, rivers: geo.rivers, named_rivers: geo.named_rivers || [], lakes: geo.lakes, bathy: geo.bathy || {}, peaks, features: feats.features, feature_note: feats.note, network: net ? { source: net.source, min_order: net.min_order, reaches: net.reaches } : null, basins, relief, source: geo.source })};`;
 writeFileSync(join(ROOT, 'web/data', study.id + '-geo.js'), geoJs);
 // The registry: every built study with content hashes, so the engine and the
 // globe can address them and CF's browser cache never serves a stale bundle.

@@ -16,7 +16,7 @@ const files = new Set(study.layers.map((L) => L.file));
 const steps = [];
 steps.push(['geo', 'geo.mjs']);
 if (!existsSync(join(DIR, 'places.json')) || !Object.keys(JSON.parse(readFileSync(join(DIR, 'places.json'), 'utf8')).places || {}).length) steps.push(['places', 'places-from-frame.mjs']);
-steps.push(['relief', 'relief.mjs'], ['hydro', 'hydro.mjs']);
+steps.push(['relief', 'relief.mjs'], ['hydro', 'hydro.mjs'], ['basins', 'basins.mjs']);
 if ([...files].some((f) => f.startsWith('natural/'))) steps.push(['climate', 'harvest-climate.mjs']);
 if (files.has('food/crops.json')) steps.push(['crops', 'harvest-crops.mjs']);
 if (files.has('food/trade.json')) steps.push(['trade', 'harvest-trade.mjs']);

@@ -43,6 +43,10 @@ body{max-width:1180px}
 #sheet .res{fill:#8FA6A8; stroke:#3F5A5E; stroke-width:.4}
 #sheet .canal{fill:none; stroke:var(--sepia); stroke-width:.9; stroke-dasharray:3 2}
 #sheet .f-canal{font-size:6.8px; fill:var(--sepia); font-style:italic}
+#sheet .basin{fill:none; stroke:#5C4A36; stroke-width:.55; stroke-dasharray:1.5 2; opacity:.7}
+#sheet .basin.scoped{fill:var(--verdigris); fill-opacity:.14; stroke:var(--verdigris); stroke-dasharray:none; stroke-width:1; opacity:1}
+#sheet .bname{font-size:7.5px; letter-spacing:.2em; text-transform:uppercase; fill:#5C4A36; text-anchor:middle; opacity:.8; pointer-events:none}
+#sheet.nobasins .basing{display:none}
 #sheet .grat{fill:none; stroke:var(--rule); stroke-width:.4; stroke-dasharray:2 3}
 #sheet .fade{fill:var(--paper)}
 #sheet text{font-family:inherit}
@@ -111,6 +115,10 @@ body{max-width:1180px}
 .notes{max-width:860px; margin:10px 0 0; font-size:14.5px}
 .notes p{margin:6px 0}
 .notes .k{font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-soft); display:block; margin-bottom:2px}
+body.embed{max-width:none; padding:10px 14px; border:0}
+body.embed header, body.embed details.read, body.embed .controls, body.embed .sources, body.embed #notes, body.embed .margin, body.embed #printBtn, body.embed #dataBtn{display:none}
+body.embed .study{grid-template-columns:1fr}
+body.embed #sheet{position:static}
 @media print{
   @page{size:A3 landscape; margin:12mm}
   body{max-width:none; padding:0; border:0; background:#fff; font-size:11px}
@@ -183,6 +191,7 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
   <button class="play" id="play">Play ▸</button>
   <span class="hint" id="yrHint"></span>
   <button class="printbtn" id="printBtn" title="print this plate — A3 landscape">Print the plate</button>
+  <button class="printbtn" id="dataBtn" title="every series on this page as CSV, for R, Python or a spreadsheet">Download the data</button>
 </div>
 
 <div class="controls">
@@ -196,6 +205,7 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
   <div class="chips" id="sheetChips">
     <button data-s="physical" class="on" title="relief, rivers and names">Physical</button><button data-s="nonames" title="relief and rivers, no names">No names</button><button data-s="plain" title="a bare sheet for the data">Plain</button>
   </div>
+  <div class="chips" id="basinChips" style="display:none"><button data-b="on" class="on" title="drainage basins (HydroBASINS), named after the rivers that drain them">Basins</button><button data-b="off">Off</button></div>
 </div>
 
 <div class="study">
@@ -210,7 +220,7 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
   <ul id="sources"></ul>
 </section>
 
-<script src="data/studies.js?v=fd1bcf2dae22"></script>
+<script src="data/studies.js?v=130f0e2ec36f"></script>
 
 <script>
 function runStudy(){
@@ -260,6 +270,8 @@ function runStudy(){
     s += `<g class="coastg">${G.coast.map((l) => `<path class="coast" d="${path(l)}"/>`).join('')}</g>`;
     // The land north of the Pyrenees is not the study's: it fades, it is not cut.
     if (S.fade) { const A = S.fade.from, B = S.fade.to; const steps = 14; for (let i = 0; i < steps; i++) { const d0 = i * .075, d1 = 3; const q = [[A[0], A[1] + d0], [B[0], B[1] + d0], [B[0], B[1] + d1], [A[0], A[1] + d1]]; s += `<path class="fade" opacity="0.09" d="${path(q, true)}"/>`; } }
+    // Basins: dashed outlines and a name each; an instrument scoped to a basin fills it.
+    if (G.basins && G.basins.basins.length) { s += '<g class="basing">' + G.basins.basins.map((b) => `<path class="basin" data-basin="${esc(b.id)}" d="${path(b.ring, true)}"><title>${esc(b.name || 'unnamed basin')}${b.tributary ? ' · ' + esc(b.tributary) : ''} · ${fmt(b.area_km2)} km²</title></path>`).join('') + '<g class="physnames">' + G.basins.basins.filter((b) => b.name).map((b) => { const [x, y] = P(b.label); return `<text class="bname" x="${x.toFixed(1)}" y="${y.toFixed(1)}">${esc(b.name)}</text>`; }).join('') + '</g></g>'; $('#basinChips').style.display = ''; }
     // ── the physical names ──
     let n = '<g class="physnames">';
     // rivers: text along the line, once per name (Tajo·Tejo and Miño·Minho are one river each)
@@ -332,8 +344,11 @@ function runStudy(){
     g.innerHTML = s; lg.innerHTML = l;
   }
   function drawScope() {
-    const g = $('#scopeg'); const e = state.event && S.events.find((e) => e.id === state.event); if (!e) { g.innerHTML = ''; return; }
+    const g = $('#scopeg'); const e = state.event && S.events.find((e) => e.id === state.event); if (!e) { g.innerHTML = ''; document.querySelectorAll('#sheet .basin.scoped').forEach((el) => el.classList.remove('scoped')); return; }
     const regs = e.scope?.regions || []; let s = '';
+    const norm = (x) => String(x).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const want = (e.scope?.basins || []).map(norm);
+    document.querySelectorAll('#sheet .basin').forEach((el) => { const b = G.basins.basins.find((b) => b.id === el.dataset.basin); const hit = b && b.name && (want.includes('all') ? false : want.some((w) => norm(b.name).split(/ · /).some((part) => part === w || part.startsWith(w) || w.startsWith(part)))); el.classList.toggle('scoped', !!hit); });
     if (e.lat != null && e.lon != null) { const [x, y] = P([e.lon, e.lat]); s += `<circle class="scope-all" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.2" fill="var(--oxblood)"/>`; }
     if (regs.includes('all')) { if (e.lat == null) for (const pl of Object.values(S.places)) { const [x, y] = P([pl.lon, pl.lat]); s += `<circle class="scope" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="13"/>`; } }
     else for (const r of regs) { const pl = S.places[r]; if (!pl) continue; const [x, y] = P([pl.lon, pl.lat]); s += `<circle class="scope" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="16"/>`; }
@@ -455,11 +470,27 @@ function runStudy(){
 
   function render() { drawField(); drawMarks(); drawScope(); drawMargin(); drawStrip(); writeHash(); $('#yrBig').textContent = state.year; $('#yrHint').textContent = `${FIELD[state.field]?.unit || 'ground layer off'} · ← → keys step years`; }
   $('#printBtn').addEventListener('click', () => window.print());
+  // Every number the page draws, as CSV — one file per shape, zipped by nothing:
+  // plain files, plain names, so they open in R, pandas or a spreadsheet.
+  const csv = (rows, cols) => [cols.join(','), ...rows.map((r) => cols.map((c) => { const v = r[c]; return v == null ? '' : /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : v; }).join(','))].join('\n');
+  const save = (name, text) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv' })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
+  $('#dataBtn').addEventListener('click', () => {
+    const id = S.id;
+    if (S.field) { const rows = []; for (const p of S.field.points) for (const y of YEARS) { const v = p.hy[y]; if (!v) continue; rows.push({ lon: p.lon, lat: p.lat, place: p.place, year: y, P_mm: v[0], ET0_mm: v[1], D35: v[2], D40: v[3], TM_c: v[4], P_normal_mm: p.n ? p.n[0] : '', ET0_normal_mm: p.n ? p.n[1] : '', D35_normal: p.n ? p.n[2] : '', TM_normal_c: p.n ? p.n[4] : '' }); } save(`${id}-field.csv`, csv(rows, ['lon', 'lat', 'place', 'year', 'P_mm', 'ET0_mm', 'D35', 'D40', 'TM_c', 'P_normal_mm', 'ET0_normal_mm', 'D35_normal', 'TM_normal_c'])); }
+    { const rows = []; for (const [pl, m] of Object.entries(S.marks)) for (const [c, ys] of Object.entries(m)) for (const [y, v] of Object.entries(ys)) rows.push({ place: pl, place_name: S.places[pl]?.name || '', series: c, series_name: S.crop_names[c] || c, year: y, value: v.p, area_kha: v.a, unit: unitOf(c) }); for (const [cc, m] of Object.entries(S.national)) for (const [c, ys] of Object.entries(m)) for (const [y, v] of Object.entries(ys)) rows.push({ place: cc, place_name: S.national_names[cc] || cc, series: c, series_name: S.crop_names[c] || c, year: y, value: v.p, area_kha: v.a, unit: unitOf(c) }); if (rows.length) save(`${id}-marks.csv`, csv(rows, ['place', 'place_name', 'series', 'series_name', 'year', 'value', 'area_kha', 'unit'])); }
+    if (S.trade) { save(`${id}-trade.csv`, csv(S.trade.trade.map((r) => ({ ...r, product_name: S.trade.products[r.product] || '' })), ['country', 'product', 'product_name', 'flow', 'year', 'eur', 'q_100kg'])); save(`${id}-prices.csv`, csv(S.trade.price.map((r) => ({ ...r, product_name: S.trade.prices[r.product] || '' })), ['country', 'product', 'product_name', 'year', 'eur'])); }
+    if (S.own && S.own.series.length) { const rows = []; for (const sr of S.own.series) for (const [y, v] of Object.entries(sr.values)) rows.push({ series: sr.id, label: sr.label, unit: sr.unit || '', source: sr.source || 'own', year: y, value: v }); save(`${id}-series.csv`, csv(rows, ['series', 'label', 'unit', 'source', 'year', 'value'])); }
+    if (S.events.length) save(`${id}-events.csv`, csv(S.events.map((e) => ({ id: e.id, date: e.date, country: e.country, kind: e.kind, title: e.title, citation: e.citation, summary: e.summary, regions: (e.scope?.regions || []).join(';'), basins: (e.scope?.basins || []).join(';'), source_url: e.source_url || '', confidence: e.confidence, verified_at: e.verified_at || '' })), ['id', 'date', 'country', 'kind', 'title', 'citation', 'summary', 'regions', 'basins', 'source_url', 'confidence', 'verified_at']));
+    if (S.readings && S.readings.years) save(`${id}-readings.csv`, csv(Object.entries(S.readings.years).map(([y, r]) => ({ year: y, ...r })), ['year', 'P', 'P_pct', 'ET0', 'bal', 'bal_n', 'D35', 'D35_n', 'TM', 'TM_n', 'n']));
+  });
+  // ?embed=1: the sheet, the year bar and the strip only — for a thesis page or a slide.
+  if (new URLSearchParams(location.search).get('embed')) { document.body.classList.add('embed'); }
   $('#prevYr').addEventListener('click', () => { if (state.year > Y0) { state.year--; render(); } });
   $('#nextYr').addEventListener('click', () => { if (state.year < Y1) { state.year++; render(); } });
 
   // ── wiring ──
   $('#fieldChips').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; state.field = b.dataset.f; [...$('#fieldChips').children].forEach((c) => c.classList.toggle('on', c === b)); render(); });
+  $('#basinChips').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; [...$('#basinChips').children].forEach((c) => c.classList.toggle('on', c === b)); sheet.classList.toggle('nobasins', b.dataset.b === 'off'); });
   $('#sheetChips').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; [...$('#sheetChips').children].forEach((c) => c.classList.toggle('on', c === b)); sheet.classList.toggle('plain', b.dataset.s === 'plain'); sheet.classList.toggle('nonames', b.dataset.s === 'nonames'); });
   cropSel.addEventListener('change', () => { state.crop = cropSel.value; render(); });
   sheet.addEventListener('click', (e) => { const t = e.target.closest('[data-p]'); if (!t) return; state.place = state.place === t.dataset.p ? null : t.dataset.p; state.event = null; render(); });
@@ -491,7 +522,7 @@ function runStudy(){
     S.trade ? S.trade.sources.map((s) => `<li><b>Market.</b> ${esc(s.name)} — ${esc(s.licence)}, fetched ${s.fetched_at}. <a href="${esc(s.url)}" target="_blank" rel="noopener">source ↗</a></li>`).join('') : '',
     `<li><b>Law.</b> ${S.events.length} instruments, hand-curated with a citation each. Confidence: ${Object.entries(S.confidence_tiers).map(([k, v]) => `<i>${k}</i> — ${esc(v)}`).join('; ')}. Counts: ${['read', 'cited', 'recalled'].map((t) => `${S.events.filter((e) => e.confidence === t).length} ${t}`).join(', ')}. Publishers behind a JavaScript wall cannot be checked by script; those citations are marked.</li>`,
     S.own && (S.own.marks || S.own.series_source || S.own.events) ? `<li><b>Your data.</b> ${[S.own.marks && 'marks (' + esc(S.own.marks.name) + ')', S.own.series_source && S.own.series.filter((x) => x.source !== 'World Bank').length + ' series (' + esc(S.own.series_source.name) + ')', S.own.events && 'events (' + esc(S.own.events.name) + ')'].filter(Boolean).join(', ')} — read by scripts/harvest-own.mjs from CSV in the study's own/ folder.</li>` : '',
-    `<li><b>Frame.</b> Coast, lakes, bathymetry, named rivers and surveyed peaks: ${esc(G.source)}. Drainage: ${esc(G.network ? G.network.source : '—')}, Strahler order ≥ ${G.network ? G.network.min_order : '—'} (${G.network ? fmt(G.network.reaches.length) : 0} reaches), line weight by order. Relief: ${esc(G.relief ? G.relief.source : '—')}. Physical names: ${esc(G.feature_note || '')} No political boundary is drawn${S.fade ? '; ' + esc(S.fade.note || 'land beyond the study fades rather than ends') : ''}. Regions are marked at an interior point, not outlined.</li>`,
+    `<li><b>Frame.</b> Coast, lakes, bathymetry, named rivers and surveyed peaks: ${esc(G.source)}. Drainage: ${esc(G.network ? G.network.source : '—')}, Strahler order ≥ ${G.network ? G.network.min_order : '—'} (${G.network ? fmt(G.network.reaches.length) : 0} reaches), line weight by order.${G.basins ? ` Basins: ${esc(G.basins.source)} — ${G.basins.basins.length} basins, ${G.basins.basins.filter((b) => b.name).length} named.` : ''} Relief: ${esc(G.relief ? G.relief.source : '—')}. Physical names: ${esc(G.feature_note || '')} No political boundary is drawn${S.fade ? '; ' + esc(S.fade.note || 'land beyond the study fades rather than ends') : ''}. Regions are marked at an interior point, not outlined.</li>`,
     `<li><b>Engine.</b> A study is a manifest naming layers of three kinds — a <i>field</i> (values on grid points), <i>marks</i> (values on places), <i>events</i> (dated instruments with a scope) — on one frame and one year axis. This page renders any study of that shape.</li>`,
   ].join('');
   drawBase(); readHash(); render();

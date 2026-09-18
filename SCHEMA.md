@@ -17,6 +17,8 @@ worldbank: [indicator codes]     for scripts/harvest-worldbank.mjs (defaults if 
 faostat_items: { itemCode: name } for scripts/harvest-faostat.mjs (defaults if absent)
 notes: [paragraphs]              printed under the title — the author's reading of the plate
 private: true                    build, but keep off the site's registry
+frame.basin_level: 5             HydroBASINS Pfafstetter level for scripts/basins.mjs
+frame.relief_zoom, frame.field_step   override the auto-sized relief tiles / grid step
 ```
 `mask` = the admin-0 rings whose mainland defines "inside the study" (grid
 points, marks). Borders are used for that and never drawn.

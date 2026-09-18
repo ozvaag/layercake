@@ -13,7 +13,7 @@ one sheet, one time axis, every figure with its source.
 |---|---|
 | `web/index.html` | the globe: pick a place (one country or a region), open a study |
 | `web/builder.html` | the three questions → `study.json`, `places.json`, `instruments.json` + the commands; live NASA POWER preview |
-| `web/study.html?s=<id>` | the engine: renders any built study |
+| `web/study.html?s=<id>` | the engine: renders any built study · `&embed=1` for the sheet and strip alone · **Download the data** = every series as CSV · **Print the plate** = A3 landscape |
 
 Built on the Film Commission Atlas's pattern (`~/dev/film-commission-atlas`):
 Natural Earth geometry as plain lon/lat rings projected in the browser, a
@@ -67,6 +67,7 @@ Without them the button says so and the files still download.
 | `scripts/run.mjs` | **the one command**: runs, in order, only what the manifest asks for; every step re-runnable alone; raw responses cached |
 | `scripts/harvest-faostat.mjs` | FAOSTAT bulk file (34 MB, cached, streamed) → national harvests for ~28 crops, any country |
 | `scripts/harvest-worldbank.mjs` | World Bank API → any national indicator per year (`study.worldbank` list) |
+| `scripts/basins.mjs` | HydroBASINS (level 5 by default) → drainage basins, named after the rivers that drain them; instruments scoped to a basin fill it on the sheet |
 | `scripts/harvest-climate.mjs` | NASA POWER daily (MERRA-2) → per-point per-year P, ET₀ (Hargreaves), D35, D40, Tmean; hydrological + calendar year; 1991–2020 normals |
 | `scripts/harvest-crops.mjs` | Eurostat `apro_cpshr` NUTS-2 crop production and area |
 | `scripts/harvest-trade.mjs` | Eurostat Comext HS exports/imports + `apri_ap_crpouta` producer prices |
