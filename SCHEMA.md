@@ -26,8 +26,8 @@ points, marks). Borders are used for that and never drawn.
 
 ## field — `natural/climate.json`
 ```
-points[]: { lon, lat, normal:[P, ET0, D35, D40, TM] | null,
-            hy: { "2000":[P, ET0, D35, D40, TM], … },   hydrological year (Oct–Sep, named by end year)
+points[]: { lon, lat, normal:[P, ET0, D35, D40, TM, P_MAM, P_REC] | null,
+            hy: { "2000":[P, ET0, D35, D40, TM, P_MAM, P_REC], … },   P_MAM = Mar–May rain, P_REC = Oct–Feb rain   hydrological year (Oct–Sep, named by end year)
             cy: { … } }                                   calendar year
 columns, normal_period, hydro_year, et0_method, source{name,url,licence,fetched_at}
 ```
@@ -74,5 +74,6 @@ The page's `MARKET` map ties a crop to its HS products and price code.
 `window.STUDY = { id, title, subtitle, years, normal, built, layers, places,
 national_names, place_note, field, marks, national, regional_crops, crop_names,
 crop_source, trade, events, event_kinds, confidence_tiers, readings }`.
+`findings[]` = candidate sentences computed at build (extremes, dry runs, heat trend, region × harvest relations with |r| ≥ 0.5 over ≥ 15 years, national harvest lows with that year's rain and spring rain).
 `readings.years[y]` = study-wide means of the field for the cartouche and
 the strip; `driest/wettest/hottest` = the years those extremes fall in.

@@ -97,7 +97,8 @@ if (field) for (let y = Y0; y <= Y1; y++) {
   const rows = field.points.filter((p) => p.hy[y] && p.n); if (!rows.length) continue;
   const mean = (i) => rows.reduce((s, p) => s + p.hy[y][i], 0) / rows.length;
   const meanN = (i) => rows.reduce((s, p) => s + p.n[i], 0) / rows.length;
-  readings.years[y] = { P: Math.round(mean(0)), P_pct: Math.round(mean(0) / meanN(0) * 100), ET0: Math.round(mean(1)), bal: Math.round(mean(0) - mean(1)), bal_n: Math.round(meanN(0) - meanN(1)), D35: Math.round(mean(2) * 10) / 10, D35_n: Math.round(meanN(2) * 10) / 10, TM: Math.round(mean(4) * 10) / 10, TM_n: Math.round(meanN(4) * 10) / 10, n: rows.length };
+  const hasS = rows.every((p) => p.hy[y][5] != null && p.n[5]);
+  readings.years[y] = { P: Math.round(mean(0)), P_pct: Math.round(mean(0) / meanN(0) * 100), ET0: Math.round(mean(1)), bal: Math.round(mean(0) - mean(1)), bal_n: Math.round(meanN(0) - meanN(1)), D35: Math.round(mean(2) * 10) / 10, D35_n: Math.round(meanN(2) * 10) / 10, TM: Math.round(mean(4) * 10) / 10, TM_n: Math.round(meanN(4) * 10) / 10, spr_pct: hasS ? Math.round(mean(5) / meanN(5) * 100) : null, rec_pct: hasS ? Math.round(mean(6) / meanN(6) * 100) : null, n: rows.length };
 }
 const ys = Object.entries(readings.years);
 if (ys.length) {
@@ -107,6 +108,35 @@ if (ys.length) {
 }
 
 const trade = layers.trade?.data;
+
+// ── findings: what the numbers say on their own, as candidate sentences ──
+// Each carries its figures and its n; the wording claims a relation, never a
+// cause. A researcher deletes what is trivial and keeps what is worth a look.
+const findings = [];
+const pct = (v) => Math.round(v) + '%';
+if (field && ys.length) {
+  const yrs = readings.years;
+  findings.push({ kind: 'field', text: `Driest water year ${readings.driest} (${pct(yrs[readings.driest].P_pct)} of normal), wettest ${readings.wettest} (${pct(yrs[readings.wettest].P_pct)}); most heat-stress days in ${readings.hottest} (${yrs[readings.hottest].D35} per grid point against a normal of ${yrs[readings.hottest].D35_n}).` });
+  // runs of dry years
+  let run = [], best = []; for (let y = Y0; y <= Y1; y++) { if (yrs[y] && yrs[y].P_pct < 90) { run.push(y); if (run.length > best.length) best = [...run]; } else run = []; }
+  if (best.length >= 2) findings.push({ kind: 'field', text: `Longest run of dry water years (under 90% of normal): ${best[0]}–${best[best.length - 1]}, ${best.length} years, averaging ${pct(best.reduce((a, y) => a + yrs[y].P_pct, 0) / best.length)} of normal.` });
+  // heat trend: mean D35 first third vs last third
+  const third = Math.max(3, Math.floor(ys.length / 3)); const first = ys.slice(0, third), last = ys.slice(-third); const mD = (arr) => arr.reduce((a, [, r]) => a + r.D35, 0) / arr.length;
+  if (mD(first) > 0) findings.push({ kind: 'field', text: `Heat-stress days per grid point averaged ${mD(first).toFixed(1)} over ${first[0][0]}–${first[first.length - 1][0]} and ${mD(last).toFixed(1)} over ${last[0][0]}–${last[last.length - 1][0]} (${mD(last) >= mD(first) ? '+' : ''}${Math.round((mD(last) / mD(first) - 1) * 100)}%).` });
+}
+// per-place: strongest ground↔harvest relations, r with n ≥ 15
+const placeClimate = (code, y) => { const rows = field ? field.points.filter((p) => p.place === code && p.hy[y] && p.n) : []; if (!rows.length) return null; const m = (i) => rows.reduce((s, p) => s + p.hy[y][i], 0) / rows.length, mn = (i) => rows.reduce((s, p) => s + p.n[i], 0) / rows.length; const hasS = rows.every((p) => p.hy[y][5] != null && p.n[5]); return { P_pct: m(0) / mn(0) * 100, D35: m(2), bal: (m(0) - m(1)), spr_pct: hasS ? m(5) / mn(5) * 100 : null }; };
+const rels = [];
+if (field) for (const [code, m] of Object.entries(marks)) for (const [crop, ysr] of Object.entries(m)) for (const [xk, xl] of [['P_pct', 'rain'], ['spr_pct', 'spring rain'], ['D35', 'heat-stress days'], ['bal', 'water balance']]) {
+  const pairs = []; for (let y = Y0; y <= Y1; y++) { const c = placeClimate(code, y); const v = ysr[y]?.p; if (c && v != null && c[xk] != null) pairs.push([c[xk], v]); }
+  if (pairs.length < 15) continue; const n = pairs.length, mx = pairs.reduce((s, p) => s + p[0], 0) / n, mv = pairs.reduce((s, p) => s + p[1], 0) / n; let sxx = 0, svv = 0, sxv = 0; for (const [x, v] of pairs) { sxx += (x - mx) ** 2; svv += (v - mv) ** 2; sxv += (x - mx) * (v - mv); } const r = sxx && svv ? sxv / Math.sqrt(sxx * svv) : 0;
+  if (Math.abs(r) >= 0.5) rels.push({ code, crop, xl, r, n });
+}
+rels.sort((a, b) => Math.abs(b.r) - Math.abs(a.r));
+for (const q of rels.slice(0, 5)) findings.push({ kind: 'relation', place: q.code, crop: q.crop, text: `${places[q.code]?.name || q.code}: ${cropNames[q.crop] || q.crop} against ${q.xl}, r = ${q.r.toFixed(2)} over ${q.n} years (${q.r < 0 ? 'inverse' : 'direct'}).` });
+// national harvest extremes vs the field
+for (const [cc, m] of Object.entries(national)) for (const [crop, ysr] of Object.entries(m).slice(0, 12)) { const vals = Object.entries(ysr).filter(([, v]) => v.p != null); if (vals.length < 10) continue; const mean = vals.reduce((a, [, v]) => a + v.p, 0) / vals.length; const [minY, minV] = vals.reduce((a, b) => b[1].p < a[1].p ? b : a); if (minV.p / mean < 0.7 && readings.years[minY]) findings.push({ kind: 'harvest', text: `${placesFile.national[cc] || cc}, ${(cropNames[crop] || crop).replace(/ — FAOSTAT/, '')}: lowest year ${minY} at ${Math.round(minV.p / mean * 100)}% of its mean; that water year's rain was ${pct(readings.years[minY].P_pct)} of normal${readings.years[minY].spr_pct != null ? `, its spring rain ${pct(readings.years[minY].spr_pct)}` : ''}.` }); }
+
 
 if (crops && !Object.keys(placesFile.places).length && !fao) warnings.push('no places and no FAOSTAT: the harvest layer is national only from Eurostat');
 if (errors.length) { console.error('BUILD FAILED\n' + errors.join('\n')); process.exit(1); }
@@ -122,7 +152,7 @@ const bundle = {
   trade: trade ? { products: trade.products, prices: trade.prices, sources: trade.sources, trade: trade.trade, price: trade.price } : null,
   events, event_kinds: kinds, confidence_tiers: pol?.confidence_tiers || { recalled: 'written from knowledge, with a citation; nothing opened', cited: 'the citation resolved to an act of that name and date at the publisher', read: 'the source text was read and the summary checked against it' }, readings,
   fade: study.frame.fade || null, market: study.market || {}, hydro_year_start_month: study.hydro_year_start_month || 10,
-  notes: study.notes || [],
+  notes: study.notes || [], findings: findings.slice(0, 12),
 };
 mkdirSync(join(ROOT, 'web/data'), { recursive: true });
 const js = `// ${study.title} — © ${new Date().getFullYear()} Ozvåag LLC. Sources are named inside; every figure carries its origin.\nwindow.STUDY=${JSON.stringify(bundle)};`;
@@ -148,6 +178,13 @@ const REG = existsSync(regPath) ? JSON.parse(readFileSync(regPath, 'utf8').repla
 const reliefPng = join(ROOT, 'web/data', study.id + '-relief.png');
 if (study.private) delete REG[study.id]; else REG[study.id] = { title: study.title, subtitle: study.subtitle, years: study.years, countries: study.frame.mask, window: study.frame.window, built: bundle.built, data: h(js), geo: h(geoJs), relief: existsSync(reliefPng) ? h(readFileSync(reliefPng)) : null, counts: { field: field ? field.points.length : 0, places: Object.keys(places).length, events: events.length, trade: trade ? trade.trade.length : 0 } };
 writeFileSync(regPath, 'window.STUDIES=' + JSON.stringify(REG) + ';');
+// A share page per study: crawlers read the card (title, one line, the relief),
+// people are sent on to the engine. /s/<id>
+mkdirSync(join(ROOT, 'web/s'), { recursive: true });
+for (const [sid, r] of Object.entries(REG)) {
+  const site = 'https://layercake.pages.dev';
+  writeFileSync(join(ROOT, 'web/s', sid + '.html'), `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>${r.title} — Layercake</title><meta name="description" content="${(r.subtitle || '').replace(/"/g, '&quot;')}"><meta property="og:type" content="article"><meta property="og:title" content="${r.title} — Layercake"><meta property="og:description" content="${(r.subtitle || '').replace(/"/g, '&quot;')} · ${(r.countries || []).join('+')} · ${r.years[0]}–${r.years[1]} · ${r.counts.field} grid points, ${r.counts.places} places, ${r.counts.events} instruments"><meta property="og:url" content="${site}/study?s=${sid}">${r.relief ? `<meta property="og:image" content="${site}/data/${sid}-relief.png?v=${r.relief}"><meta name="twitter:card" content="summary_large_image">` : ''}<meta http-equiv="refresh" content="0; url=/study?s=${sid}"><link rel="canonical" href="${site}/study?s=${sid}"></head><body style="font-family:Georgia,serif;padding:2em"><p><a href="/study?s=${sid}">${r.title}</a> — a Layercake study.</p></body></html>`);
+}
 for (const page of ['index.html', 'study.html', 'builder.html']) {
   const f = join(ROOT, 'web', page); if (!existsSync(f)) continue;
   let html = readFileSync(f, 'utf8');

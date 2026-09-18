@@ -1,0 +1,47 @@
+name: monthly refresh
+# The sources move: Eurostat revises, POWER extends into the current year,
+# FAOSTAT adds a year. Once a month every public study is re-read and rebuilt;
+# the diff is the record of what changed. Manual runs allowed.
+on:
+  schedule: [{ cron: '20 6 3 * *' }]
+  workflow_dispatch: {}
+concurrency: { group: build-study, cancel-in-progress: false }
+permissions: { contents: write }
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/cache@v4
+        with:
+          path: |
+            data/sources/hydrorivers
+            data/sources/hydrobasins
+            data/sources/faostat
+            data/sources/terrain
+            data/sources/*.geojson
+          key: sources-${{ runner.os }}-v1
+      - name: re-read every public study
+        shell: bash
+        run: |
+          set -euo pipefail
+          for m in studies/*/study.json; do
+            id=$(basename "$(dirname "$m")"); case "$id" in _*) continue;; esac
+            if node -e "process.exit(JSON.parse(require('fs').readFileSync('$m','utf8')).private ? 1 : 0)"; then
+              node scripts/run.mjs "$m" --skip=relief,hydro,basins,sources
+            fi
+          done
+      - name: commit what moved
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "layercake-ci"; git config user.email "ci@layercake"
+          git add -A studies web/data
+          git commit -m "refresh: sources re-read $(date -u +%F)" || { echo "nothing moved"; exit 0; }
+          for i in 1 2 3 4; do git pull --rebase -X theirs && git push && break || sleep $((i*5)); done
+      - name: deploy
+        if: env.CF_TOKEN != ''
+        env: { CF_TOKEN: '${{ secrets.CLOUDFLARE_API_TOKEN }}', CLOUDFLARE_API_TOKEN: '${{ secrets.CLOUDFLARE_API_TOKEN }}', CLOUDFLARE_ACCOUNT_ID: '${{ secrets.CLOUDFLARE_ACCOUNT_ID }}' }
+        run: npx --yes wrangler pages deploy web --project-name=layercake --commit-dirty=true

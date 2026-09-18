@@ -174,6 +174,7 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
   <div class="edition" id="edition"></div>
   <p class="reading" id="reading"></p>
   <details class="notes" id="notes"></details>
+  <details class="notes" id="findings"></details>
 </header>
 
 <details class="read" open>
@@ -199,7 +200,7 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
 <div class="controls">
   <span class="ctl-l" title="the natural layer, on a grid of points">Ground</span>
   <div class="chips" id="fieldChips">
-    <button data-f="rain" class="on" title="rain as % of the 1991–2020 normal">Rain</button><button data-f="heat" title="days at or above 35 °C; the ring is the normal">Heat</button><button data-f="bal" title="rain minus evaporation demand, against normal">Water balance</button><button data-f="none" title="hide the ground layer">Off</button>
+    <button data-f="rain" class="on" title="rain as % of the 1991–2020 normal">Rain</button><button data-f="heat" title="days at or above 35 °C; the ring is the normal">Heat</button><button data-f="bal" title="rain minus evaporation demand, against normal">Water balance</button><button data-f="spring" title="March–May rain as % of normal: a water year can be normal in total and dry when the grain fills">Spring rain</button><button data-f="none" title="hide the ground layer">Off</button>
   </div>
   <span class="ctl-l" title="what the land grew; regional where the source publishes it">Harvest</span>
   <select id="cropSel"></select>
@@ -222,7 +223,7 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
   <ul id="sources"></ul>
 </section>
 
-<script src="data/studies.js?v=0d2193e6b788"></script>
+<script src="data/studies.js?v=86fd04cda488"></script>
 
 <script>
 function runStudy(){
@@ -301,6 +302,7 @@ function runStudy(){
     rain: { label: 'Rain', unit: '% of 1991–2020 normal, hydrological year', val1: (p, y) => p.hy[y] && p.n ? p.hy[y][0] / p.n[0] * 100 : null, mode: 'diverge', centre: 100, cap: 60 },
     heat: { label: 'Heat stress', unit: 'days ≥ 35 °C, hydrological year (ring = normal)', val1: (p, y) => p.hy[y] ? p.hy[y][2] : null, norm: (p) => p.n ? p.n[2] : null, mode: 'count', scale: 1.9 },
     bal: { label: 'Water balance', unit: 'P − ET₀ against normal, mm', val1: (p, y) => p.hy[y] && p.n ? (p.hy[y][0] - p.hy[y][1]) - (p.n[0] - p.n[1]) : null, mode: 'diverge', centre: 0, cap: 350 },
+    spring: { label: 'Spring rain', unit: 'Mar–May rain, % of normal — the window that decides a grain harvest', val1: (p, y) => p.hy[y] && p.hy[y][5] != null && p.n && p.n[5] ? p.hy[y][5] / p.n[5] * 100 : null, mode: 'diverge', centre: 100, cap: 70 },
   };
   // A span averages the metric over its years — a three-year drought reads as one thing.
   for (const F of Object.values(FIELD)) F.val = (p, y) => { const ys = spanYears(); const vs = ys.map((yy) => F.val1(p, yy)).filter((v) => v != null); return vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : null; };
@@ -366,11 +368,11 @@ function runStudy(){
   // Pearson r with n, and a least-squares line, on paired years. Printed with its
   // n because a dozen points is a hint, not a finding; never without it.
   state.cx = state.cx || 'rain';
-  const XAXES = { rain: { label: 'rain, % of normal', get: (c) => c.P_pct }, heat: { label: 'days ≥ 35 °C', get: (c) => c.D35 }, bal: { label: 'P − ET₀, mm', get: (c) => c.bal } };
+  const XAXES = { rain: { label: 'rain, % of normal', get: (c) => c.P_pct }, spring: { label: 'spring rain, % of normal', get: (c) => c.spr_pct }, heat: { label: 'days ≥ 35 °C', get: (c) => c.D35 }, bal: { label: 'P − ET₀, mm', get: (c) => c.bal } };
   function corrPanel(code) {
     const crop = state.crop; if (!crop || !S.regional_crops.includes(crop) || !S.field) return '';
     const ax = XAXES[state.cx] || XAXES.rain; const pairs = [];
-    for (const y of YEARS) { const c = placeClimate(code, y - state.lag); const v = S.marks[code]?.[crop]?.[y]?.p; if (!c || v == null) continue; pairs.push({ y, x: ax.get(c), v }); }
+    for (const y of YEARS) { const c = placeClimate(code, y - state.lag); const v = S.marks[code]?.[crop]?.[y]?.p; if (!c || v == null || ax.get(c) == null) continue; pairs.push({ y, x: ax.get(c), v }); }
     if (pairs.length < 5) return `<p class="sub">Fewer than five years pair this region's ground and its ${esc((S.crop_names[crop] || crop).toLowerCase())} — no correlation printed.</p>`;
     const n = pairs.length, mx = pairs.reduce((s, p) => s + p.x, 0) / n, mv = pairs.reduce((s, p) => s + p.v, 0) / n;
     let sxx = 0, svv = 0, sxv = 0; for (const p of pairs) { sxx += (p.x - mx) ** 2; svv += (p.v - mv) ** 2; sxv += (p.x - mx) * (p.v - mv); }
@@ -386,7 +388,7 @@ function runStudy(){
     const strength = Math.abs(r) < .2 ? 'no linear relation to speak of' : Math.abs(r) < .4 ? 'a weak relation' : Math.abs(r) < .7 ? 'a moderate relation' : 'a strong relation';
     return `<div class="corr"><p class="sub" style="margin-bottom:4px">The layers against each other, this region${state.lag ? ' — ground of the previous water year' : ''}</p>${g}<p class="r"><b>r = ${r.toFixed(2)}</b> over ${n} years — ${strength}${r < -0.2 && state.cx === 'rain' ? ' (inverse)' : ''}. Correlation is not attribution: irrigation, prices and policy sit between the rain and the harvest.</p><div class="pick">${Object.entries(XAXES).map(([k, a]) => `<button data-cx="${k}" class="${k === state.cx ? 'on' : ''}">${esc(a.label.split(',')[0])}</button>`).join('')}<button data-lag="${state.lag ? 0 : 1}" class="${state.lag ? 'on' : ''}" title="pair each harvest with the previous water year's ground">lag 1 yr</button></div></div>`;
   }
-  function placeClimate(code, y) { const rows = S.field.points.filter((p) => p.place === code && p.hy[y] && p.n); if (!rows.length) return null; const m = (i) => rows.reduce((s, p) => s + p.hy[y][i], 0) / rows.length, mn = (i) => rows.reduce((s, p) => s + p.n[i], 0) / rows.length; return { n: rows.length, P: m(0), P_pct: m(0) / mn(0) * 100, D35: m(2), D35_n: mn(2), bal: m(0) - m(1), bal_n: mn(0) - mn(1), TM: m(4), TM_n: mn(4) }; }
+  function placeClimate(code, y) { const rows = S.field.points.filter((p) => p.place === code && p.hy[y] && p.n); if (!rows.length) return null; const m = (i) => rows.reduce((s, p) => s + p.hy[y][i], 0) / rows.length, mn = (i) => rows.reduce((s, p) => s + p.n[i], 0) / rows.length; const hasS = rows.every((p) => p.hy[y][5] != null && p.n[5]); return { n: rows.length, P: m(0), P_pct: m(0) / mn(0) * 100, D35: m(2), D35_n: mn(2), bal: m(0) - m(1), bal_n: mn(0) - mn(1), TM: m(4), TM_n: mn(4), spr_pct: hasS ? m(5) / mn(5) * 100 : null, spr: hasS ? m(5) : null, rec_pct: hasS ? m(6) / mn(6) * 100 : null }; }
   function drawMargin() {
     const y = state.year, R = S.readings.years[y]; let h = '';
     if (state.span) { const ys = spanYears().filter((yy) => S.readings.years[yy]); const m = (k) => ys.length ? ys.reduce((a, yy) => a + S.readings.years[yy][k], 0) / ys.length : null;
@@ -398,7 +400,7 @@ function runStudy(){
     } else {
     h += `<p class="yr">${y}</p><p class="hy">${S.field ? esc(S.field.hydro_year) : ''}${S.hydro_year_start_month && S.hydro_year_start_month !== 1 ? ` · ${y - 1}/${y}` : ''} · <span style="letter-spacing:0;text-transform:none">shift-click another year for a span</span></p>`;
     h += '<dl>';
-    if (R) h += `<dt><span class="k verd"></span>Rain</dt><dd><b>${R.P_pct}%</b> of normal · ${fmt(R.P)} mm mean over ${R.n} points</dd><dt><span class="k ox"></span>Heat</dt><dd><b>${fmt(R.D35, 1)}</b> days ≥ 35 °C per point · normal ${fmt(R.D35_n, 1)}</dd><dt>Balance</dt><dd><b>${fmt(R.bal)}</b> mm P − ET₀ · normal ${fmt(R.bal_n)}</dd><dt>Mean T</dt><dd><b>${fmt(R.TM, 1)} °C</b> · normal ${fmt(R.TM_n, 1)}</dd>`;
+    if (R) h += `<dt><span class="k verd"></span>Rain</dt><dd><b>${R.P_pct}%</b> of normal · ${fmt(R.P)} mm mean over ${R.n} points</dd><dt><span class="k ox"></span>Heat</dt><dd><b>${fmt(R.D35, 1)}</b> days ≥ 35 °C per point · normal ${fmt(R.D35_n, 1)}</dd><dt>Balance</dt><dd><b>${fmt(R.bal)}</b> mm P − ET₀ · normal ${fmt(R.bal_n)}</dd>${R.spr_pct != null ? `<dt>Spring</dt><dd><b>${fmt(R.spr_pct)}%</b> of normal Mar–May rain · recharge (Oct–Feb) ${fmt(R.rec_pct)}%</dd>` : ''}<dt>Mean T</dt><dd><b>${fmt(R.TM, 1)} °C</b> · normal ${fmt(R.TM_n, 1)}</dd>`;
     else h += `<dt>Field</dt><dd>no reanalysis year on record</dd>`;
     const crop = state.crop, nat = crop ? cropSeries(crop) : {}, v = nat[y], m = meanOf(nat);
     const natNames = Object.values(S.national_names || {}).join(' + ');
@@ -413,7 +415,7 @@ function runStudy(){
     if (state.place && S.places[state.place]) {
       const pl = S.places[state.place], c = placeClimate(pl.code, y);
       h += `<div class="panel"><h3>${esc(pl.name)}</h3><p class="sub">${pl.country ? esc(S.national_names[pl.country] || pl.country) + ' · ' : ''}${pl.own ? 'your place' : pl.code} · ${c ? c.n + ' grid points nearest' : 'no grid point'}</p>`;
-      if (c) h += `<dl><dt>Rain</dt><dd><b>${fmt(c.P_pct)}%</b> of normal (${fmt(c.P)} mm)</dd><dt>Heat</dt><dd><b>${fmt(c.D35, 1)}</b> days ≥ 35 °C · normal ${fmt(c.D35_n, 1)}</dd><dt>Balance</dt><dd><b>${fmt(c.bal)}</b> mm · normal ${fmt(c.bal_n)}</dd></dl>`;
+      if (c) h += `<dl><dt>Rain</dt><dd><b>${fmt(c.P_pct)}%</b> of normal (${fmt(c.P)} mm)${c.spr_pct != null ? ` · spring ${fmt(c.spr_pct)}%` : ''}</dd><dt>Heat</dt><dd><b>${fmt(c.D35, 1)}</b> days ≥ 35 °C · normal ${fmt(c.D35_n, 1)}</dd><dt>Balance</dt><dd><b>${fmt(c.bal)}</b> mm · normal ${fmt(c.bal_n)}</dd></dl>`;
       const rows = S.regional_crops.map((cr) => { const s = placeSeries(pl.code, cr), vv = s[y], mm = meanOf(s); return vv == null && mm == null ? '' : `<dt>${esc(S.crop_names[cr] || cr).replace(/ \(.*$/, '')}</dt><dd><b>${fmt(vv, 1)}</b> ${unitOf(cr)}${mm ? ` · mean ${fmt(mm, 1)}` : ''}${S.marks[pl.code]?.[cr]?.[y]?.a != null ? ` · ${fmt(S.marks[pl.code][cr][y].a, 1)} kha` : ''}</dd>`; }).join('');
       h += `<dl>${rows || '<dt>Harvest</dt><dd>no regional row</dd>'}</dl>`;
       // ── the layers against each other, quantified: this place's ground vs its harvest, year by year ──
@@ -432,7 +434,7 @@ function runStudy(){
         const b = avg(before), a = avg(nxt); if (b && a) h += `<p class="cite">${esc(S.crop_names[state.crop])}, ${esc(Object.values(S.national_names || {}).join(' + '))}: three years before ${fmt(b)} kt/yr, three after ${fmt(a)} kt/yr (${a >= b ? '+' : ''}${fmt((a / b - 1) * 100)}%). Correlation is not attribution; the strip below shows the rain that ran alongside.</p>`;
         h += '</div>'; }
     }
-    if (!state.place && !state.event) h += `<div class="panel"><p class="sub"><b style="color:var(--ink)">Try:</b> click a brown harvest mark on the sheet to open its region here · click a tick on the strip below to read an instrument · press ▶ to run the years.</p><p class="sub"><span class="k verd"></span>wetter / above normal · <span class="k ox"></span>drier / hotter · <span class="k sep"></span>harvest (dashed ring = the ${Y0}–${Y1} mean) · <span class="k ring"></span>normal</p></div>`;
+    if (!state.place && !state.event) h += `<div class="panel"><p class="sub"><b style="color:var(--ink)">Try:</b> click a brown harvest mark on the sheet to open its region here · click a tick on the strip below to read an instrument · press ▶ to run the years.</p><p class="sub"><span class="k verd"></span>wetter / above normal · <span class="k ox"></span>drier / hotter · <span class="k sep"></span>harvest (dashed ring = the ${Y0}–${Y1} mean; the largest mark on the sheet = the largest value of this series in any year) · <span class="k ring"></span>normal</p></div>`;
     $('#margin').innerHTML = h;
   }
 
@@ -528,6 +530,7 @@ function runStudy(){
   document.title = `${S.title} — Layercake`; $('#title').firstChild.textContent = S.title + ' '; $('#subtitle').textContent = S.subtitle;
   $('#edition').innerHTML = `<span>Built <b>${S.built}</b></span><span>Field <b>${S.field ? S.field.points.length : 0}</b> points · ${S.field?.step}°</span><span>Places <b>${Object.keys(S.places).length}</b></span><span>Instruments <b>${S.events.length}</b></span><span>Trade rows <b>${S.trade ? S.trade.trade.length : 0}</b></span><span>Normal <b>${S.normal[0]}–${S.normal[1]}</b></span>`;
   if (S.notes && S.notes.length) { $('#notes').innerHTML = `<summary class="k" style="cursor:pointer">Notes — ${S.notes.length} paragraph${S.notes.length > 1 ? 's' : ''}</summary>` + S.notes.map((n) => `<p>${esc(n)}</p>`).join(''); $('#notes').open = window.innerWidth >= 700; }
+  if (S.findings && S.findings.length) { $('#findings').innerHTML = `<summary class="k" style="cursor:pointer">What the numbers say on their own — ${S.findings.length} candidate sentences</summary><p class="sub" style="color:var(--ink-soft);font-size:12.5px;margin:4px 0 6px">Computed from the bundle at build time: extremes, runs, trends, and any region × harvest relation with |r| ≥ 0.5 over at least 15 years. Relations are not causes; a sentence here is a place to look, not a result.</p>` + S.findings.map((f) => `<p>${f.place ? `<a href="#/place/${esc(f.place)}/y/${state.year}" style="color:var(--oxblood)">→</a> ` : ''}${esc(f.text)}</p>`).join(''); $('#findings').open = false; }
   if (window.innerWidth < 700) document.querySelector('details.read').open = false;
   const rd = S.readings; if (rd.driest) $('#reading').textContent = `From the field: the driest hydrological year was ${rd.driest} (${rd.years[rd.driest].P_pct}% of normal), the wettest ${rd.wettest} (${rd.years[rd.wettest].P_pct}%), and ${rd.hottest} carried the most days at or above 35 °C (${fmt(rd.years[rd.hottest].D35, 1)} per grid point against a normal of ${fmt(rd.years[rd.hottest].D35_n, 1)}).`;
   $('#sources').innerHTML = [

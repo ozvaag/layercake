@@ -55,6 +55,10 @@ Free on a public repo; studies are public. Secrets to set once: Pages
 for CI deploys, repo secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`.
 Without them the button says so and the files still download.
 
+## Kept alive
+
+`.github/workflows/build.yml` builds every study on push; `build-study.yml` runs the readers for a changed study after a merge; `refresh.yml` re-reads every public study on the 3rd of each month and commits what moved. `web/s/<id>.html` are share pages with social cards that send people on to the engine.
+
 ## Scripts
 
 | script | does |

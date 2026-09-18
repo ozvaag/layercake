@@ -18,6 +18,9 @@
 //   D35   days with Tmax ≥ 35 °C   (heat stress)
 //   D40   days with Tmax ≥ 40 °C
 //   TM    mean temperature, °C
+//   P_MAM spring rain (Mar–May), mm — the sowing-to-grain-fill window; a water
+//         year can be normal in total and dry when it matters
+//   P_REC recharge rain (Oct–Feb), mm
 // plus the 1991–2020 normal of each, so anomalies are against the WMO period.
 //
 // Usage: node scripts/harvest-climate.mjs studies/iberia/study.json [--step=0.5]
@@ -83,16 +86,17 @@ function aggregate(j, lat) {
   const q = j.properties.parameter, P = q.PRECTOTCORR, X = q.T2M_MAX, N = q.T2M_MIN, M = q.T2M;
   const hy = {}, cy = {};
   const add = (o, y, k) => {
-    const r = o[y] || (o[y] = [0, 0, 0, 0, 0, 0]);
+    const r = o[y] || (o[y] = [0, 0, 0, 0, 0, 0, 0, 0]);
     const p = P[k], x = X[k], n = N[k], m = M[k]; if (p === -999 || x === -999 || n === -999 || m === -999) return;
+    const mo = +k.slice(4, 6); if (mo >= 3 && mo <= 5) r[6] += p; if (mo >= 10 || mo <= 2) r[7] += p;
     r[0] += p; r[1] += Math.max(0, 0.0023 * Ra(lat, doyOf(k)) * (m + 17.8) * Math.sqrt(Math.max(0, x - n)));
     if (x >= 35) r[2]++; if (x >= 40) r[3]++; r[4] += m; r[5]++;
   };
   for (const k of Object.keys(P)) { const y = +k.slice(0, 4), mo = +k.slice(4, 6); add(cy, y, k); add(hy, HM === 1 ? y : (mo >= HM ? y + 1 : y), k); }
-  const fin = (o) => { const out = {}; for (const y in o) { const r = o[y]; if (r[5] < 360) continue; out[y] = [Math.round(r[0]), Math.round(r[1]), r[2], r[3], Math.round(r[4] / r[5] * 10) / 10]; } return out; };
+  const fin = (o) => { const out = {}; for (const y in o) { const r = o[y]; if (r[5] < 360) continue; out[y] = [Math.round(r[0]), Math.round(r[1]), r[2], r[3], Math.round(r[4] / r[5] * 10) / 10, Math.round(r[6]), Math.round(r[7])]; } return out; };
   return { hy: fin(hy), cy: fin(cy) };
 }
-const normalOf = (rows) => { const ys = Object.keys(rows).map(Number).filter((y) => y >= N0 && y <= N1); if (ys.length < 25) return null; const n = [0, 0, 0, 0, 0]; ys.forEach((y) => rows[y].forEach((v, i) => n[i] += v)); return n.map((v, i) => Math.round(v / ys.length * 10) / 10); };
+const normalOf = (rows) => { const ys = Object.keys(rows).map(Number).filter((y) => y >= N0 && y <= N1); if (ys.length < 25) return null; const n = [0, 0, 0, 0, 0, 0, 0]; ys.forEach((y) => rows[y].forEach((v, i) => n[i] += v)); return n.map((v, i) => Math.round(v / ys.length * 10) / 10); };
 
 async function main() {
   const todo = pts.filter((p) => !existsSync(join(CACHE, keyOf(p) + '.json')));
@@ -112,7 +116,7 @@ async function main() {
     return { lon: p[0], lat: p[1], normal: normalOf(a.hy), normal_cal: normalOf(a.cy), hy: yrs, cy: cal };
   });
   const out = {
-    layer: 'climate', kind: 'field', step: STEP, columns: ['P_mm', 'ET0_mm', 'D35', 'D40', 'TM_c'],
+    layer: 'climate', kind: 'field', step: STEP, columns: ['P_mm', 'ET0_mm', 'D35', 'D40', 'TM_c', 'P_MAM_mm', 'P_REC_mm'],
     normal_period: [N0, N1], hydro_year: HM === 1 ? 'calendar year' : `${['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][HM]}–${['', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'][HM]}, named by the year it ends`, et0_method: 'Hargreaves–Samani (FAO-56 eq. 52) from MERRA-2 Tmax/Tmin/Tmean',
     source: { name: 'NASA POWER daily API v2 (MERRA-2 / GEOS), parameters PRECTOTCORR, T2M_MAX, T2M_MIN, T2M, community AG', url: 'https://power.larc.nasa.gov/docs/services/api/temporal/daily/', licence: 'public domain (NASA)', fetched_at: new Date().toISOString().slice(0, 10) },
     points,
