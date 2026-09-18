@@ -59,6 +59,7 @@ body{max-width:1180px}
 #sheet .ring{fill:none; stroke:var(--ink); stroke-width:.5; opacity:.55}
 #sheet .mark{fill:var(--sepia); fill-opacity:.5; stroke:var(--sepia); stroke-width:.8; cursor:pointer}
 #sheet .mark.on{fill-opacity:.8; stroke:var(--ink); stroke-width:1.2}
+#sheet.regionview .mark{fill:none; stroke-width:1.1; stroke-dasharray:3 2}
 #sheet .mark-n{fill:none; stroke:var(--sepia); stroke-width:.6; stroke-dasharray:2 2; pointer-events:none}
 #sheet .hit{fill:transparent; cursor:pointer}
 #sheet .scope{fill:none; stroke:var(--ink); stroke-width:1; stroke-dasharray:3 3}
@@ -195,12 +196,14 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
   <span class="hint" id="yrHint"></span>
   <button class="printbtn" id="printBtn" title="print this plate — A3 landscape">Print the plate</button>
   <button class="printbtn" id="dataBtn" title="every series on this page as CSV, for R, Python or a spreadsheet">Download the data</button>
+  <button class="printbtn" id="svgBtn" title="the sheet as it stands, as SVG — a figure for a chapter">Sheet as SVG</button>
+  <button class="printbtn" id="stripBtn" title="the strip as it stands, as SVG">Strip as SVG</button>
 </div>
 
 <div class="controls">
   <span class="ctl-l" title="the natural layer, on a grid of points">Ground</span>
   <div class="chips" id="fieldChips">
-    <button data-f="rain" class="on" title="rain as % of the 1991–2020 normal">Rain</button><button data-f="heat" title="days at or above 35 °C; the ring is the normal">Heat</button><button data-f="bal" title="rain minus evaporation demand, against normal">Water balance</button><button data-f="spring" title="March–May rain as % of normal: a water year can be normal in total and dry when the grain fills">Spring rain</button><button data-f="none" title="hide the ground layer">Off</button>
+    <button data-f="rain" class="on" title="rain as % of the 1991–2020 normal">Rain</button><button data-f="heat" title="days at or above 35 °C; the ring is the normal">Heat</button><button data-f="bal" title="rain minus evaporation demand, against normal">Water balance</button><button data-f="spring" title="March–May rain as % of normal: a water year can be normal in total and dry when the grain fills">Spring rain</button><button data-f="region" title="one mark per region: the region's mean rain as % of normal — the same field, read at the marks' grain">By region</button><button data-f="none" title="hide the ground layer">Off</button>
   </div>
   <span class="ctl-l" title="what the land grew; regional where the source publishes it">Harvest</span>
   <select id="cropSel"></select>
@@ -302,13 +305,15 @@ function runStudy(){
     rain: { label: 'Rain', unit: '% of 1991–2020 normal, hydrological year', val1: (p, y) => p.hy[y] && p.n ? p.hy[y][0] / p.n[0] * 100 : null, mode: 'diverge', centre: 100, cap: 60 },
     heat: { label: 'Heat stress', unit: 'days ≥ 35 °C, hydrological year (ring = normal)', val1: (p, y) => p.hy[y] ? p.hy[y][2] : null, norm: (p) => p.n ? p.n[2] : null, mode: 'count', scale: 1.9 },
     bal: { label: 'Water balance', unit: 'P − ET₀ against normal, mm', val1: (p, y) => p.hy[y] && p.n ? (p.hy[y][0] - p.hy[y][1]) - (p.n[0] - p.n[1]) : null, mode: 'diverge', centre: 0, cap: 350 },
+    region: { label: 'By region', unit: 'each region\u2019s mean rain, % of normal, from its nearest grid points' },
     spring: { label: 'Spring rain', unit: 'Mar–May rain, % of normal — the window that decides a grain harvest', val1: (p, y) => p.hy[y] && p.hy[y][5] != null && p.n && p.n[5] ? p.hy[y][5] / p.n[5] * 100 : null, mode: 'diverge', centre: 100, cap: 70 },
   };
   // A span averages the metric over its years — a three-year drought reads as one thing.
-  for (const F of Object.values(FIELD)) F.val = (p, y) => { const ys = spanYears(); const vs = ys.map((yy) => F.val1(p, yy)).filter((v) => v != null); return vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : null; };
+  for (const F of Object.values(FIELD)) if (F.val1) F.val = (p, y) => { const ys = spanYears(); const vs = ys.map((yy) => F.val1(p, yy)).filter((v) => v != null); return vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : null; };
   const cell = () => { const a = P([0, 40]), b = P([S.field.step, 40]); return Math.abs(b[0] - a[0]); };
   function drawField() {
     const g = $('#fieldg'); if (state.field === 'none' || !S.field) { g.innerHTML = ''; return; }
+    if (state.field === 'region') { let s = ''; const ys = spanYears(); for (const pl of Object.values(S.places)) { const cs = ys.map((y) => placeClimate(pl.code, y)).filter(Boolean); if (!cs.length) continue; const pct = cs.reduce((a, c) => a + c.P_pct, 0) / cs.length, d35 = cs.reduce((a, c) => a + c.D35, 0) / cs.length, d35n = cs.reduce((a, c) => a + c.D35_n, 0) / cs.length; const d = pct - 100; const [x, y] = P([pl.lon, pl.lat]); const r = 6 + 22 * Math.min(1, Math.sqrt(Math.abs(d) / 60)); s += `<circle class="dot ${d >= 0 ? 'wet' : 'dry'}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"><title>${esc(pl.name)}: rain ${fmt(pct)}% of normal · ${fmt(d35, 1)} days ≥ 35 °C (normal ${fmt(d35n, 1)}) · ${cs[0].n} grid points</title></circle><text class="pname" x="${x.toFixed(1)}" y="${(y + 3).toFixed(1)}" text-anchor="middle" style="fill:var(--ink);font-size:8px">${fmt(pct)}%</text>`; } g.innerHTML = s; return; }
     const F = FIELD[state.field], y = state.year, half = cell() / 2; let s = '';
     for (const p of S.field.points) {
       const v = F.val(p, y); if (v == null) continue; const [x, yy] = P([p.lon, p.lat]);
@@ -400,7 +405,8 @@ function runStudy(){
     } else {
     h += `<p class="yr">${y}</p><p class="hy">${S.field ? esc(S.field.hydro_year) : ''}${S.hydro_year_start_month && S.hydro_year_start_month !== 1 ? ` · ${y - 1}/${y}` : ''} · <span style="letter-spacing:0;text-transform:none">shift-click another year for a span</span></p>`;
     h += '<dl>';
-    if (R) h += `<dt><span class="k verd"></span>Rain</dt><dd><b>${R.P_pct}%</b> of normal · ${fmt(R.P)} mm mean over ${R.n} points</dd><dt><span class="k ox"></span>Heat</dt><dd><b>${fmt(R.D35, 1)}</b> days ≥ 35 °C per point · normal ${fmt(R.D35_n, 1)}</dd><dt>Balance</dt><dd><b>${fmt(R.bal)}</b> mm P − ET₀ · normal ${fmt(R.bal_n)}</dd>${R.spr_pct != null ? `<dt>Spring</dt><dd><b>${fmt(R.spr_pct)}%</b> of normal Mar–May rain · recharge (Oct–Feb) ${fmt(R.rec_pct)}%</dd>` : ''}<dt>Mean T</dt><dd><b>${fmt(R.TM, 1)} °C</b> · normal ${fmt(R.TM_n, 1)}</dd>`;
+    const rank = (k, asc) => { const arr = Object.entries(S.readings.years).map(([yy, r]) => [+yy, r[k]]).filter(([, v]) => v != null).sort((a, b) => asc ? a[1] - b[1] : b[1] - a[1]); const i = arr.findIndex(([yy]) => yy === y); return i < 0 ? '' : ` · ${asc ? 'driest' : 'hottest'} ${i + 1}${['st', 'nd', 'rd'][i] || 'th'} of ${arr.length}`; };
+    if (R) h += `<dt><span class="k verd"></span>Rain</dt><dd><b>${R.P_pct}%</b> of normal · ${fmt(R.P)} mm mean over ${R.n} points${rank('P_pct', true)}</dd><dt><span class="k ox"></span>Heat</dt><dd><b>${fmt(R.D35, 1)}</b> days ≥ 35 °C per point · normal ${fmt(R.D35_n, 1)}${rank('D35', false)}</dd><dt>Balance</dt><dd><b>${fmt(R.bal)}</b> mm P − ET₀ · normal ${fmt(R.bal_n)}</dd>${R.spr_pct != null ? `<dt>Spring</dt><dd><b>${fmt(R.spr_pct)}%</b> of normal Mar–May rain · recharge (Oct–Feb) ${fmt(R.rec_pct)}%</dd>` : ''}<dt>Mean T</dt><dd><b>${fmt(R.TM, 1)} °C</b> · normal ${fmt(R.TM_n, 1)}</dd>`;
     else h += `<dt>Field</dt><dd>no reanalysis year on record</dd>`;
     const crop = state.crop, nat = crop ? cropSeries(crop) : {}, v = nat[y], m = meanOf(nat);
     const natNames = Object.values(S.national_names || {}).join(' + ');
@@ -421,6 +427,7 @@ function runStudy(){
       // ── the layers against each other, quantified: this place's ground vs its harvest, year by year ──
       h += corrPanel(pl.code);
       const touching = S.events.filter((e) => (e.scope?.regions || []).includes(pl.code)).sort((a, b) => a.date.localeCompare(b.date));
+      if (state.place2 && S.places[state.place2]) h += `<p class="sub">Compared with <b>${esc(S.places[state.place2].name)}</b> on the strip (green line) · <a href="#" data-clearp2 style="color:var(--oxblood)">clear</a></p>`; else h += `<p class="sub">Shift-click another region's mark to overlay it on the strip.</p>`;
       h += `<p class="sub">Instruments naming this region</p>${touching.map((e) => `<div class="ev" data-e="${e.id}"><span class="kind">${e.year}</span>${esc(e.title)}</div>`).join('') || '<p class="sub">none scoped to it (national instruments apply)</p>'}</div>`;
     }
     if (state.event) {
@@ -462,6 +469,10 @@ function runStudy(){
       const vals = Object.values(ser).filter((v) => v != null); const mx = Math.max(1, ...vals), m = meanOf(ser); const yy = (v) => t + hgt - 4 - v / mx * (hgt - 12);
       if (m) s += `<line class="norm" x1="${LEFT}" x2="${SW - RIGHT}" y1="${yy(m).toFixed(1)}" y2="${yy(m).toFixed(1)}"/>`;
       if (!vals.length) s += `<text class="nodata" x="${LEFT + 4}" y="${t + hgt / 2}">no series</text>`;
+      // least-squares trend, printed as % of the mean per year
+      const pts = YEARS.filter((y) => ser[y] != null).map((y) => [y, ser[y]]); if (pts.length >= 8 && m) { const n = pts.length, mx = pts.reduce((a, p) => a + p[0], 0) / n, my = pts.reduce((a, p) => a + p[1], 0) / n; let sxx = 0, sxy = 0; for (const [x, v] of pts) { sxx += (x - mx) ** 2; sxy += (x - mx) * (v - my); } const b = sxy / sxx, a = my - b * mx; const y0v = a + b * pts[0][0], y1v = a + b * pts[n - 1][0]; s += `<line x1="${X(pts[0][0]).toFixed(1)}" y1="${yy(Math.max(0, y0v)).toFixed(1)}" x2="${X(pts[n - 1][0]).toFixed(1)}" y2="${yy(Math.max(0, y1v)).toFixed(1)}" stroke="var(--oxblood)" stroke-width=".9" opacity=".7"/><text class="lane-u" x="${SW - RIGHT}" y="${t + 12}" text-anchor="end" style="fill:var(--oxblood)">trend ${b >= 0 ? '+' : ''}${(b / m * 100).toFixed(1)}%/yr of the mean · n = ${n}</text>`; }
+      // a second place, for comparison
+      if (state.place2 && S.regional_crops.includes(crop) && S.marks[state.place2]) { const s2 = placeSeries(state.place2, crop); const v2 = Object.values(s2).filter((v) => v != null); const mx2 = Math.max(mx, ...v2); const y2 = (v) => t + hgt - 4 - v / mx2 * (hgt - 12); const p2 = YEARS.filter((y) => s2[y] != null).map((y) => [X(y), y2(s2[y])]); s += `<path d="${p2.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('')}" fill="none" stroke="var(--verdigris)" stroke-width="1.6"/><text class="lane-u" x="${SW - RIGHT}" y="${t + 24}" text-anchor="end" style="fill:var(--verdigris)">${esc(S.places[state.place2].name)} (line, own scale)</text>`; }
       for (const y of YEARS) { const v = ser[y]; if (v == null) continue; s += `<rect class="bar harv${y === state.year ? ' on' : ''}" x="${(X(y) - BW * .32).toFixed(1)}" y="${yy(v).toFixed(1)}" width="${(BW * .64).toFixed(1)}" height="${(t + hgt - 4 - yy(v)).toFixed(1)}"><title>${y}: ${fmt(v, 1)} ${esc(unitOf(crop))}</title></rect>`; } }
     // own series lane (only when the study carries one)
     if (S.own && S.own.series.length && state.own) { const sr = S.own.series.find((x) => x.id === state.own); const [t, hgt] = lane(4); s += `<text class="lane-l" x="6" y="${t + 12}">Series</text><text class="lane-u" x="6" y="${t + 24}">${esc(sr.label).slice(0, 22)}</text><text class="lane-u" x="6" y="${t + 36}">${esc(sr.unit || '')}</text>`; const vals = YEARS.map((y) => sr.values[y]).filter((v) => v != null); const mx = Math.max(1e-9, ...vals); const yy = (v) => t + hgt - 4 - v / mx * (hgt - 12); const pts = YEARS.filter((y) => sr.values[y] != null).map((y) => [X(y), yy(sr.values[y])]); s += `<path class="price" d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('')}"/>` + YEARS.filter((y) => sr.values[y] != null).map((y) => `<circle class="price-d" cx="${X(y).toFixed(1)}" cy="${yy(sr.values[y]).toFixed(1)}" r="2"><title>${y}: ${fmt(sr.values[y], 2)} ${esc(sr.unit || '')}</title></circle>`).join(''); }
@@ -478,14 +489,21 @@ function runStudy(){
       for (const [y, es] of Object.entries(byY)) { const w = Math.min(BW * .8 / es.length, 9); es.forEach((e, i) => { const x = X(+y) - (es.length - 1) * w / 2 + i * w; s += `<line class="tick kind-${e.kind}${state.event === e.id ? ' on' : ''}" data-e="${e.id}" x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${t + 8}" y2="${t + hgt - 8}"><title>${esc(e.date)} · ${esc(e.title)}</title></line>`; }); } }
     // axis, cursor, hit areas
     for (const y of YEARS) s += `<text class="yr-l" x="${X(y).toFixed(1)}" y="${SH - 6}">${y % 5 === 0 || y === Y1 ? y : "'" + String(y).slice(2)}</text>`;
+    if (state.event) { const ev = S.events.find((e) => e.id === state.event); if (ev && ev.year >= Y0 && ev.year <= Y1) { const xe = X(ev.year) + (new Date(ev.date).getMonth() / 12 - .5) * BW; s += `<line x1="${xe.toFixed(1)}" x2="${xe.toFixed(1)}" y1="${TOP - 4}" y2="${SH - BOT + 4}" stroke="var(--oxblood)" stroke-width="1" stroke-dasharray="2 2" opacity=".8"/>`; } }
     if (state.span) s += `<rect x="${(X(state.span[0]) - BW / 2).toFixed(1)}" y="${TOP - 4}" width="${(X(state.span[1]) - X(state.span[0]) + BW).toFixed(1)}" height="${SH - TOP - BOT + 8}" fill="var(--ink)" fill-opacity=".06" stroke="var(--ink)" stroke-width=".6" stroke-dasharray="3 3"/>`;
     s += `<line class="cursor" x1="${X(state.year).toFixed(1)}" x2="${X(state.year).toFixed(1)}" y1="${TOP - 4}" y2="${SH - BOT + 4}"/>`;
     for (const y of YEARS) s += `<rect class="hit" data-y="${y}" x="${(X(y) - BW / 2).toFixed(1)}" y="${TOP}" width="${BW.toFixed(1)}" height="${SH - TOP - BOT}"/>`;
     strip.innerHTML = s;
   }
 
-  function render() { drawField(); drawMarks(); drawScope(); drawMargin(); drawStrip(); writeHash(); $('#yrBig').textContent = state.year; $('#yrHint').textContent = `${state.span ? 'mean of ' + state.span[0] + '–' + state.span[1] + ' · ' : ''}${FIELD[state.field]?.unit || 'ground layer off'} · ← → keys step years · shift-click the strip for a span`; }
+  function render() { sheet.classList.toggle('regionview', state.field === 'region'); drawField(); drawMarks(); drawScope(); drawMargin(); drawStrip(); writeHash(); $('#yrBig').textContent = state.year; $('#yrHint').textContent = `${state.span ? 'mean of ' + state.span[0] + '–' + state.span[1] + ' · ' : ''}${FIELD[state.field]?.unit || 'ground layer off'} · ← → keys step years · shift-click the strip for a span`; }
   $('#printBtn').addEventListener('click', () => window.print());
+  // A figure: the SVG with the page's styles inlined and the relief's href made absolute,
+  // so it opens in Inkscape, Illustrator or a browser on its own.
+  const svgOut = (el, name) => { const css = [...document.styleSheets].flatMap((ss) => { try { return [...ss.cssRules].map((r) => r.cssText); } catch { return []; } }).filter((t) => /#sheet|#strip|:root|\.corr/.test(t)).join('\n').replace(/#sheet|#strip/g, 'svg'); const clone = el.cloneNode(true); clone.querySelectorAll('image').forEach((im) => im.setAttribute('href', new URL(im.getAttribute('href'), location.href).href)); clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg'); clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink'); const style = document.createElementNS('http://www.w3.org/2000/svg', 'style'); style.textContent = ':root{--paper:#F4EFE6;--paper-deep:#E8E0D2;--ink:#1C1A17;--ink-soft:#5A5349;--rule:#B8AE9C;--sea:#DDE4E3;--oxblood:#7A2E2E;--verdigris:#4A6B62;--sepia:#8B6F47} svg{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif}\n' + css; clone.insertBefore(style, clone.firstChild); const text = '<?xml version="1.0" encoding="UTF-8"?>\n<!-- ' + S.title + ' — Layercake, built ' + S.built + '. Sources on the study page. © Ozvåag LLC (engine, MIT); data as licensed by each source. -->\n' + new XMLSerializer().serializeToString(clone); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'image/svg+xml' })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
+  $('#svgBtn').addEventListener('click', () => svgOut(sheet, `${S.id}-sheet-${state.span ? state.span.join('-') : state.year}-${state.field}.svg`));
+  $('#stripBtn').addEventListener('click', () => svgOut(strip, `${S.id}-strip-${state.crop || 'none'}.svg`));
+  document.addEventListener('keydown', (e) => { if (e.key === ' ' && e.target === document.body) { e.preventDefault(); $('#play').click(); } });
   // Every number the page draws, as CSV — one file per shape, zipped by nothing:
   // plain files, plain names, so they open in R, pandas or a spreadsheet.
   const csv = (rows, cols) => [cols.join(','), ...rows.map((r) => cols.map((c) => { const v = r[c]; return v == null ? '' : /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : v; }).join(','))].join('\n');
@@ -509,9 +527,9 @@ function runStudy(){
   $('#basinChips').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; [...$('#basinChips').children].forEach((c) => c.classList.toggle('on', c === b)); sheet.classList.toggle('nobasins', b.dataset.b === 'off'); });
   $('#sheetChips').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; [...$('#sheetChips').children].forEach((c) => c.classList.toggle('on', c === b)); sheet.classList.toggle('plain', b.dataset.s === 'plain'); sheet.classList.toggle('nonames', b.dataset.s === 'nonames'); });
   cropSel.addEventListener('change', () => { state.crop = cropSel.value; render(); });
-  sheet.addEventListener('click', (e) => { const t = e.target.closest('[data-p]'); if (!t) return; state.place = state.place === t.dataset.p ? null : t.dataset.p; state.event = null; render(); });
+  sheet.addEventListener('click', (e) => { const t = e.target.closest('[data-p]'); if (!t) return; if (e.shiftKey && state.place && t.dataset.p !== state.place) { state.place2 = state.place2 === t.dataset.p ? null : t.dataset.p; render(); return; } state.place = state.place === t.dataset.p ? null : t.dataset.p; if (!state.place) state.place2 = null; state.event = null; render(); });
   strip.addEventListener('click', (e) => { const tk = e.target.closest('[data-e]'); if (tk) { const ev = S.events.find((x) => x.id === tk.dataset.e); state.event = state.event === ev.id ? null : ev.id; state.place = null; if (state.event) state.year = Math.min(Y1, Math.max(Y0, ev.year)); render(); return; } const h = e.target.closest('[data-y]'); if (h) { const y = +h.dataset.y; if (e.shiftKey) { const a = state.span ? state.span[0] : state.year; state.span = [Math.min(a, y), Math.max(a, y)]; state.year = state.span[1]; } else { state.span = null; state.year = y; } render(); } });
-  $('#margin').addEventListener('click', (e) => { if (e.target.closest('[data-clearspan]')) { e.preventDefault(); state.span = null; render(); } });
+  $('#margin').addEventListener('click', (e) => { if (e.target.closest('[data-clearspan]')) { e.preventDefault(); state.span = null; render(); } if (e.target.closest('[data-clearp2]')) { e.preventDefault(); state.place2 = null; render(); } });
   $('#margin').addEventListener('click', (e) => { const cx = e.target.closest('[data-cx]'); if (cx) { state.cx = cx.dataset.cx; render(); return; } const lg = e.target.closest('[data-lag]'); if (lg) { state.lag = +lg.dataset.lag; render(); return; } const t = e.target.closest('[data-e]'); if (!t) return; const ev = S.events.find((x) => x.id === t.dataset.e); state.event = ev.id; state.place = null; state.year = Math.min(Y1, Math.max(Y0, ev.year)); render(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft' && state.year > Y0) { state.year--; render(); } if (e.key === 'ArrowRight' && state.year < Y1) { state.year++; render(); } });
   let timer = null; $('#play').addEventListener('click', () => { if (timer) { clearInterval(timer); timer = null; $('#play').textContent = 'Play ▸'; return; } $('#play').textContent = 'Stop ■'; if (state.year >= Y1) state.year = Y0 - 1; timer = setInterval(() => { if (state.year >= Y1) { clearInterval(timer); timer = null; $('#play').textContent = 'Play ▸'; return; } state.year++; state.event = null; render(); }, 900); });
