@@ -57,8 +57,8 @@ async function main() {
     out[k] = Math.min(255, c[0] * f); out[k + 1] = Math.min(255, c[1] * f); out[k + 2] = Math.min(255, c[2] * f); out[k + 3] = 255;
   }
   mkdirSync(join(ROOT, 'web/data'), { recursive: true });
-  writeFileSync(join(ROOT, 'web/data/relief.png'), encode(OW, OH, out));
+  writeFileSync(join(ROOT, 'web/data', study.id + '-relief.png'), encode(OW, OH, out));
   writeFileSync(join(ROOT, 'studies', study.id, 'geo/relief.json'), JSON.stringify({ ramp: RAMP, zoom: Z, scale: SCALE, source: 'Terrarium terrain tiles (Mapzen/Nextzen on AWS Open Data; SRTM, GMTED2010, ETOPO1 and others), hillshade from the north-west, vertical exaggeration 2.2', generated: new Date().toISOString().slice(0, 10) }));
-  console.log(`wrote web/data/relief.png ${OW}×${OH}`);
+  console.log(`wrote web/data/${study.id}-relief.png ${OW}×${OH}`);
 }
 main().catch((e) => { console.error(e); process.exit(1); });

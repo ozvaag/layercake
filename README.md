@@ -1,6 +1,19 @@
-# Iberia — and the study engine under it
+# Layercake — a place, its layers, its years
+
+**Live:** https://layercake.pages.dev · MIT · © Ozvåag LLC
+
+Spin the globe, click where you work, answer three questions — *where, what,
+when* — and Layercake writes a study manifest, previews the frame, fetches a
+first field live, and (after five commands on your machine) renders a plate:
+one sheet, one time axis, every figure with its source.
 
 **Study #1:** `studies/iberia/` — rain, law and harvest on one peninsula, 2000–2025.
+
+| page | what |
+|---|---|
+| `web/index.html` | the globe: pick a place (one country or a region), open a study |
+| `web/builder.html` | the three questions → `study.json`, `places.json`, `instruments.json` + the commands; live NASA POWER preview |
+| `web/study.html?s=<id>` | the engine: renders any built study |
 
 Built on the Film Commission Atlas's pattern (`~/dev/film-commission-atlas`):
 Natural Earth geometry as plain lon/lat rings projected in the browser, a
@@ -43,7 +56,8 @@ source into the layer file shapes in `SCHEMA.md`,
 | `scripts/harvest-crops.mjs` | Eurostat `apro_cpshr` NUTS-2 crop production and area |
 | `scripts/harvest-trade.mjs` | Eurostat Comext HS exports/imports + `apri_ap_crpouta` producer prices |
 | `scripts/check-sources.mjs` | probes every instrument URL; stamps `source_state` up / wall / dead; never touches `confidence` |
-| `scripts/build.mjs` | validate → `web/data/<id>.js` + `web/data/geo.js`; hash-stamps `index.html` |
+| `scripts/build.mjs` | validate → `web/data/<id>.js` + `web/data/<id>-geo.js`; registers the study in `web/data/studies.js`; hash-stamps the pages |
+| `scripts/world.mjs` | Natural Earth 50m → `web/data/world.js` for the globe and the builder |
 | `deploy.sh` | build → Cloudflare Pages |
 
 Raw source responses cache under `data/sources/` (gitignored); re-runs are free.

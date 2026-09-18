@@ -101,6 +101,7 @@ const bundle = {
   field, marks, national, regional_crops: [...regionalCrops], crop_names: crops?.crops || {}, crop_source: crops?.source || null,
   trade: trade ? { products: trade.products, prices: trade.prices, sources: trade.sources, trade: trade.trade, price: trade.price } : null,
   events, event_kinds: pol?.kinds || {}, confidence_tiers: pol?.confidence_tiers || {}, readings,
+  fade: study.frame.fade || null, market: study.market || {}, hydro_year_start_month: study.hydro_year_start_month || 10,
 };
 mkdirSync(join(ROOT, 'web/data'), { recursive: true });
 const js = `// ${study.title} — © ${new Date().getFullYear()} Ozvåag LLC. Sources are named inside; every figure carries its origin.\nwindow.STUDY=${JSON.stringify(bundle)};`;
@@ -111,14 +112,21 @@ const feats = existsSync(join(DIR, 'features.json')) ? JSON.parse(readFileSync(j
 const relief = existsSync(join(DIR, 'geo/relief.json')) ? JSON.parse(readFileSync(join(DIR, 'geo/relief.json'), 'utf8')) : null;
 const peakSeen = new Set(); const peaks = [...(geo.peaks || []), ...(feats.peaks || [])].filter((p) => { const k = p.name.toLowerCase(); if (peakSeen.has(k)) return false; peakSeen.add(k); return true; });
 const geoJs = `window.STUDY_GEO=${JSON.stringify({ window: geo.window, land: geo.land, coast: geo.coast, rivers: geo.rivers, named_rivers: geo.named_rivers || [], lakes: geo.lakes, bathy: geo.bathy || {}, peaks, features: feats.features, feature_note: feats.note, network: net ? { source: net.source, min_order: net.min_order, reaches: net.reaches } : null, relief, source: geo.source })};`;
-writeFileSync(join(ROOT, 'web/data/geo.js'), geoJs);
-// Hash-stamp the asset URLs in index.html (the Atlas's rule: CF's browser-cache TTL outlives a deploy).
+writeFileSync(join(ROOT, 'web/data', study.id + '-geo.js'), geoJs);
+// The registry: every built study with content hashes, so the engine and the
+// globe can address them and CF's browser cache never serves a stale bundle.
 const h = (s) => createHash('sha256').update(s).digest('hex').slice(0, 12);
-const idx = join(ROOT, 'web/index.html');
-if (existsSync(idx)) {
-  let html = readFileSync(idx, 'utf8');
-  html = html.replace(/data\/geo\.js(\?v=[0-9a-f]+)?/g, `data/geo.js?v=${h(geoJs)}`).replace(/data\/relief\.png(\?v=[0-9a-f]+)?/g, `data/relief.png?v=${existsSync(join(ROOT, 'web/data/relief.png')) ? h(readFileSync(join(ROOT, 'web/data/relief.png'))) : '0'}`).replace(new RegExp(`data/${study.id}\\.js(\\?v=[0-9a-f]+)?`, 'g'), `data/${study.id}.js?v=${h(js)}`).replace(/atlas\.css(\?v=[0-9a-f]+)?/g, `atlas.css?v=${h(readFileSync(join(ROOT, 'web/atlas.css'), 'utf8'))}`);
-  writeFileSync(idx, html);
+const regPath = join(ROOT, 'web/data/studies.js');
+const REG = existsSync(regPath) ? JSON.parse(readFileSync(regPath, 'utf8').replace(/^window\.STUDIES=/, '').replace(/;\s*$/, '')) : {};
+const reliefPng = join(ROOT, 'web/data', study.id + '-relief.png');
+REG[study.id] = { title: study.title, subtitle: study.subtitle, years: study.years, countries: study.frame.mask, window: study.frame.window, built: bundle.built, data: h(js), geo: h(geoJs), relief: existsSync(reliefPng) ? h(readFileSync(reliefPng)) : null, counts: { field: field ? field.points.length : 0, places: Object.keys(places).length, events: events.length, trade: trade ? trade.trade.length : 0 } };
+writeFileSync(regPath, 'window.STUDIES=' + JSON.stringify(REG) + ';');
+for (const page of ['index.html', 'study.html', 'builder.html']) {
+  const f = join(ROOT, 'web', page); if (!existsSync(f)) continue;
+  let html = readFileSync(f, 'utf8');
+  html = html.replace(/data\/studies\.js(\?v=[0-9a-f]+)?/g, `data/studies.js?v=${h(JSON.stringify(REG))}`).replace(/atlas\.css(\?v=[0-9a-f]+)?/g, `atlas.css?v=${h(readFileSync(join(ROOT, 'web/atlas.css'), 'utf8'))}`);
+  if (existsSync(join(ROOT, 'web/data/world.js'))) html = html.replace(/data\/world\.js(\?v=[0-9a-f]+)?/g, `data/world.js?v=${h(readFileSync(join(ROOT, 'web/data/world.js')))}`);
+  writeFileSync(f, html);
 }
 console.log(`built ${study.id}: ${Object.keys(places).length} places · field ${field ? field.points.length : 0} pts · marks ${Object.keys(marks).length} places × ${regionalCrops.size} regional crops (${folded} rows folded by alias, ${dropped} dropped: islands/NUTS-1/extra-regio) · events ${events.length} · trade ${trade ? trade.trade.length : 0} · ${(js.length / 1024).toFixed(0)} KB`);
 if (readings.driest) console.log(`readings: driest ${readings.driest} (${readings.years[readings.driest].P_pct}% of normal) · wettest ${readings.wettest} (${readings.years[readings.wettest].P_pct}%) · most ≥35° days ${readings.hottest} (${readings.years[readings.hottest].D35}/pt)`);

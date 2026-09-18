@@ -2,23 +2,163 @@
   "id": "iberia",
   "title": "Iberia",
   "subtitle": "Rain, law and harvest on one peninsula, 2000–2025",
-  "years": [2000, 2025],
-  "normal": [1991, 2020],
+  "years": [
+    2000,
+    2025
+  ],
+  "normal": [
+    1991,
+    2020
+  ],
   "frame": {
-    "window": { "lon": [-9.9, 3.6], "lat": [35.8, 44.2] },
-    "mask": ["ES", "PT"],
-    "admin1_countries": ["ES", "PT"],
-    "fade_north_of": 43.35,
+    "window": {
+      "lon": [
+        -9.9,
+        3.6
+      ],
+      "lat": [
+        35.8,
+        44.2
+      ]
+    },
+    "mask": [
+      "ES",
+      "PT"
+    ],
+    "admin1_countries": [
+      "ES",
+      "PT"
+    ],
     "river_scalerank": 9,
     "exclude_boxes": [
-      { "name": "Balearics", "lon": [1.0, 4.5], "lat": [38.5, 40.3] }
-    ]
+      {
+        "name": "Balearics",
+        "lon": [
+          1.0,
+          4.5
+        ],
+        "lat": [
+          38.5,
+          40.3
+        ]
+      }
+    ],
+    "fade": {
+      "from": [
+        -1.85,
+        43.38
+      ],
+      "to": [
+        3.6,
+        42.42
+      ],
+      "note": "the land north of the Pyrenees fades rather than ends"
+    }
   },
   "layers": [
-    { "id": "rain",   "kind": "field",  "file": "natural/climate.json", "ink": "sea",       "label": "Rain",        "unit": "mm, hydrological year Oct–Sep" },
-    { "id": "heat",   "kind": "field",  "file": "natural/climate.json", "ink": "oxblood",   "label": "Heat stress", "unit": "days ≥ 35 °C" },
-    { "id": "crops",  "kind": "marks",  "file": "food/crops.json",      "ink": "sepia",     "label": "Harvest",     "unit": "thousand tonnes, NUTS-2" },
-    { "id": "trade",  "kind": "series", "file": "food/trade.json",      "ink": "sepia",     "label": "Exports",     "unit": "€, HS4, reporter = country" },
-    { "id": "policy", "kind": "events", "file": "policy/instruments.json", "ink": "verdigris", "label": "Law",      "unit": "instrument, dated" }
-  ]
+    {
+      "id": "rain",
+      "kind": "field",
+      "file": "natural/climate.json",
+      "ink": "sea",
+      "label": "Rain",
+      "unit": "mm, hydrological year Oct–Sep"
+    },
+    {
+      "id": "heat",
+      "kind": "field",
+      "file": "natural/climate.json",
+      "ink": "oxblood",
+      "label": "Heat stress",
+      "unit": "days ≥ 35 °C"
+    },
+    {
+      "id": "crops",
+      "kind": "marks",
+      "file": "food/crops.json",
+      "ink": "sepia",
+      "label": "Harvest",
+      "unit": "thousand tonnes, NUTS-2"
+    },
+    {
+      "id": "trade",
+      "kind": "series",
+      "file": "food/trade.json",
+      "ink": "sepia",
+      "label": "Exports",
+      "unit": "€, HS4, reporter = country"
+    },
+    {
+      "id": "policy",
+      "kind": "events",
+      "file": "policy/instruments.json",
+      "ink": "verdigris",
+      "label": "Law",
+      "unit": "instrument, dated"
+    }
+  ],
+  "hydro_year_start_month": 10,
+  "market": {
+    "O1000": {
+      "hs": [
+        "1509"
+      ],
+      "price": "08100000",
+      "pl": "olive oil"
+    },
+    "T0000": {
+      "hs": [
+        "0805"
+      ],
+      "price": "06210000",
+      "pl": "citrus"
+    },
+    "W1000": {
+      "hs": [
+        "2204"
+      ],
+      "price": "06490000",
+      "pl": "wine"
+    },
+    "C1100": {
+      "hs": [
+        "1001"
+      ],
+      "price": "01110000",
+      "pl": "wheat"
+    },
+    "C2000": {
+      "hs": [
+        "1006"
+      ],
+      "price": "01600000",
+      "pl": "rice"
+    },
+    "F0000": {
+      "hs": [
+        "080212"
+      ],
+      "price": "06194130",
+      "pl": "almonds (shelled)"
+    },
+    "V0000_S0000": {
+      "hs": [
+        "0702",
+        "081010"
+      ],
+      "price": "04121000",
+      "pl": "tomatoes + strawberries"
+    },
+    "CORK": {
+      "hs": [
+        "4501",
+        "4502",
+        "4503",
+        "4504"
+      ],
+      "price": null,
+      "pl": "cork, HS 4501–4504",
+      "label": "Cork (HS 4501–4504)"
+    }
+  }
 }

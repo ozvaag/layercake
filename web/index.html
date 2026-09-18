@@ -3,393 +3,147 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Iberia — Rain, Law, Harvest</title>
-<meta name="description" content="One landmass, three layers, twenty-six years: reanalysis rain and heat, water and farm law, and what the land grew and sold — laid on one sheet and one time axis.">
+<title>Layercake</title>
+<meta name="description" content="Layercake — a place, its layers, its years. Put your research on a globe: pick the place, add the data, set the years, and read the layers against each other on one sheet and one time axis.">
 <link rel="icon" href="favicon.svg">
 <link rel="stylesheet" href="atlas.css?v=1b892092ee72">
 <style>
-/* The study engine's own chrome, on top of the Atlas tokens. */
 body{max-width:1180px}
-.study{display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:26px; margin-top:18px}
-@media (max-width:900px){ .study{grid-template-columns:1fr} body{padding:22px 16px 40px} h1{font-size:34px} }
-#sheet{width:100%; height:auto; display:block; background:var(--sea); border:1px solid var(--rule); position:sticky; top:10px}
-@media (max-width:900px){ #sheet{position:static} }
-#sheet .land{fill:var(--paper-deep); stroke:none}
-#sheet .coast{fill:none; stroke:var(--ink); stroke-width:.9; stroke-linejoin:round}
-#sheet .river{fill:none; stroke:#4A6C71; stroke-width:1.2; stroke-linecap:round; stroke-linejoin:round; opacity:.95}
-#sheet .river.big{stroke-width:1.7}
-#sheet .lake{fill:#AFC3C5; stroke:#4A6C71; stroke-width:.4}
-#sheet .bathy200{fill:#D3DCDB} #sheet .bathy1000{fill:#C9D4D4} #sheet .bathy2000{fill:#BFCCCD}
-#sheet .relief{opacity:.92}
-#sheet.plain .relief, #sheet.plain .physnames{display:none}
-#sheet.nonames .physnames{display:none}
-#sheet .net{fill:none; stroke:#4A6C71; stroke-linecap:round; stroke-linejoin:round}
-#sheet .net.o4{stroke-width:.45; opacity:.7} #sheet .net.o5{stroke-width:.7; opacity:.85} #sheet .net.o6{stroke-width:1} #sheet .net.o7{stroke-width:1.45}
-#sheet .rlabel{font-style:italic; font-size:8.5px; fill:#2F4A4E; letter-spacing:0}
-#sheet .rlabel.big{font-size:10px}
-#sheet .f-range{font-size:9px; letter-spacing:.24em; text-transform:uppercase; fill:#5C4A36; text-anchor:middle}
-#sheet .f-range.s3{font-size:11px; letter-spacing:.32em} #sheet .f-range.s1{font-size:7.5px; letter-spacing:.12em; text-transform:none; font-style:italic}
-#sheet .f-plateau, #sheet .f-basin{font-size:9px; letter-spacing:.28em; text-transform:uppercase; fill:#7A6A52; text-anchor:middle; opacity:.85}
-#sheet .f-plateau.s1, #sheet .f-basin.s1{font-size:8px; letter-spacing:.1em; text-transform:none; font-style:italic}
-#sheet .f-sea, #sheet .f-strait{font-size:9px; letter-spacing:.3em; text-transform:uppercase; fill:#5F7477; text-anchor:middle; font-style:italic}
-#sheet .f-sea.s1, #sheet .f-strait{font-size:7.5px; letter-spacing:.16em}
-#sheet .f-coast{font-size:7.5px; letter-spacing:.14em; fill:#5F7477; text-anchor:middle; font-style:italic}
-#sheet .f-cape{font-size:7px; fill:var(--ink-soft); font-style:italic}
-#sheet .f-wetland{font-size:7px; fill:#4A6B62; font-style:italic; text-anchor:middle}
-#sheet .f-reservoir{font-size:6.8px; fill:#3F5A5E; text-anchor:middle}
-#sheet .f-peak{font-size:6.8px; fill:#4A3A2A}
-#sheet .peak{fill:#4A3A2A}
-#sheet .wet{fill:none; stroke:#4A6B62; stroke-width:.5; stroke-dasharray:1.2 1.2}
-#sheet .res{fill:#8FA6A8; stroke:#3F5A5E; stroke-width:.4}
-#sheet .canal{fill:none; stroke:var(--sepia); stroke-width:.9; stroke-dasharray:3 2}
-#sheet .f-canal{font-size:6.8px; fill:var(--sepia); font-style:italic}
-#sheet .grat{fill:none; stroke:var(--rule); stroke-width:.4; stroke-dasharray:2 3}
-#sheet .fade{fill:var(--paper)}
-#sheet text{font-family:inherit}
-#sheet .rname{font-style:italic; font-size:9.5px; fill:var(--ink-soft)}
-#sheet .pname{font-size:9px; letter-spacing:.14em; text-transform:uppercase; fill:var(--ink-soft); pointer-events:none}
-#sheet .dot{stroke-width:.6}
-#sheet .dot.wet{fill:var(--verdigris); fill-opacity:.36; stroke:var(--verdigris); stroke-opacity:.6}
-#sheet .dot.dry{fill:var(--oxblood); fill-opacity:.34; stroke:var(--oxblood); stroke-opacity:.6}
-#sheet .dot.hot{fill:var(--oxblood); fill-opacity:.38; stroke:none}
-#sheet .ring{fill:none; stroke:var(--ink); stroke-width:.5; opacity:.55}
-#sheet .mark{fill:var(--sepia); fill-opacity:.5; stroke:var(--sepia); stroke-width:.8; cursor:pointer}
-#sheet .mark.on{fill-opacity:.8; stroke:var(--ink); stroke-width:1.2}
-#sheet .mark-n{fill:none; stroke:var(--sepia); stroke-width:.6; stroke-dasharray:2 2; pointer-events:none}
-#sheet .hit{fill:transparent; cursor:pointer}
-#sheet .scope{fill:none; stroke:var(--ink); stroke-width:1; stroke-dasharray:3 3}
-#sheet .scope-all{fill:none; stroke:var(--ink); stroke-width:1.2; stroke-dasharray:5 4}
-#sheet .legend-t{font-size:7px; fill:var(--ink-soft); font-variant-numeric:lining-nums}
-#sheet .cartouche-t{font-size:10px; letter-spacing:.22em; text-transform:uppercase; fill:var(--ink-soft)}
+.hero{display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:26px; margin-top:18px; align-items:start}
+@media (max-width:900px){ .hero{grid-template-columns:1fr} body{padding:22px 16px 40px} h1{font-size:34px} }
+#globe{width:100%; height:auto; display:block; touch-action:none; cursor:grab; user-select:none}
+#globe:active{cursor:grabbing}
+#globe .sea{fill:var(--sea); stroke:var(--ink); stroke-width:1.1}
+#globe .grat{fill:none; stroke:var(--rule); stroke-width:.5; opacity:.7}
+#globe .land{fill:var(--paper-deep); stroke:var(--ink); stroke-width:.55; stroke-linejoin:round; cursor:pointer; transition:fill .15s}
+#globe .land:hover{fill:#DACFBD}
+#globe .land.sel{fill:#C9B99C; stroke-width:1}
+#globe .land.studied{fill:#B8C9C3}
+#globe .land.studied:hover{fill:#A9BDB6}
+#globe .lbl{font-size:11px; letter-spacing:.2em; text-transform:uppercase; fill:var(--ink); text-anchor:middle; pointer-events:none; paint-order:stroke; stroke:var(--paper); stroke-width:3px; stroke-linejoin:round}
+#globe .lbl.study{fill:var(--verdigris); font-style:italic; text-transform:none; letter-spacing:.04em; font-size:12px}
+#globe .hint{font-size:10px; letter-spacing:.2em; text-transform:uppercase; fill:var(--ink-soft); text-anchor:middle}
 .margin{font-size:13.5px}
-.margin .yr{font-size:64px; line-height:1; font-weight:600; letter-spacing:-.02em; font-variant-numeric:lining-nums; margin:0}
-.margin .hy{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-soft); margin:2px 0 12px}
-.margin dl{margin:0 0 14px; display:grid; grid-template-columns:auto 1fr; gap:3px 12px; font-variant-numeric:lining-nums}
-.margin dt{font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-soft); padding-top:3px}
-.margin dd{margin:0}
-.margin dd b{font-weight:600}
-.margin .k{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align:-1px}
-.k.verd{background:var(--verdigris)} .k.ox{background:var(--oxblood)} .k.sep{background:var(--sepia)} .k.ink{background:var(--ink)} .k.ring{border:1px solid var(--ink); background:none}
-.panel{border-top:1px solid var(--ink); padding-top:12px; margin-top:6px}
-.panel h3{font-size:16px; margin:0 0 4px; font-weight:600}
-.panel .sub{color:var(--ink-soft); font-size:12px; margin:0 0 8px}
-.panel p{margin:6px 0}
-.panel .cite{font-size:12px; color:var(--ink-soft); font-style:italic}
-.panel a{color:var(--oxblood)}
-.tier{display:inline-block; font-size:10px; letter-spacing:.14em; text-transform:uppercase; padding:1px 6px; border:1px solid var(--rule); color:var(--ink-soft); margin-left:4px}
-.tier.cited{border-color:var(--ink); color:var(--ink)}
-.tier.read{background:var(--ink); color:var(--paper); border-color:var(--ink)}
-.ev{padding:5px 0; border-bottom:1px dotted var(--rule); cursor:pointer}
-.ev:hover{color:var(--oxblood)}
-.ev .kind{font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft); margin-right:6px}
-.controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:14px 0 6px; font-size:12px; letter-spacing:.06em}
-.chips{display:flex; gap:0; border:1px solid var(--ink)}
-.chips button{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:uppercase; background:none; border:0; border-right:1px solid var(--ink); padding:6px 11px; cursor:pointer; color:var(--ink)}
-.chips button:last-child{border-right:0}
-.chips button.on{background:var(--ink); color:var(--paper)}
-select{font:inherit; font-size:12.5px; background:var(--paper); border:1px solid var(--ink); padding:5px 8px; color:var(--ink)}
-button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:uppercase; border:1px solid var(--ink); background:none; padding:6px 12px; cursor:pointer; color:var(--ink)}
-.ctl-l{font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-soft)}
-#strip{width:100%; height:auto; display:block; margin-top:6px; border-top:1px solid var(--ink)}
-#strip .lane-l{font-size:9.5px; letter-spacing:.2em; text-transform:uppercase; fill:var(--ink-soft)}
-#strip .lane-u{font-size:9px; fill:var(--ink-soft); font-style:italic}
-#strip .yr-l{font-size:10px; fill:var(--ink-soft); font-variant-numeric:lining-nums; text-anchor:middle}
-#strip .axis{stroke:var(--rule); stroke-width:.6}
-#strip .norm{stroke:var(--ink); stroke-width:.6; stroke-dasharray:2 2; opacity:.6}
-#strip .bar.wet{fill:var(--verdigris)} #strip .bar.dry{fill:var(--oxblood)} #strip .bar.harv{fill:var(--sepia); fill-opacity:.75}
-#strip .bar.harv.on{fill-opacity:1; stroke:var(--ink); stroke-width:.8}
-#strip .heat{fill:none; stroke:var(--oxblood); stroke-width:1.4}
-#strip .heat-d{fill:var(--oxblood)}
-#strip .tick{stroke:var(--ink); stroke-width:1.6; cursor:pointer}
-#strip .tick.on{stroke:var(--oxblood); stroke-width:3}
-#strip .tick.kind-drought{stroke:var(--oxblood)}
-#strip .tick.kind-water{stroke:var(--verdigris)}
-#strip .cursor{stroke:var(--ink); stroke-width:1; opacity:.8}
-#strip .cursor-lab{font-size:11px; font-weight:600; fill:var(--ink); text-anchor:middle; font-variant-numeric:lining-nums}
-#strip .hit{fill:transparent; cursor:pointer}
-#strip .bar.mkt{fill:var(--ink); fill-opacity:.28} #strip .bar.mkt.on{fill-opacity:.6}
-#strip .price{fill:none; stroke:var(--sepia); stroke-width:1.4} #strip .price-d{fill:var(--sepia)}
-#strip .nodata{font-size:9.5px; fill:var(--ink-soft); font-style:italic}
-.sources{margin-top:30px; font-size:12.5px; color:var(--ink-soft)}
-.sources li{margin:4px 0}
-.sources b{color:var(--ink); font-weight:600}
-.reading{font-size:13px; margin:8px 0 0; color:var(--ink-soft); font-style:italic}
+.margin h2{font-size:13px; letter-spacing:.22em; text-transform:uppercase; margin:0 0 8px; font-weight:600}
+.chips{display:flex; flex-wrap:wrap; gap:6px; margin:6px 0 10px}
+.chip{border:1px solid var(--ink); padding:3px 9px; font-size:12px; letter-spacing:.06em; cursor:pointer; background:var(--paper)}
+.chip:hover{color:var(--oxblood)}
+.chip b{font-weight:600}
+.go{display:inline-block; font:inherit; font-size:12px; letter-spacing:.2em; text-transform:uppercase; padding:9px 16px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); text-decoration:none; cursor:pointer; margin-top:8px}
+.go.alt{background:none; color:var(--ink)}
+.go[aria-disabled="true"]{opacity:.35; pointer-events:none}
+.win{font-size:11.5px; color:var(--ink-soft); font-variant-numeric:lining-nums; margin:4px 0 0}
+.studies{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; margin-top:8px}
+.card{border:1px solid var(--rule); padding:14px 16px; text-decoration:none; color:inherit; display:block}
+.card:hover{border-color:var(--ink)}
+.card h3{margin:0 0 4px; font-size:18px; font-weight:600}
+.card p{margin:0; font-size:12.5px; color:var(--ink-soft)}
+.card .n{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft); margin-top:8px; font-variant-numeric:lining-nums}
+.steps{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:6px}
+@media (max-width:700px){ .steps{grid-template-columns:1fr} }
+.step{border-top:2px solid var(--ink); padding-top:10px}
+.step .k{font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-soft)}
+.step h3{margin:2px 0 6px; font-size:19px; font-weight:600}
+.step p{margin:0; font-size:13.5px}
+.step code{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--paper-deep); padding:1px 4px}
+.foot{margin-top:34px; font-size:12px; color:var(--ink-soft); border-top:1px solid var(--rule); padding-top:10px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px}
+.foot a{color:var(--ink-soft)}
 </style>
 </head>
 <body>
 <header class="plate-head">
-  <p class="kicker">A study · one sheet, three layers, one time axis</p>
-  <h1 id="title">Iberia <small id="subtitle"></small></h1>
-  <div class="edition" id="edition"></div>
-  <p class="reading" id="reading"></p>
+  <p class="kicker">Open source · MIT · © Ozvåag LLC</p>
+  <h1>Layercake <small>a place, its layers, its years</small></h1>
+  <div class="edition"><span>Studies <b id="nStudies">0</b></span><span>Countries on the globe <b id="nCountries">0</b></span><span>Layer kinds <b>field · marks · events · series</b></span><span><a href="https://github.com/ozvaag/layercake" style="color:inherit">github.com/ozvaag/layercake</a></span></div>
+  <p class="reading" style="font-style:italic;color:var(--ink-soft);margin:8px 0 0;font-size:13.5px">Research that lives on a map usually has three things happening at once — the ground (rain, heat, soil), the rules (laws, plans, subsidies) and the outcome (what grew, what sold, who moved). Layercake puts them on one sheet and one time axis so they can be read against each other, with every figure carrying its source. Spin the globe, click where you work, and start a study.</p>
 </header>
 
-<div class="controls">
-  <span class="ctl-l">Field</span>
-  <div class="chips" id="fieldChips">
-    <button data-f="rain" class="on">Rain</button><button data-f="heat">Heat</button><button data-f="bal">Balance</button><button data-f="none">Off</button>
-  </div>
-  <span class="ctl-l">Harvest</span>
-  <select id="cropSel"></select>
-  <span class="ctl-l">Sheet</span>
-  <div class="chips" id="sheetChips">
-    <button data-s="physical" class="on">Physical</button><button data-s="nonames">No names</button><button data-s="plain">Plain</button>
-  </div>
-  <button class="play" id="play">Play ▸</button>
-  <span class="ctl-l" id="yrHint"></span>
+<div class="hero">
+  <svg id="globe" role="img" aria-label="A globe of countries; click one or more to choose the place of a study"></svg>
+  <aside class="margin">
+    <h2>Your place</h2>
+    <p id="selHint" style="margin:0 0 6px;color:var(--ink-soft);font-size:12.5px">Click a country. Click more to make a region. Drag to spin, scroll to zoom.</p>
+    <div class="chips" id="selChips"></div>
+    <p class="win" id="selWin"></p>
+    <a class="go" id="startBtn" href="builder.html" aria-disabled="true">Start a study here →</a>
+    <a class="go alt" id="openBtn" href="study.html" style="display:none">Open the study →</a>
+    <h2 style="margin-top:26px">How a study is made</h2>
+    <p style="margin:0;font-size:12.5px;color:var(--ink-soft)">Three questions, in order. The builder asks them and writes the manifest; the readers fetch the data; the engine draws it.</p>
+  </aside>
 </div>
 
-<div class="study">
-  <svg id="sheet" role="img" aria-label="The peninsula: land, coast and rivers; a field of reanalysis grid points and harvest marks by region"></svg>
-  <aside class="margin" id="margin"></aside>
+<h2 class="section">The three questions</h2>
+<div class="steps">
+  <div class="step"><span class="k">1 · Place</span><h3>Where?</h3><p>One country or several — the <code>mask</code>. The frame draws land, coast, relief and every river from open sources; no political line is drawn. The window is the mask's bounding box plus a margin.</p></div>
+  <div class="step"><span class="k">2 · Data</span><h3>What?</h3><p>Layers of four shapes: a <b>field</b> (values on a grid — rain, heat), <b>marks</b> (values on places — regions, sites), <b>events</b> (dated instruments with a scope — laws, plans, dams), <b>series</b> (national figures — exports, prices). Readers exist for NASA POWER (worldwide) and Eurostat (EU); anything else comes in as CSV in the same shape.</p></div>
+  <div class="step"><span class="k">3 · Years</span><h3>When?</h3><p>A start, an end, and a normal period for anomalies (WMO 1991–2020 by default). Every layer is read on that one axis, so a year is the same year on the sheet, in the margin and on the strip.</p></div>
 </div>
 
-<svg id="strip" role="img" aria-label="Year axis: rain against normal, heat-stress days, harvest, and dated instruments"></svg>
+<h2 class="section">Studies</h2>
+<div class="studies" id="studies"></div>
 
-<section class="sources">
-  <h2 class="section">Sources and method</h2>
-  <ul id="sources"></ul>
-</section>
+<div class="foot"><span>Frame: Natural Earth · Terrarium (AWS Open Data) · HydroRIVERS. Field: NASA POWER (MERRA-2). Harvest and market: Eurostat. Instruments: hand-curated, cited.</span><span>© <span id="yr"></span> Ozvåag LLC · <a href="https://github.com/ozvaag/layercake/blob/main/SCHEMA.md">the schema</a></span></div>
 
-<script src="data/geo.js?v=4b4812f0d288"></script>
-<script src="data/iberia.js?v=752510107a3f"></script>
+<script src="data/world.js?v=33bc3611d893"></script>
+<script src="data/studies.js?v=c47bbfc2e6ee"></script>
 <script>
 (function(){
-  const S = window.STUDY, G = window.STUDY_GEO;
-  const $ = (s) => document.querySelector(s);
-  const [Y0, Y1] = S.years; const YEARS = []; for (let y = Y0; y <= Y1; y++) YEARS.push(y);
-  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const fmt = (n, d = 0) => n == null ? '—' : Number(n).toLocaleString('en-GB', { maximumFractionDigits: d, minimumFractionDigits: d });
-  const eur = (n) => n == null ? '—' : n >= 1e9 ? '€' + (n / 1e9).toFixed(2) + ' bn' : n >= 1e6 ? '€' + (n / 1e6).toFixed(1) + ' m' : '€' + fmt(n);
+  const WD = window.WORLD, ST = window.STUDIES || {}; const $ = (s) => document.querySelector(s);
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  $('#nStudies').textContent = Object.keys(ST).length; $('#nCountries').textContent = Object.keys(WD.countries).length;
+  const studiedBy = {}, studyLabelOn = {}; for (const [id, s] of Object.entries(ST)) { (s.countries || []).forEach((cc) => studiedBy[cc] = id); const ccs = (s.countries || []).filter((c) => WD.countries[c]); if (ccs.length) { const big = ccs.reduce((a, b) => { const A = WD.countries[a].bbox, B = WD.countries[b].bbox; return (B[2] - B[0]) * (B[3] - B[1]) > (A[2] - A[0]) * (A[3] - A[1]) ? b : a; }); studyLabelOn[big] = id; } }
 
-  // ── state, in the hash ──
-  const state = { year: Y1, field: 'rain', crop: null, place: null, event: null };
-  const readHash = () => { const m = location.hash.match(/^#\/(y|place|event)\/([^/]+)(?:\/y\/(\d{4}))?/); if (!m) return; if (m[1] === 'y') state.year = +m[2]; if (m[1] === 'place') { state.place = m[2]; state.event = null; } if (m[1] === 'event') { state.event = m[2]; state.place = null; const e = S.events.find((e) => e.id === m[2]); if (e) state.year = Math.min(Y1, Math.max(Y0, e.year)); } if (m[3]) state.year = +m[3]; };
-  const writeHash = () => { const h = state.event ? `#/event/${state.event}` : state.place ? `#/place/${state.place}/y/${state.year}` : `#/y/${state.year}`; if (location.hash !== h) history.replaceState(null, '', h); };
-
-  // ── projection: Albers equal-area conic on the study window ──
-  const W = G.window, R = Math.PI / 180;
-  const φ1 = (W.lat[0] + 1) * R, φ2 = (W.lat[1] - 1) * R, φ0 = (W.lat[0] + W.lat[1]) / 2 * R, λ0 = (W.lon[0] + W.lon[1]) / 2 * R;
-  const n = (Math.sin(φ1) + Math.sin(φ2)) / 2, C = Math.cos(φ1) ** 2 + 2 * n * Math.sin(φ1), ρ0 = Math.sqrt(C - 2 * n * Math.sin(φ0)) / n;
-  const raw = ([lon, lat]) => { const ρ = Math.sqrt(C - 2 * n * Math.sin(lat * R)) / n, θ = n * (lon * R - λ0); return [ρ * Math.sin(θ), ρ0 - ρ * Math.cos(θ)]; };
-  const VW = 760, VH = 560, PAD = 6;
-  let bx0 = 1e9, by0 = 1e9, bx1 = -1e9, by1 = -1e9;
-  for (let i = 0; i <= 40; i++) { const t = i / 40; [[W.lon[0] + t * (W.lon[1] - W.lon[0]), W.lat[0]], [W.lon[0] + t * (W.lon[1] - W.lon[0]), W.lat[1]], [W.lon[0], W.lat[0] + t * (W.lat[1] - W.lat[0])], [W.lon[1], W.lat[0] + t * (W.lat[1] - W.lat[0])]].forEach((p) => { const [x, y] = raw(p); bx0 = Math.min(bx0, x); bx1 = Math.max(bx1, x); by0 = Math.min(by0, y); by1 = Math.max(by1, y); }); }
-  const sc = Math.min((VW - 2 * PAD) / (bx1 - bx0), (VH - 2 * PAD) / (by1 - by0));
-  const ox = (VW - sc * (bx1 - bx0)) / 2, oy = (VH - sc * (by1 - by0)) / 2;
-  const P = (p) => { const [x, y] = raw(p); return [ox + (x - bx0) * sc, oy + (by1 - y) * sc]; };
-  const path = (pts, close) => pts.map((p, i) => (i ? 'L' : 'M') + P(p).map((v) => v.toFixed(1)).join(' ')).join('') + (close ? 'Z' : '');
-
-  // ── the sheet ──
-  const sheet = $('#sheet'); sheet.setAttribute('viewBox', `0 0 ${VW} ${VH}`);
-  const rot = (tilt) => -(tilt || 0);   // a baseline rising to the east is a negative SVG rotation
-  function drawBase() {
-    let s = '';
-    // The sea, tinted by depth (Natural Earth bathymetry: each ring is the area deeper than its depth).
-    s += (G.bathy['200'] || []).map((r) => `<path class="bathy200" d="${path(r, true)}"/>`).join('') + (G.bathy['1000'] || []).map((r) => `<path class="bathy1000" d="${path(r, true)}"/>`).join('') + (G.bathy['2000'] || []).map((r) => `<path class="bathy2000" d="${path(r, true)}"/>`).join('');
-    // graticule every 2°
-    for (let lon = Math.ceil(W.lon[0] / 2) * 2; lon <= W.lon[1]; lon += 2) { const pts = []; for (let lat = W.lat[0]; lat <= W.lat[1] + .01; lat += .5) pts.push([lon, Math.min(lat, W.lat[1])]); s += `<path class="grat" d="${path(pts)}"/>`; }
-    for (let lat = Math.ceil(W.lat[0] / 2) * 2; lat <= W.lat[1]; lat += 2) { const pts = []; for (let lon = W.lon[0]; lon <= W.lon[1] + .01; lon += .5) pts.push([Math.min(lon, W.lon[1]), lat]); s += `<path class="grat" d="${path(pts)}"/>`; }
-    s += `<g class="landg">${G.land.map((r) => `<path class="land" d="${path(r, true)}"/>`).join('')}</g>`;
-    // The ground: hypsometric tint + hillshade, rendered by scripts/relief.mjs in this same projection.
-    if (G.relief) s += `<image class="relief" href="data/relief.png?v=dc74e05e6738" x="0" y="0" width="${VW}" height="${VH}" preserveAspectRatio="none"/>`;
-    // The drainage: HydroRIVERS reaches weighted by Strahler order, then Natural Earth's named rivers on top.
-    if (G.network) { const byO = {}; for (const r of G.network.reaches) (byO[r.o] = byO[r.o] || []).push(path(r.pts)); s += `<g class="netg">${Object.entries(byO).map(([o, ds]) => `<path class="net o${o}" d="${ds.join('')}"/>`).join('')}</g>`; }
-    s += G.lakes.map((l) => `<path class="lake" d="${path(l.ring, true)}"/>`).join('');
-    s += G.rivers.map((r) => `<path class="river${r.rank <= 6 ? ' big' : ''}" d="${path(r.pts)}"/>`).join('');
-    s += `<g class="coastg">${G.coast.map((l) => `<path class="coast" d="${path(l)}"/>`).join('')}</g>`;
-    // The land north of the Pyrenees is not the study's: it fades, it is not cut.
-    const A = [-1.85, 43.38], B = [3.6, 42.42]; const steps = 14;
-    for (let i = 0; i < steps; i++) { const d0 = i * .075, d1 = 3; const q = [[A[0], A[1] + d0], [B[0], B[1] + d0], [B[0], B[1] + d1], [A[0], A[1] + d1]]; s += `<path class="fade" opacity="0.09" d="${path(q, true)}"/>`; }
-    // ── the physical names ──
-    let n = '<g class="physnames">';
-    // rivers: text along the line, once per name (Tajo·Tejo and Miño·Minho are one river each)
-    const SKIP = new Set(['Tejo', 'Minho', 'Garonne']); const RN = { Tajo: 'Tajo · Tejo', Miño: 'Miño · Minho', Duero: 'Duero · Douro', Guadiana: 'Guadiana' };
-    (G.named_rivers || []).forEach((r, i) => { if (SKIP.has(r.name) || r.pts.length < 4) return; const id = 'rv' + i; n += `<defs><path id="${id}" d="${path(r.pts)}"/></defs><text class="rlabel${r.rank <= 7 ? ' big' : ''}" dy="-2"><textPath href="#${id}" startOffset="${r.rank <= 7 ? 42 : 50}%" text-anchor="middle">${esc(RN[r.name] || r.name)}</textPath></text>`; });
-    for (const f of G.features) {
-      if (f.class === 'canal') { n += `<path class="canal" d="${path(f.pts)}"/>`; const m = P(f.pts[Math.floor(f.pts.length / 2)]); n += `<text class="f-canal" x="${m[0] + 4}" y="${m[1]}">${esc(f.name)}</text>`; continue; }
-      const [x, y] = P([f.lon, f.lat]); const cls = `f-${f.class}${f.size ? ' s' + f.size : ''}`;
-      if (f.class === 'range' || f.class === 'plateau' || f.class === 'basin' || f.class === 'sea' || f.class === 'strait' || f.class === 'coast') n += `<text class="${cls}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${rot(f.tilt)})">${esc(f.name)}</text>`;
-      else if (f.class === 'cape') n += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r=".8" fill="var(--ink)"/><text class="${cls}" x="${(x + (f.anchor === 'end' ? -3 : f.anchor === 'start' ? 3 : 0)).toFixed(1)}" y="${(y + (f.anchor === 'middle' ? -3 : 2.5)).toFixed(1)}" text-anchor="${f.anchor || 'start'}">${esc(f.name)}</text>`;
-      else if (f.class === 'wetland') n += `<circle class="wet" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4"/><text class="${cls}" x="${x.toFixed(1)}" y="${(y + 9).toFixed(1)}">${esc(f.name)}</text>`;
-      else if (f.class === 'reservoir') n += `<rect class="res" x="${(x - 2).toFixed(1)}" y="${(y - 2).toFixed(1)}" width="4" height="4" transform="rotate(45 ${x.toFixed(1)} ${y.toFixed(1)})"/><text class="${cls}" x="${x.toFixed(1)}" y="${(y + 8).toFixed(1)}">${esc(f.name)}</text>`;
+  // ── the globe (the Atlas's orthographic: far-side points clamp to the limb) ──
+  const rad = Math.PI / 180, W = 1000, H = 1000, CX = 500, CY = 500;
+  let lam0 = -5, phi0 = 40, R = 470, L0, CF0, SF0;
+  const setRot = () => { L0 = lam0 * rad; CF0 = Math.cos(phi0 * rad); SF0 = Math.sin(phi0 * rad); };
+  const PRE = {}; for (const [cc, c] of Object.entries(WD.countries)) PRE[cc] = c.rings.map((r) => r.map(([lo, la]) => [lo * rad, Math.cos(la * rad), Math.sin(la * rad)]));
+  const PA = {}; for (const [cc, c] of Object.entries(WD.countries)) PA[cc] = [c.anchor[0] * rad, Math.cos(c.anchor[1] * rad), Math.sin(c.anchor[1] * rad)];
+  function proj(l, cf, sf) { const dl = l - L0, cd = Math.cos(dl); const cosc = SF0 * sf + CF0 * cf * cd; let x = cf * Math.sin(dl), y = CF0 * sf - SF0 * cf * cd; if (cosc < 0) { const m = Math.hypot(x, y) || 1; x /= m; y /= m; } return [CX + x * R, CY - y * R, cosc >= 0]; }
+  const r1 = (n) => Math.round(n * 10) / 10;
+  const NS = 'http://www.w3.org/2000/svg'; const svg = $('#globe'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const el = (t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
+  const sea = el('circle', { class: 'sea', cx: CX, cy: CY }); svg.appendChild(sea);
+  const grat = el('path', { class: 'grat' }); svg.appendChild(grat);
+  const gLand = el('g', {}), gLbl = el('g', {}); svg.appendChild(gLand); svg.appendChild(gLbl);
+  const paths = {}, labels = {};
+  for (const cc of Object.keys(WD.countries)) { const p = el('path', { class: 'land' + (studiedBy[cc] ? ' studied' : '') }); p.dataset.cc = cc; gLand.appendChild(p); paths[cc] = p; const t = el('text', { class: 'lbl' + (studyLabelOn[cc] ? ' study' : '') }); t.textContent = studyLabelOn[cc] ? ST[studyLabelOn[cc]].title : WD.countries[cc].name; gLbl.appendChild(t); labels[cc] = t; }
+  const hint = el('text', { class: 'hint', x: CX, y: H - 12 }); hint.textContent = 'drag to spin · scroll to zoom · click to choose'; svg.appendChild(hint);
+  const sel = new Set(); let hover = null;
+  function draw() {
+    setRot(); sea.setAttribute('r', R);
+    let d = '';
+    for (let lon = -180; lon < 180; lon += 15) { const l = lon * rad; let st = false; for (let lat = -80; lat <= 80; lat += 2) { const [x, y, v] = proj(l, Math.cos(lat * rad), Math.sin(lat * rad)); if (!v) { st = false; continue; } d += (st ? 'L' : 'M') + r1(x) + ' ' + r1(y); st = true; } }
+    for (let lat = -75; lat <= 75; lat += 15) { const cf = Math.cos(lat * rad), sf = Math.sin(lat * rad); let st = false; for (let lon = -180; lon <= 180; lon += 3) { const [x, y, v] = proj(lon * rad, cf, sf); if (!v) { st = false; continue; } d += (st ? 'L' : 'M') + r1(x) + ' ' + r1(y); st = true; } }
+    grat.setAttribute('d', d);
+    for (const cc in PRE) {
+      let dd = '', any = false;
+      for (const ring of PRE[cc]) { let vis = 0; let s = ''; ring.forEach((p, i) => { const [x, y, v] = proj(p[0], p[1], p[2]); if (v) vis++; s += (i ? 'L' : 'M') + r1(x) + ' ' + r1(y); }); if (vis) { dd += s + 'Z'; any = true; } }
+      paths[cc].setAttribute('d', any ? dd : ''); paths[cc].style.display = any ? '' : 'none';
+      const t = labels[cc]; const show = any && (sel.has(cc) || studyLabelOn[cc] || (hover === cc && !studiedBy[cc])); if (show) { const a = PA[cc]; const [x, y, v] = proj(a[0], a[1], a[2]); if (v) { t.setAttribute('x', r1(x)); t.setAttribute('y', r1(y)); t.style.display = ''; } else t.style.display = 'none'; } else t.style.display = 'none';
     }
-    for (const p of G.peaks) { const [x, y] = P([p.lon, p.lat]); n += `<path class="peak" d="M${(x - 2.6).toFixed(1)} ${(y + 2).toFixed(1)}L${x.toFixed(1)} ${(y - 2.6).toFixed(1)}L${(x + 2.6).toFixed(1)} ${(y + 2).toFixed(1)}Z"/><text class="f-peak" x="${(x + 3.5).toFixed(1)}" y="${(y + 2.5).toFixed(1)}">${esc(p.name)} ${fmt(p.elev)}</text>`; }
-    n += '</g>';
-    let leg = '';
-    if (G.relief) { const R = G.relief.ramp; const x0 = 12, y0 = VH - 26, w = 16, h = 7; leg += `<g class="physnames"><text class="legend-t" x="${x0}" y="${y0 - 4}" style="letter-spacing:.18em;text-transform:uppercase">Elevation, m</text>`; R.forEach(([m, c], i) => { leg += `<rect x="${x0 + i * w}" y="${y0}" width="${w}" height="${h}" fill="rgb(${c.map(Math.round).join(',')})" stroke="var(--rule)" stroke-width=".3"/>`; if (i % 2 === 0 || i === R.length - 1) leg += `<text class="legend-t" x="${x0 + i * w}" y="${y0 + h + 8}">${m}</text>`; }); leg += `<rect x="${x0 + R.length * w + 8}" y="${y0}" width="${w}" height="${h}" class="bathy1000"/><text class="legend-t" x="${x0 + R.length * w + 8}" y="${y0 + h + 8}">sea, by depth</text></g>`; }
-    const cart = leg + `<g class="cart"><text class="cartouche-t" x="${VW - 10}" y="${VH - 34}" text-anchor="end">${esc(S.title)} · ${Y0}–${Y1}</text><text class="cartouche-t" x="${VW - 10}" y="${VH - 20}" text-anchor="end">no political line is drawn · Terrarium · HydroRIVERS · Natural Earth</text><text class="cartouche-t" x="${VW - 10}" y="${VH - 6}" text-anchor="end">© ${new Date().getFullYear()} Ozvåag LLC</text></g>`;
-    sheet.innerHTML = s + n + '<g id="fieldg"></g><g id="marksg"></g><g id="scopeg"></g><g id="labelg"></g>' + cart;
   }
-
-  // field metrics: value, normal, mode
-  const FIELD = {
-    rain: { label: 'Rain', unit: '% of 1991–2020 normal, hydrological year', val: (p, y) => p.hy[y] && p.n ? p.hy[y][0] / p.n[0] * 100 : null, mode: 'diverge', centre: 100, cap: 60 },
-    heat: { label: 'Heat stress', unit: 'days ≥ 35 °C, hydrological year (ring = normal)', val: (p, y) => p.hy[y] ? p.hy[y][2] : null, norm: (p) => p.n ? p.n[2] : null, mode: 'count', scale: 1.9 },
-    bal: { label: 'Water balance', unit: 'P − ET₀ against normal, mm', val: (p, y) => p.hy[y] && p.n ? (p.hy[y][0] - p.hy[y][1]) - (p.n[0] - p.n[1]) : null, mode: 'diverge', centre: 0, cap: 350 },
-  };
-  const cell = () => { const a = P([0, 40]), b = P([S.field.step, 40]); return Math.abs(b[0] - a[0]); };
-  function drawField() {
-    const g = $('#fieldg'); if (state.field === 'none' || !S.field) { g.innerHTML = ''; return; }
-    const F = FIELD[state.field], y = state.year, half = cell() / 2; let s = '';
-    for (const p of S.field.points) {
-      const v = F.val(p, y); if (v == null) continue; const [x, yy] = P([p.lon, p.lat]);
-      if (F.mode === 'diverge') { const d = v - F.centre; const r = half * .92 * Math.min(1, Math.sqrt(Math.abs(d) / F.cap)); s += `<circle class="dot ${d >= 0 ? 'wet' : 'dry'}" cx="${x.toFixed(1)}" cy="${yy.toFixed(1)}" r="${Math.max(0.7, r).toFixed(1)}"><title>${p.lat}°N ${p.lon}°E · ${F.label} ${y}: ${state.field === 'rain' ? fmt(v) + '% of normal (' + fmt(p.hy[y][0]) + ' mm, normal ' + fmt(p.n[0]) + ')' : fmt(v) + ' mm vs normal (P ' + fmt(p.hy[y][0]) + ', ET₀ ' + fmt(p.hy[y][1]) + ')'}</title></circle>`; }
-      else { const r = Math.min(half * .98, Math.sqrt(v) * F.scale * half / 6), nrm = F.norm(p), rn = nrm != null ? Math.min(half * .98, Math.sqrt(nrm) * F.scale * half / 6) : 0; s += `<circle class="dot hot" cx="${x.toFixed(1)}" cy="${yy.toFixed(1)}" r="${r.toFixed(1)}"><title>${p.lat}°N ${p.lon}°E · ${y}: ${v} days ≥ 35 °C (normal ${fmt(nrm, 1)}); ${p.hy[y][3]} days ≥ 40 °C</title></circle>${rn ? `<circle class="ring" cx="${x.toFixed(1)}" cy="${yy.toFixed(1)}" r="${rn.toFixed(1)}"/>` : ''}`; }
-    }
-    g.innerHTML = s;
+  // interaction
+  let drag = null;
+  svg.addEventListener('pointerdown', (e) => { const t = e.target.closest('[data-cc]'); drag = { x: e.clientX, y: e.clientY, l: lam0, p: phi0, moved: false, cc: t ? t.dataset.cc : null }; svg.setPointerCapture(e.pointerId); });
+  svg.addEventListener('pointermove', (e) => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true; const k = 0.25 * 470 / R; lam0 = drag.l + dx * k; phi0 = Math.max(-85, Math.min(85, drag.p - dy * k)); draw(); });
+  svg.addEventListener('pointerup', (e) => { const d = drag; drag = null; if (!d || d.moved || !d.cc) return; const cc = d.cc; if (!e.shiftKey && !e.metaKey && !e.ctrlKey && sel.size && !sel.has(cc)) { /* plain click on a new country starts a fresh selection */ sel.clear(); } if (sel.has(cc)) sel.delete(cc); else sel.add(cc); update(); });
+  svg.addEventListener('wheel', (e) => { e.preventDefault(); R = Math.max(240, Math.min(3000, R * (e.deltaY > 0 ? 0.9 : 1.1))); draw(); }, { passive: false });
+  svg.addEventListener('pointerover', (e) => { const t = e.target.closest('[data-cc]'); const cc = t ? t.dataset.cc : null; if (cc !== hover) { hover = cc; draw(); } });
+  function update() {
+    for (const cc in paths) paths[cc].classList.toggle('sel', sel.has(cc));
+    const ccs = [...sel]; $('#selChips').innerHTML = ccs.map((cc) => `<span class="chip" data-cc="${cc}"><b>${cc}</b> ${WD.countries[cc].name} ×</span>`).join('');
+    if (ccs.length) { let x0 = 180, y0 = 90, x1 = -180, y1 = -90; ccs.forEach((cc) => { const b = WD.countries[cc].bbox; x0 = Math.min(x0, b[0]); y0 = Math.min(y0, b[1]); x1 = Math.max(x1, b[2]); y1 = Math.max(y1, b[3]); }); $('#selWin').textContent = `window ≈ ${x0.toFixed(1)}° to ${x1.toFixed(1)}° E, ${y0.toFixed(1)}° to ${y1.toFixed(1)}° N (edit in the builder)`; } else $('#selWin').textContent = '';
+    $('#startBtn').setAttribute('aria-disabled', ccs.length ? 'false' : 'true'); $('#startBtn').href = 'builder.html?cc=' + ccs.join(',');
+    const match = Object.entries(ST).find(([id, s]) => s.countries && s.countries.length === ccs.length && s.countries.every((c) => sel.has(c)));
+    $('#openBtn').style.display = match ? '' : 'none'; if (match) { $('#openBtn').href = 'study.html?s=' + match[0]; $('#openBtn').textContent = `Open “${match[1].title}” →`; }
+    $('#selHint').textContent = ccs.length ? 'Shift-click adds a neighbour; click a chip to remove it.' : 'Click a country. Click more to make a region. Drag to spin, scroll to zoom.';
+    draw();
   }
-
-  // marks: the selected crop by place
-  const cropSel = $('#cropSel');
-  const cropOptions = () => { const reg = S.regional_crops, all = Object.keys(S.crop_names); const nat = all.filter((c) => !reg.includes(c)); return { reg, nat }; };
-  // National sum, ES + PT. A year is null unless EVERY country reports it —
-  // Spain has no olive row for 2010 or 2012, and a sum of one country is not a sum.
-  const cropSeries = (crop) => { const out = {}; const ccs = Object.keys(S.national); for (const y of YEARS) { let t = 0, ok = true; for (const cc of ccs) { const v = S.national[cc][crop]?.[y]?.p; if (v == null) { ok = false; break; } t += v; } out[y] = ok ? t : null; } return out; };
-  // The market side: which HS product and which producer-price series stand for a crop.
-  const MARKET = { O1000: { hs: ['1509'], price: '08100000', pl: 'olive oil' }, T0000: { hs: ['0805'], price: '06210000', pl: 'citrus' }, W1000: { hs: ['2204'], price: '06490000', pl: 'wine' }, C1100: { hs: ['1001'], price: '01110000', pl: 'wheat' }, C2000: { hs: ['1006'], price: '01600000', pl: 'rice' }, F0000: { hs: ['080212'], price: '06194130', pl: 'almonds (shelled)' }, V0000_S0000: { hs: ['0702', '081010'], price: '04121000', pl: 'tomatoes + strawberries' }, CORK: { hs: ['4501', '4502', '4503', '4504'], price: null, pl: 'cork, HS 4501–4504' } };
-  const exportsOf = (crop, y, flow = 'export') => { const m = MARKET[crop]; if (!m || !S.trade) return null; let t = 0, any = false; for (const r of S.trade.trade) if (r.year === y && r.flow === flow && m.hs.includes(String(r.product)) && r.eur != null) { t += r.eur; any = true; } return any ? t : null; };
-  const exportsSplit = (crop, y) => { const m = MARKET[crop]; if (!m || !S.trade) return ''; return Object.keys(S.national).map((cc) => { let t = 0, any = false; for (const r of S.trade.trade) if (r.year === y && r.flow === 'export' && r.country === cc && m.hs.includes(String(r.product)) && r.eur != null) { t += r.eur; any = true; } return `${cc} ${any ? eur(t) : '—'}`; }).join(' · '); };
-  const priceOf = (crop, y, cc = 'ES') => { const m = MARKET[crop]; if (!m || !m.price || !S.trade) return null; const r = S.trade.price.find((r) => r.year === y && r.country === cc && r.product === m.price); return r ? r.eur : null; };
-  const cropSplit = (crop, y) => Object.keys(S.national).map((cc) => `${cc} ${fmt(S.national[cc][crop]?.[y]?.p, 0)}`).join(' · ');
-  const placeSeries = (place, crop) => { const out = {}; for (const y of YEARS) out[y] = S.marks[place]?.[crop]?.[y]?.p ?? null; return out; };
-  const meanOf = (ser) => { const vs = Object.values(ser).filter((v) => v != null); return vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : null; };
-  function drawMarks() {
-    const g = $('#marksg'), lg = $('#labelg'); const crop = state.crop; let s = '', l = '';
-    const regional = S.regional_crops.includes(crop);
-    const maxP = regional ? Math.max(1, ...Object.keys(S.places).flatMap((pl) => YEARS.map((y) => S.marks[pl]?.[crop]?.[y]?.p ?? 0))) : 1;
-    for (const pl of Object.values(S.places)) {
-      const [x, y] = P([pl.lon, pl.lat]); const on = state.place === pl.code;
-      if (regional) {
-        const v = S.marks[pl.code]?.[crop]?.[state.year]?.p; const m = meanOf(placeSeries(pl.code, crop));
-        const r = v != null ? 4 + 30 * Math.sqrt(v / maxP) : 0, rn = m != null ? 4 + 30 * Math.sqrt(m / maxP) : 0;
-        if (rn) s += `<circle class="mark-n" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rn.toFixed(1)}"/>`;
-        if (r) s += `<circle class="mark${on ? ' on' : ''}" data-p="${pl.code}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"><title>${esc(pl.name)} · ${esc(S.crop_names[crop])} ${state.year}: ${fmt(v, 1)} kt (mean ${fmt(m, 1)} kt)</title></circle>`;
-        else s += `<circle class="hit" data-p="${pl.code}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9"><title>${esc(pl.name)} · no figure for ${state.year}</title></circle>`;
-      } else s += `<circle class="hit" data-p="${pl.code}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9"><title>${esc(pl.name)}</title></circle><circle class="mark-n" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.2"/>`;
-      if (on || regional && (S.marks[pl.code]?.[crop]?.[state.year]?.p ?? 0) / maxP > .12) l += `<text class="pname" x="${x.toFixed(1)}" y="${(y + (regional ? 4 + 30 * Math.sqrt((S.marks[pl.code]?.[crop]?.[state.year]?.p ?? 0) / maxP) : 0) + 11).toFixed(1)}" text-anchor="middle">${esc(pl.name)}</text>`;
-    }
-    g.innerHTML = s; lg.innerHTML = l;
-  }
-  function drawScope() {
-    const g = $('#scopeg'); const e = state.event && S.events.find((e) => e.id === state.event); if (!e) { g.innerHTML = ''; return; }
-    const regs = e.scope?.regions || []; let s = '';
-    if (regs.includes('all')) { const m = G.land; s = ''; for (const pl of Object.values(S.places)) { const [x, y] = P([pl.lon, pl.lat]); s += `<circle class="scope" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="13"/>`; } }
-    else for (const r of regs) { const pl = S.places[r]; if (!pl) continue; const [x, y] = P([pl.lon, pl.lat]); s += `<circle class="scope" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="16"/>`; }
-    g.innerHTML = s;
-  }
-
-  // ── the margin ──
-  const tier = (c) => `<span class="tier ${c}">${c}</span>`;
-  const kindL = (k) => S.event_kinds[k] ? k : k;
-  function placeClimate(code, y) { const rows = S.field.points.filter((p) => p.place === code && p.hy[y] && p.n); if (!rows.length) return null; const m = (i) => rows.reduce((s, p) => s + p.hy[y][i], 0) / rows.length, mn = (i) => rows.reduce((s, p) => s + p.n[i], 0) / rows.length; return { n: rows.length, P: m(0), P_pct: m(0) / mn(0) * 100, D35: m(2), D35_n: mn(2), bal: m(0) - m(1), bal_n: mn(0) - mn(1), TM: m(4), TM_n: mn(4) }; }
-  function drawMargin() {
-    const y = state.year, R = S.readings.years[y]; let h = '';
-    h += `<p class="yr">${y}</p><p class="hy">Hydrological year Oct ${y - 1} – Sep ${y}</p>`;
-    h += '<dl>';
-    if (R) h += `<dt><span class="k verd"></span>Rain</dt><dd><b>${R.P_pct}%</b> of normal · ${fmt(R.P)} mm mean over ${R.n} points</dd><dt><span class="k ox"></span>Heat</dt><dd><b>${fmt(R.D35, 1)}</b> days ≥ 35 °C per point · normal ${fmt(R.D35_n, 1)}</dd><dt>Balance</dt><dd><b>${fmt(R.bal)}</b> mm P − ET₀ · normal ${fmt(R.bal_n)}</dd><dt>Mean T</dt><dd><b>${fmt(R.TM, 1)} °C</b> · normal ${fmt(R.TM_n, 1)}</dd>`;
-    else h += `<dt>Field</dt><dd>no reanalysis year on record</dd>`;
-    const crop = state.crop, nat = cropSeries(crop), v = nat[y], m = meanOf(nat);
-    h += `<dt><span class="k sep"></span>Harvest</dt><dd><b>${fmt(v, 0)}</b> kt ${esc(S.crop_names[crop]).toLowerCase().replace(/ \(.*$/, '')}, Spain + Portugal${v != null && m ? ` · ${fmt(v / m * 100)}% of the ${Y0}–${Y1} mean` : v == null ? ' · <i>a country is missing this year</i>' : ''}<br><span style="color:var(--ink-soft)">${cropSplit(crop, y)}</span>${S.regional_crops.includes(crop) ? '' : '<br><i>national series only — Eurostat publishes no NUTS-2 row for this crop in ES or PT</i>'}</dd>`;
-    if (MARKET[crop]) { const ex = exportsOf(crop, y), pr = priceOf(crop, y), prPT = priceOf(crop, y, 'PT'); h += `<dt>Market</dt><dd>exports of ${esc(MARKET[crop].pl)} <b>${eur(ex)}</b><br><span style="color:var(--ink-soft)">${exportsSplit(crop, y)}</span>${MARKET[crop].price ? `<br>producer price ${esc(S.trade.prices[MARKET[crop].price]).replace(/,.*$/, '')}: <b>ES €${fmt(pr, 1)}</b> · PT €${fmt(prPT, 1)} ${esc(S.trade.prices[MARKET[crop].price]).replace(/^.*€/, '€')}` : ''}</dd>`; }
-    const ev = S.events.filter((e) => e.year === y);
-    h += `<dt><span class="k ink"></span>Law</dt><dd>${ev.length ? ev.map((e) => `<div class="ev" data-e="${e.id}"><span class="kind">${esc(e.kind)} · ${esc(e.country)}</span>${esc(e.title)}</div>`).join('') : '<i>no instrument dated this year on file</i>'}</dd>`;
-    h += '</dl>';
-    if (state.place && S.places[state.place]) {
-      const pl = S.places[state.place], c = placeClimate(pl.code, y);
-      h += `<div class="panel"><h3>${esc(pl.name)}</h3><p class="sub">${esc(S.national_names[pl.country])} · NUTS-2 ${pl.code} · ${c ? c.n + ' grid points nearest' : 'no grid point'}</p>`;
-      if (c) h += `<dl><dt>Rain</dt><dd><b>${fmt(c.P_pct)}%</b> of normal (${fmt(c.P)} mm)</dd><dt>Heat</dt><dd><b>${fmt(c.D35, 1)}</b> days ≥ 35 °C · normal ${fmt(c.D35_n, 1)}</dd><dt>Balance</dt><dd><b>${fmt(c.bal)}</b> mm · normal ${fmt(c.bal_n)}</dd></dl>`;
-      const rows = S.regional_crops.map((cr) => { const s = placeSeries(pl.code, cr), vv = s[y], mm = meanOf(s); return vv == null && mm == null ? '' : `<dt>${esc(S.crop_names[cr]).replace(/ \(.*$/, '')}</dt><dd><b>${fmt(vv, 1)}</b> kt${mm ? ` · mean ${fmt(mm, 1)}` : ''}${S.marks[pl.code]?.[cr]?.[y]?.a != null ? ` · ${fmt(S.marks[pl.code][cr][y].a, 1)} kha` : ''}</dd>`; }).join('');
-      h += `<dl>${rows || '<dt>Harvest</dt><dd>no regional row</dd>'}</dl>`;
-      const touching = S.events.filter((e) => (e.scope?.regions || []).includes(pl.code)).sort((a, b) => a.date.localeCompare(b.date));
-      h += `<p class="sub">Instruments naming this region</p>${touching.map((e) => `<div class="ev" data-e="${e.id}"><span class="kind">${e.year}</span>${esc(e.title)}</div>`).join('') || '<p class="sub">none scoped to it (national instruments apply)</p>'}</div>`;
-    }
-    if (state.event) {
-      const e = S.events.find((e) => e.id === state.event);
-      if (e) { const regs = e.scope?.regions || []; const R2 = S.readings.years[e.year];
-        h += `<div class="panel"><h3>${esc(e.title)}</h3><p class="sub">${esc(e.date)} · ${esc(e.country)} · ${esc(S.event_kinds[e.kind] || e.kind)} ${tier(e.confidence)}</p><p>${esc(e.summary)}</p><p class="cite">${esc(e.citation)}</p>${e.source_url ? `<p><a href="${esc(e.source_url)}" target="_blank" rel="noopener">source ↗</a>${e.wall ? ' <span class="tier">js wall — open in a browser</span>' : ''}${e.source_state === 'dead' ? ' <span class="tier">link dead</span>' : ''}</p>` : `<p class="cite">no primary URL on file${e.note ? ' — ' + esc(e.note) : ''}</p>`}${e.check ? `<p class="cite">${esc(e.check)}</p>` : ''}`;
-        h += `<p class="sub">Scope: ${regs.includes('all') ? 'the whole study' : regs.map((r) => S.places[r]?.name || r).join(', ')}${e.scope?.basins?.length ? ' · basins: ' + esc(e.scope.basins.join(', ')) : ''}</p>`;
-        if (R2) h += `<p class="cite">The year it landed: rain ${R2.P_pct}% of normal, ${fmt(R2.D35, 1)} heat days per point.</p>`;
-        const nxt = YEARS.filter((yy) => yy > e.year && yy <= e.year + 3); const before = YEARS.filter((yy) => yy < e.year && yy >= e.year - 3);
-        const cs = cropSeries(state.crop); const avg = (ys) => { const v = ys.map((yy) => cs[yy]).filter((v) => v != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
-        const b = avg(before), a = avg(nxt); if (b && a) h += `<p class="cite">${esc(S.crop_names[state.crop])}, ES + PT: three years before ${fmt(b)} kt/yr, three after ${fmt(a)} kt/yr (${a >= b ? '+' : ''}${fmt((a / b - 1) * 100)}%). Correlation is not attribution; the strip below shows the rain that ran alongside.</p>`;
-        h += '</div>'; }
-    }
-    if (!state.place && !state.event) h += `<div class="panel"><p class="sub">Click a harvest mark for its region · a tick on the axis for an instrument · a year to move the sheet.</p><p class="sub"><span class="k verd"></span>wetter / above · <span class="k ox"></span>drier / hotter · <span class="k sep"></span>harvest (dashed ring = the ${Y0}–${Y1} mean) · <span class="k ring"></span>normal</p></div>`;
-    $('#margin').innerHTML = h;
-  }
-
-  // ── the strip: four lanes on one axis ──
-  const strip = $('#strip'); const SW = 1120, LANE = [58, 58, 66, 60, 44], TOP = 14, LEFT = 96, RIGHT = 16, BOT = 22;
-  const SH = TOP + LANE.reduce((a, b) => a + b, 0) + BOT; strip.setAttribute('viewBox', `0 0 ${SW} ${SH}`);
-  const X = (y) => LEFT + (y - Y0 + .5) / (Y1 - Y0 + 1) * (SW - LEFT - RIGHT), BW = (SW - LEFT - RIGHT) / (Y1 - Y0 + 1);
-  function drawStrip() {
-    let s = ''; let y0 = TOP;
-    const lane = (i) => { const t = y0; y0 += LANE[i]; return [t, LANE[i]]; };
-    // 1 rain
-    { const [t, hgt] = lane(0); const mid = t + hgt / 2; s += `<text class="lane-l" x="6" y="${t + 12}">Rain</text><text class="lane-u" x="6" y="${t + 24}">% of normal</text><line class="norm" x1="${LEFT}" x2="${SW - RIGHT}" y1="${mid}" y2="${mid}"/>`;
-      for (const y of YEARS) { const R = S.readings.years[y]; if (!R) continue; const d = R.P_pct - 100, hh = Math.min(hgt / 2 - 2, Math.abs(d) / 45 * (hgt / 2)); s += `<rect class="bar ${d >= 0 ? 'wet' : 'dry'}" x="${(X(y) - BW * .32).toFixed(1)}" y="${(d >= 0 ? mid - hh : mid).toFixed(1)}" width="${(BW * .64).toFixed(1)}" height="${hh.toFixed(1)}"><title>${y}: ${R.P_pct}% of normal</title></rect>`; } }
-    // 2 heat
-    { const [t, hgt] = lane(1); s += `<text class="lane-l" x="6" y="${t + 12}">Heat</text><text class="lane-u" x="6" y="${t + 24}">days ≥ 35 °C / pt</text>`;
-      const vals = YEARS.map((y) => S.readings.years[y]?.D35).filter((v) => v != null); const mx = Math.max(1, ...vals); const nrm = S.readings.years[Y1]?.D35_n ?? S.readings.years[Y0]?.D35_n; const yy = (v) => t + hgt - 6 - v / mx * (hgt - 14);
-      if (nrm != null) s += `<line class="norm" x1="${LEFT}" x2="${SW - RIGHT}" y1="${yy(nrm).toFixed(1)}" y2="${yy(nrm).toFixed(1)}"/>`;
-      const pts = YEARS.filter((y) => S.readings.years[y]).map((y) => [X(y), yy(S.readings.years[y].D35)]);
-      s += `<path class="heat" d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('')}"/>` + YEARS.filter((y) => S.readings.years[y]).map((y) => `<circle class="heat-d" cx="${X(y).toFixed(1)}" cy="${yy(S.readings.years[y].D35).toFixed(1)}" r="2"><title>${y}: ${fmt(S.readings.years[y].D35, 1)} days ≥ 35 °C per point</title></circle>`).join(''); }
-    // 3 harvest
-    { const [t, hgt] = lane(2); const crop = state.crop; const regional = S.regional_crops.includes(crop) && state.place; const ser = regional ? placeSeries(state.place, crop) : cropSeries(crop); const who = regional ? S.places[state.place].name : 'ES + PT';
-      s += `<text class="lane-l" x="6" y="${t + 12}">Harvest</text><text class="lane-u" x="6" y="${t + 24}">${esc(S.crop_names[crop]).replace(/ \(.*$/, '').slice(0, 22)}</text><text class="lane-u" x="6" y="${t + 36}">${esc(who)}, kt</text>`;
-      const vals = Object.values(ser).filter((v) => v != null); const mx = Math.max(1, ...vals), m = meanOf(ser); const yy = (v) => t + hgt - 4 - v / mx * (hgt - 12);
-      if (m) s += `<line class="norm" x1="${LEFT}" x2="${SW - RIGHT}" y1="${yy(m).toFixed(1)}" y2="${yy(m).toFixed(1)}"/>`;
-      if (!vals.length) s += `<text class="nodata" x="${LEFT + 4}" y="${t + hgt / 2}">no series</text>`;
-      for (const y of YEARS) { const v = ser[y]; if (v == null) continue; s += `<rect class="bar harv${y === state.year ? ' on' : ''}" x="${(X(y) - BW * .32).toFixed(1)}" y="${yy(v).toFixed(1)}" width="${(BW * .64).toFixed(1)}" height="${(t + hgt - 4 - yy(v)).toFixed(1)}"><title>${y}: ${fmt(v, 1)} kt</title></rect>`; } }
-    // 4 market: export value (bars, ES + PT) and producer price (line, ES)
-    { const [t, hgt] = lane(3); const crop = state.crop, m = MARKET[crop];
-      s += `<text class="lane-l" x="6" y="${t + 12}">Market</text><text class="lane-u" x="6" y="${t + 24}">${m ? 'exports ' + esc(m.pl).slice(0, 18) : 'no product mapped'}</text><text class="lane-u" x="6" y="${t + 36}">${m && m.price ? 'line: ES price' : ''}</text>`;
-      if (m) { const ex = YEARS.map((y) => exportsOf(crop, y)); const mx = Math.max(1, ...ex.filter((v) => v != null)); const yy = (v) => t + hgt - 4 - v / mx * (hgt - 12);
-        YEARS.forEach((y, i) => { const v = ex[i]; if (v == null) return; s += `<rect class="bar mkt${y === state.year ? ' on' : ''}" x="${(X(y) - BW * .32).toFixed(1)}" y="${yy(v).toFixed(1)}" width="${(BW * .64).toFixed(1)}" height="${(t + hgt - 4 - yy(v)).toFixed(1)}"><title>${y}: exports ${eur(v)} (ES + PT)</title></rect>`; });
-        if (m.price) { const pr = YEARS.map((y) => priceOf(crop, y)); const pm = Math.max(1, ...pr.filter((v) => v != null)); const py = (v) => t + hgt - 4 - v / pm * (hgt - 12); const pts = YEARS.map((y, i) => pr[i] == null ? null : [X(y), py(pr[i])]).filter(Boolean);
-          s += `<path class="price" d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('')}"/>` + YEARS.map((y, i) => pr[i] == null ? '' : `<circle class="price-d" cx="${X(y).toFixed(1)}" cy="${py(pr[i]).toFixed(1)}" r="1.8"><title>${y}: ES producer price €${fmt(pr[i], 1)}</title></circle>`).join(''); } } }
-    // 5 law
-    { const [t, hgt] = lane(4); s += `<text class="lane-l" x="6" y="${t + 12}">Law</text><text class="lane-u" x="6" y="${t + 24}">${S.events.length} instruments</text>`;
-      const byY = {}; S.events.forEach((e) => { if (e.year < Y0 || e.year > Y1) return; (byY[e.year] = byY[e.year] || []).push(e); });
-      for (const [y, es] of Object.entries(byY)) { const w = Math.min(BW * .8 / es.length, 9); es.forEach((e, i) => { const x = X(+y) - (es.length - 1) * w / 2 + i * w; s += `<line class="tick kind-${e.kind}${state.event === e.id ? ' on' : ''}" data-e="${e.id}" x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${t + 8}" y2="${t + hgt - 8}"><title>${esc(e.date)} · ${esc(e.title)}</title></line>`; }); } }
-    // axis, cursor, hit areas
-    for (const y of YEARS) s += `<text class="yr-l" x="${X(y).toFixed(1)}" y="${SH - 6}">${y % 5 === 0 || y === Y1 ? y : "'" + String(y).slice(2)}</text>`;
-    s += `<line class="cursor" x1="${X(state.year).toFixed(1)}" x2="${X(state.year).toFixed(1)}" y1="${TOP - 4}" y2="${SH - BOT + 4}"/>`;
-    for (const y of YEARS) s += `<rect class="hit" data-y="${y}" x="${(X(y) - BW / 2).toFixed(1)}" y="${TOP}" width="${BW.toFixed(1)}" height="${SH - TOP - BOT}"/>`;
-    strip.innerHTML = s;
-  }
-
-  function render() { drawField(); drawMarks(); drawScope(); drawMargin(); drawStrip(); writeHash(); $('#yrHint').textContent = `${state.year} · ${FIELD[state.field]?.unit || 'field off'}`; }
-
-  // ── wiring ──
-  $('#fieldChips').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; state.field = b.dataset.f; [...$('#fieldChips').children].forEach((c) => c.classList.toggle('on', c === b)); render(); });
-  $('#sheetChips').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; [...$('#sheetChips').children].forEach((c) => c.classList.toggle('on', c === b)); sheet.classList.toggle('plain', b.dataset.s === 'plain'); sheet.classList.toggle('nonames', b.dataset.s === 'nonames'); });
-  cropSel.addEventListener('change', () => { state.crop = cropSel.value; render(); });
-  sheet.addEventListener('click', (e) => { const t = e.target.closest('[data-p]'); if (!t) return; state.place = state.place === t.dataset.p ? null : t.dataset.p; state.event = null; render(); });
-  strip.addEventListener('click', (e) => { const tk = e.target.closest('[data-e]'); if (tk) { const ev = S.events.find((x) => x.id === tk.dataset.e); state.event = state.event === ev.id ? null : ev.id; state.place = null; if (state.event) state.year = Math.min(Y1, Math.max(Y0, ev.year)); render(); return; } const h = e.target.closest('[data-y]'); if (h) { state.year = +h.dataset.y; render(); } });
-  $('#margin').addEventListener('click', (e) => { const t = e.target.closest('[data-e]'); if (!t) return; const ev = S.events.find((x) => x.id === t.dataset.e); state.event = ev.id; state.place = null; state.year = Math.min(Y1, Math.max(Y0, ev.year)); render(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft' && state.year > Y0) { state.year--; render(); } if (e.key === 'ArrowRight' && state.year < Y1) { state.year++; render(); } });
-  let timer = null; $('#play').addEventListener('click', () => { if (timer) { clearInterval(timer); timer = null; $('#play').textContent = 'Play ▸'; return; } $('#play').textContent = 'Stop ■'; if (state.year >= Y1) state.year = Y0 - 1; timer = setInterval(() => { if (state.year >= Y1) { clearInterval(timer); timer = null; $('#play').textContent = 'Play ▸'; return; } state.year++; state.event = null; render(); }, 900); });
-  window.addEventListener('hashchange', () => { readHash(); render(); });
-
-  // ── first paint ──
-  const { reg, nat } = cropOptions();
-  cropSel.innerHTML = `<optgroup label="By region (NUTS-2)">${reg.map((c) => `<option value="${c}">${esc(S.crop_names[c])}</option>`).join('')}</optgroup><optgroup label="National only (ES, PT)">${nat.map((c) => `<option value="${c}">${esc(S.crop_names[c])}</option>`).join('')}</optgroup><optgroup label="Exports only (no production series)"><option value="CORK">Cork (HS 4501–4504)</option></optgroup>`;
-  S.crop_names.CORK = 'Cork (exports only — no production row in Eurostat)';
-  state.crop = nat.includes('O1000') ? 'O1000' : reg[0]; cropSel.value = state.crop;
-  $('#subtitle').textContent = S.subtitle;
-  $('#edition').innerHTML = `<span>Built <b>${S.built}</b></span><span>Field <b>${S.field ? S.field.points.length : 0}</b> points · ${S.field?.step}°</span><span>Places <b>${Object.keys(S.places).length}</b></span><span>Instruments <b>${S.events.length}</b></span><span>Trade rows <b>${S.trade ? S.trade.trade.length : 0}</b></span><span>Normal <b>${S.normal[0]}–${S.normal[1]}</b></span>`;
-  const rd = S.readings; if (rd.driest) $('#reading').textContent = `From the field: the driest hydrological year was ${rd.driest} (${rd.years[rd.driest].P_pct}% of normal), the wettest ${rd.wettest} (${rd.years[rd.wettest].P_pct}%), and ${rd.hottest} carried the most days at or above 35 °C (${fmt(rd.years[rd.hottest].D35, 1)} per grid point against a normal of ${fmt(rd.years[rd.hottest].D35_n, 1)}).`;
-  $('#sources').innerHTML = [
-    S.field ? `<li><b>Natural.</b> ${esc(S.field.source.name)} — ${esc(S.field.source.licence)}, fetched ${S.field.source.fetched_at}. Hydrological year ${esc(S.field.hydro_year)}. ET₀: ${esc(S.field.et0_method)}. Normals ${S.field.normal_period[0]}–${S.field.normal_period[1]}. A reanalysis is a model fitted to observations, not a rain gauge; "% of normal" is the grid point against its own 30-year mean. <a href="${esc(S.field.source.url)}" target="_blank" rel="noopener">source ↗</a></li>` : '',
-    S.crop_source ? `<li><b>Harvest.</b> ${esc(S.crop_source.name)} — ${esc(S.crop_source.licence)}, Eurostat last updated ${esc(String(S.crop_source.updated).slice(0, 10))}, fetched ${S.crop_source.fetched_at}. Regional rows exist for ${S.regional_crops.map((c) => esc(S.crop_names[c]).replace(/ \(.*$/, '')).join(', ')}; olives, citrus, grapes, other fruit and vegetables are published for ES and PT nationally only. ${esc(S.place_note)} <a href="${esc(S.crop_source.url)}" target="_blank" rel="noopener">source ↗</a></li>` : '',
-    S.trade ? S.trade.sources.map((s) => `<li><b>Market.</b> ${esc(s.name)} — ${esc(s.licence)}, fetched ${s.fetched_at}. <a href="${esc(s.url)}" target="_blank" rel="noopener">source ↗</a></li>`).join('') : '',
-    `<li><b>Law.</b> ${S.events.length} instruments, hand-curated with a citation each. Confidence: ${Object.entries(S.confidence_tiers).map(([k, v]) => `<i>${k}</i> — ${esc(v)}`).join('; ')}. Counts: ${['read', 'cited', 'recalled'].map((t) => `${S.events.filter((e) => e.confidence === t).length} ${t}`).join(', ')}. Portugal's Diário da República is a JavaScript application and cannot be checked by script; its citations are marked.</li>`,
-    `<li><b>Frame.</b> Coast, lakes, bathymetry, named rivers and surveyed peaks: ${esc(G.source)}. Drainage: ${esc(G.network ? G.network.source : '—')}, Strahler order ≥ ${G.network ? G.network.min_order : '—'} (${G.network ? fmt(G.network.reaches.length) : 0} reaches), line weight by order. Relief: ${esc(G.relief ? G.relief.source : '—')}. Physical names: ${esc(G.feature_note || '')} No political boundary is drawn; the land north of the Pyrenees fades rather than ends. Regions are marked at an interior point, not outlined.</li>`,
-    `<li><b>Engine.</b> A study is a manifest naming layers of three kinds — a <i>field</i> (values on grid points), <i>marks</i> (values on places), <i>events</i> (dated instruments with a scope) — on one frame and one year axis. This page renders any study of that shape.</li>`,
-  ].join('');
-  drawBase(); readHash(); render();
+  $('#selChips').addEventListener('click', (e) => { const c = e.target.closest('[data-cc]'); if (c) { sel.delete(c.dataset.cc); update(); } });
+  // studies list
+  $('#studies').innerHTML = Object.entries(ST).map(([id, s]) => `<a class="card" href="study.html?s=${id}"><h3>${s.title}</h3><p>${s.subtitle || ''}</p><p class="n">${(s.countries || []).join(' + ')} · ${s.years[0]}–${s.years[1]} · ${s.counts.field} grid points · ${s.counts.places} places · ${s.counts.events} instruments · built ${s.built}</p></a>`).join('') + `<a class="card" href="builder.html" style="border-style:dashed"><h3>+ a new study</h3><p>Pick a place on the globe, or open the builder and type the countries.</p></a>`;
+  draw();
 })();
 </script>
 </body>

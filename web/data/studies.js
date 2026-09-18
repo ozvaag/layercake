@@ -1,0 +1,1 @@
+window.STUDIES={"iberia":{"title":"Iberia","subtitle":"Rain, law and harvest on one peninsula, 2000–2025","years":[2000,2025],"countries":["ES","PT"],"window":{"lon":[-9.9,3.6],"lat":[35.8,44.2]},"built":"2026-09-18","data":"ee1011f74074","geo":"2483183620fa","relief":"dc74e05e6738","counts":{"field":242,"places":20,"events":37,"trade":1352}}};

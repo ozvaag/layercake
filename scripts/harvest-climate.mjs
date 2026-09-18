@@ -33,7 +33,7 @@ const STEP = Number((process.argv.find((a) => a.startsWith('--step=')) || '--ste
 const geo = JSON.parse(readFileSync(join(ROOT, 'studies', study.id, 'geo/frame.json'), 'utf8'));
 const CACHE = join(ROOT, 'data/sources/power'); mkdirSync(CACHE, { recursive: true });
 const [Y0, Y1] = study.years, [N0, N1] = study.normal;
-const START = `${Math.min(Y0, N0) - 1}1001`, END = `${Y1}1231`;
+
 const PARAMS = 'PRECTOTCORR,T2M_MAX,T2M_MIN,T2M';
 const mask = Object.values(geo.mask);
 const excluded = (p) => (study.frame.exclude_boxes || []).some((b) => p[0] >= b.lon[0] && p[0] <= b.lon[1] && p[1] >= b.lat[0] && p[1] <= b.lat[1]);
@@ -81,7 +81,7 @@ function aggregate(j, lat) {
     r[0] += p; r[1] += Math.max(0, 0.0023 * Ra(lat, doyOf(k)) * (m + 17.8) * Math.sqrt(Math.max(0, x - n)));
     if (x >= 35) r[2]++; if (x >= 40) r[3]++; r[4] += m; r[5]++;
   };
-  for (const k of Object.keys(P)) { const y = +k.slice(0, 4), mo = +k.slice(4, 6); add(cy, y, k); add(hy, mo >= 10 ? y + 1 : y, k); }
+  for (const k of Object.keys(P)) { const y = +k.slice(0, 4), mo = +k.slice(4, 6); add(cy, y, k); add(hy, HM === 1 ? y : (mo >= HM ? y + 1 : y), k); }
   const fin = (o) => { const out = {}; for (const y in o) { const r = o[y]; if (r[5] < 360) continue; out[y] = [Math.round(r[0]), Math.round(r[1]), r[2], r[3], Math.round(r[4] / r[5] * 10) / 10]; } return out; };
   return { hy: fin(hy), cy: fin(cy) };
 }
@@ -106,7 +106,7 @@ async function main() {
   });
   const out = {
     layer: 'climate', kind: 'field', step: STEP, columns: ['P_mm', 'ET0_mm', 'D35', 'D40', 'TM_c'],
-    normal_period: [N0, N1], hydro_year: 'Oct–Sep, named by the year it ends', et0_method: 'Hargreaves–Samani (FAO-56 eq. 52) from MERRA-2 Tmax/Tmin/Tmean',
+    normal_period: [N0, N1], hydro_year: HM === 1 ? 'calendar year' : `${['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][HM]}–${['', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'][HM]}, named by the year it ends`, et0_method: 'Hargreaves–Samani (FAO-56 eq. 52) from MERRA-2 Tmax/Tmin/Tmean',
     source: { name: 'NASA POWER daily API v2 (MERRA-2 / GEOS), parameters PRECTOTCORR, T2M_MAX, T2M_MIN, T2M, community AG', url: 'https://power.larc.nasa.gov/docs/services/api/temporal/daily/', licence: 'public domain (NASA)', fetched_at: new Date().toISOString().slice(0, 10) },
     points,
   };

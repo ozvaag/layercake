@@ -1,4 +1,6 @@
-# SCHEMA — the study contract
+# SCHEMA — the Layercake study contract
+
+The builder (`web/builder.html`) writes `study.json` from three answers: where (mask + window), what (layers), when (years + normal). Everything below is what those files must hold.
 
 ## study.json
 ```
@@ -8,6 +10,9 @@ normal: [N0, N1]           the reference period for anomalies (WMO 1991–2020)
 frame:  { window:{lon:[a,b], lat:[c,d]}, mask:[ISO-2…], admin1_countries:[ISO-2…],
           river_scalerank, exclude_boxes:[{name, lon, lat}] }
 layers: [{ id, kind: field|marks|events|series, file, ink, label, unit }]
+hydro_year_start_month: 10       the water year's first month (1 = calendar year)
+fade: { from:[lon,lat], to:[lon,lat] } | null   land beyond this line fades (Iberia: the Pyrenees)
+market: { <crop>: { hs:[…], price, pl, label? } }  ties a crop to its HS products and price code
 ```
 `mask` = the admin-0 rings whose mainland defines "inside the study" (grid
 points, marks). Borders are used for that and never drawn.

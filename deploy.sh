@@ -3,4 +3,4 @@
 set -e
 cd "$(dirname "$0")"
 node scripts/build.mjs studies/iberia/study.json
-npx --yes wrangler pages deploy web --project-name=iberia-study --commit-dirty=true
+npx --yes wrangler pages deploy web --project-name=layercake --commit-dirty=true
