@@ -1,0 +1,27 @@
+{
+  "note": "The marks layer's atoms. A place is a Eurostat NUTS-2 code; its interior point is the area-weighted mean of the poles of inaccessibility of the Natural Earth admin-1 units listed (Spanish provinces map 1:1 into their community; Portuguese districts are assigned to the region holding most of their area — Setúbal to Alentejo, Santarém to Centro). Islands are not on the peninsula and are not here. `aliases` fold Eurostat's NUTS-2024 recode of Portugal (2023→) back onto the 2021 codes so the series run; PT1D (Oeste e Vale do Tejo) was carved mostly from Centro and is folded there — a discontinuity, printed as such.",
+  "places": {
+    "ES11": { "name": "Galicia", "country": "ES", "units": ["ES-C", "ES-LU", "ES-OR", "ES-PO"] },
+    "ES12": { "name": "Asturias", "country": "ES", "units": ["ES-O"] },
+    "ES13": { "name": "Cantabria", "country": "ES", "units": ["ES-S"] },
+    "ES21": { "name": "País Vasco", "country": "ES", "units": ["ES-VI", "ES-BI", "ES-SS"] },
+    "ES22": { "name": "Navarra", "country": "ES", "units": ["ES-NA"] },
+    "ES23": { "name": "La Rioja", "country": "ES", "units": ["ES-LO"] },
+    "ES24": { "name": "Aragón", "country": "ES", "units": ["ES-HU", "ES-Z", "ES-TE"] },
+    "ES30": { "name": "Madrid", "country": "ES", "units": ["ES-M"] },
+    "ES41": { "name": "Castilla y León", "country": "ES", "units": ["ES-AV", "ES-BU", "ES-LE", "ES-P", "ES-SA", "ES-SG", "ES-SO", "ES-VA", "ES-ZA"] },
+    "ES42": { "name": "Castilla-La Mancha", "country": "ES", "units": ["ES-AB", "ES-CR", "ES-CU", "ES-GU", "ES-TO"] },
+    "ES43": { "name": "Extremadura", "country": "ES", "units": ["ES-BA", "ES-CC"] },
+    "ES51": { "name": "Cataluña", "country": "ES", "units": ["ES-B", "ES-GI", "ES-L", "ES-T"] },
+    "ES52": { "name": "Comunitat Valenciana", "country": "ES", "units": ["ES-A", "ES-CS", "ES-V"] },
+    "ES61": { "name": "Andalucía", "country": "ES", "units": ["ES-AL", "ES-CA", "ES-CO", "ES-GR", "ES-H", "ES-J", "ES-MA", "ES-SE"] },
+    "ES62": { "name": "Murcia", "country": "ES", "units": ["ES-MU"] },
+    "PT11": { "name": "Norte", "country": "PT", "units": ["PT-16", "PT-03", "PT-13", "PT-17", "PT-04"] },
+    "PT16": { "name": "Centro", "country": "PT", "units": ["PT-01", "PT-06", "PT-10", "PT-18", "PT-09", "PT-05", "PT-14"] },
+    "PT17": { "name": "Lisboa", "country": "PT", "units": ["PT-11"] },
+    "PT18": { "name": "Alentejo", "country": "PT", "units": ["PT-07", "PT-02", "PT-12", "PT-15"] },
+    "PT15": { "name": "Algarve", "country": "PT", "units": ["PT-08"] }
+  },
+  "aliases": { "PT19": "PT16", "PT1A": "PT17", "PT1B": "PT17", "PT1C": "PT18", "PT1D": "PT16" },
+  "national": { "ES": "Spain", "PT": "Portugal" }
+}

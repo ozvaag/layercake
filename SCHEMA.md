@@ -13,6 +13,7 @@ layers: [{ id, kind: field|marks|events|series, file, ink, label, unit }]
 hydro_year_start_month: 10       the water year's first month (1 = calendar year)
 fade: { from:[lon,lat], to:[lon,lat] } | null   land beyond this line fades (Iberia: the Pyrenees)
 market: { <crop>: { hs:[…], price, pl, label? } }  ties a crop to its HS products and price code
+eurostat: [{ id, dataset, filters, label, unit, months?, agg: sum|mean, min_n?, scale? }]  any Eurostat dataset as marks (scripts/harvest-eurostat.mjs)
 worldbank: [indicator codes]     for scripts/harvest-worldbank.mjs (defaults if absent)
 faostat_items: { itemCode: name } for scripts/harvest-faostat.mjs (defaults if absent)
 notes: [paragraphs]              printed under the title — the author's reading of the plate

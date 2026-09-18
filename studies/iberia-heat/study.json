@@ -1,0 +1,22 @@
+{
+  "id": "iberia-heat",
+  "title": "Iberia — heat and deaths",
+  "subtitle": "A second question on the same sheet: heat-stress days against summer deaths by region, 2000–2025",
+  "years": [2000, 2025],
+  "normal": [1991, 2020],
+  "hydro_year_start_month": 1,
+  "frame": { "window": { "lon": [-9.9, 3.6], "lat": [35.8, 44.2] }, "mask": ["ES", "PT"], "admin1_countries": ["ES", "PT"], "fade": { "from": [-1.85, 43.38], "to": [3.6, 42.42], "note": "the land north of the Pyrenees fades rather than ends" }, "river_scalerank": 9, "exclude_boxes": [{ "name": "Balearics", "lon": [1.0, 4.5], "lat": [38.5, 40.3] }] },
+  "layers": [
+    { "id": "rain", "kind": "field", "file": "natural/climate.json", "ink": "sea", "label": "Rain", "unit": "mm, calendar year" },
+    { "id": "heat", "kind": "field", "file": "natural/climate.json", "ink": "oxblood", "label": "Heat stress", "unit": "days ≥ 35 °C" },
+    { "id": "deaths", "kind": "marks", "file": "food/eurostat.json", "ink": "sepia", "label": "Deaths", "unit": "deaths, NUTS-2" },
+    { "id": "worldbank", "kind": "series", "file": "series/worldbank.json", "ink": "ink", "label": "Indicators", "unit": "per indicator" },
+    { "id": "policy", "kind": "events", "file": "policy/instruments.json", "ink": "verdigris", "label": "Law", "unit": "instrument, dated" }
+  ],
+  "eurostat": [
+    { "id": "deaths-summer", "dataset": "demo_r_mwk2_ts", "filters": { "sex": "T" }, "label": "Deaths, June–August", "unit": "deaths", "months": [6, 7, 8], "agg": "sum", "min_n": 12 },
+    { "id": "deaths-year", "dataset": "demo_r_mwk2_ts", "filters": { "sex": "T" }, "label": "Deaths, whole year", "unit": "deaths", "agg": "sum", "min_n": 50 }
+  ],
+  "worldbank": ["SP.POP.TOTL", "SP.POP.65UP.TO.ZS"],
+  "notes": ["The same frame as the Iberia study — the same relief, drainage, basins and grid — asked a different question: do the summers with more days at or above 35 °C carry more deaths, region by region? The marks are Eurostat's weekly deaths by NUTS-2 region, folded to June–August and to the whole year; the ground is the calendar-year field. Correlation is not attribution: an ageing population raises both the baseline and the vulnerability, and the pandemic years sit inside the span.", "This study exists to test the module beyond agriculture. Nothing in the engine changed to make it; the reader was declared in the manifest."]
+}

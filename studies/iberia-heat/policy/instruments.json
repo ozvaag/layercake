@@ -1,0 +1,261 @@
+{
+ "layer": "policy",
+ "kind": "events",
+ "note": "Instruments that touch heat and health, carried from the Iberia study plus the two 2004 heat-health systems; all recalled.",
+ "kinds": {
+  "water": "water law, basin plans, transfers",
+  "drought": "drought decree or emergency",
+  "climate": "climate framework law",
+  "agri": "agricultural policy (CAP, market, nitrates)",
+  "infra": "hydraulic infrastructure",
+  "forest": "forest and cork"
+ },
+ "instruments": [
+  {
+   "id": "pt-drought-2005",
+   "date": "2005-04-19",
+   "country": "PT",
+   "kind": "drought",
+   "title": "2005 drought — national drought commission",
+   "citation": "Resolução do Conselho de Ministros n.º 83/2005",
+   "summary": "The 2004–05 hydrological year was the driest on record in Portugal to that point; the commission coordinated supply restrictions and farm support.",
+   "scope": {
+    "regions": [
+     "all"
+    ],
+    "basins": [
+     "all"
+    ]
+   },
+   "source_url": "https://data.dre.pt/eli/rcm/83/2005/04/19/p/dre/pt/html",
+   "confidence": "recalled",
+   "verified_at": null,
+   "wall": "diariodarepublica.pt is a JS application — verify in a browser, not from a script",
+   "source_state": "dead",
+   "checked_at": "2026-09-18"
+  },
+  {
+   "id": "es-drought-2005",
+   "date": "2005-10-21",
+   "country": "ES",
+   "kind": "drought",
+   "title": "2005 drought — exceptional measures, Júcar, Segura, Tajo",
+   "citation": "Real Decreto 1265/2005, de 21 de octubre",
+   "summary": "Administrative drought measures (well authorisations, transfers between users, tariff relief) in the Júcar, Segura and Tajo basins during the 2004–2008 drought; extended and widened by later decrees.",
+   "scope": {
+    "regions": [
+     "ES52",
+     "ES62",
+     "ES42",
+     "ES30",
+     "ES43"
+    ],
+    "basins": [
+     "Júcar",
+     "Segura",
+     "Tajo"
+    ]
+   },
+   "source_url": "https://www.boe.es/eli/es/rd/2005/10/21/1265",
+   "confidence": "cited",
+   "verified_at": "2026-09-18",
+   "check": "BOE ELI resolved to the named act, 2026-09-18",
+   "source_state": "up",
+   "checked_at": "2026-09-18"
+  },
+  {
+   "id": "es-drought-2017",
+   "date": "2017-06-09",
+   "country": "ES",
+   "kind": "drought",
+   "title": "2017 drought — urgent measures, Júcar, Segura, Duero",
+   "citation": "Real Decreto-ley 10/2017, de 9 de junio (converted into Ley 1/2018, de 6 de marzo)",
+   "summary": "Emergency measures for the drought in the Júcar, Segura and Duero basins: tariff exemptions, temporary transfers between rights, emergency works. 2017 was among the driest and hottest years on record in Iberia.",
+   "scope": {
+    "regions": [
+     "ES52",
+     "ES62",
+     "ES41",
+     "ES42"
+    ],
+    "basins": [
+     "Júcar",
+     "Segura",
+     "Duero"
+    ]
+   },
+   "source_url": "https://www.boe.es/eli/es/rdl/2017/06/09/10",
+   "confidence": "cited",
+   "verified_at": "2026-09-18",
+   "check": "BOE ELI resolved to the named act, 2026-09-18",
+   "source_state": "up",
+   "checked_at": "2026-09-18"
+  },
+  {
+   "id": "pt-drought-2017",
+   "date": "2017-08-23",
+   "country": "PT",
+   "kind": "drought",
+   "title": "2017 drought — mitigation measures",
+   "citation": "Resolução do Conselho de Ministros n.º 80/2017",
+   "summary": "Recognises severe/extreme drought across the interior and south; supply reinforcement, livestock water and feed support. The 2017 fire season (Pedrógão Grande, October fires) sits on the same rainfall deficit.",
+   "scope": {
+    "regions": [
+     "PT16",
+     "PT18",
+     "PT15",
+     "PT11"
+    ],
+    "basins": [
+     "Tejo",
+     "Guadiana",
+     "Sado",
+     "Mondego"
+    ]
+   },
+   "source_url": "https://data.dre.pt/eli/rcm/80/2017/08/23/p/dre/pt/html",
+   "confidence": "recalled",
+   "verified_at": null,
+   "wall": "diariodarepublica.pt is a JS application — verify in a browser, not from a script",
+   "source_state": "dead",
+   "checked_at": "2026-09-18"
+  },
+  {
+   "id": "es-climate-law-2021",
+   "date": "2021-05-20",
+   "country": "ES",
+   "kind": "climate",
+   "title": "Climate change and energy transition law",
+   "citation": "Ley 7/2021, de 20 de mayo, de cambio climático y transición energética",
+   "summary": "Net zero by 2050; basin plans must carry climate-change risk and adaptation; the water title obliges planning on foreseeable resource reduction.",
+   "scope": {
+    "regions": [
+     "all"
+    ],
+    "basins": [
+     "all"
+    ]
+   },
+   "source_url": "https://www.boe.es/eli/es/l/2021/05/20/7",
+   "confidence": "cited",
+   "verified_at": "2026-09-18",
+   "check": "BOE ELI resolved to the named act, 2026-09-18",
+   "source_state": "up",
+   "checked_at": "2026-09-18"
+  },
+  {
+   "id": "pt-climate-law-2021",
+   "date": "2021-12-31",
+   "country": "PT",
+   "kind": "climate",
+   "title": "Climate framework law",
+   "citation": "Lei n.º 98/2021, de 31 de dezembro — Lei de Bases do Clima",
+   "summary": "Climate neutrality by 2050 (target later brought to 2045); sectoral adaptation plans including water and agriculture.",
+   "scope": {
+    "regions": [
+     "all"
+    ],
+    "basins": [
+     "all"
+    ]
+   },
+   "source_url": "https://data.dre.pt/eli/lei/98/2021/12/31/p/dre/pt/html",
+   "confidence": "recalled",
+   "verified_at": null,
+   "wall": "diariodarepublica.pt is a JS application — verify in a browser, not from a script",
+   "source_state": "wall",
+   "checked_at": "2026-09-18"
+  },
+  {
+   "id": "pt-drought-2022",
+   "date": "2022-02-01",
+   "country": "PT",
+   "kind": "drought",
+   "title": "2022 drought — restrictions on hydro and irrigation",
+   "citation": "Comissão Permanente de Prevenção, Monitorização e Acompanhamento dos Efeitos da Seca — measures of 1 February 2022 and after; RCM 51-B/2022 (drought measures, 2022-06)",
+   "summary": "Hydropower suspended at five dams to hold irrigation and supply storage; the Alentejo and Algarve in extreme drought for most of the year; 2022 the hottest year in Portugal's record to that date.",
+   "scope": {
+    "regions": [
+     "PT18",
+     "PT15",
+     "PT16",
+     "PT17"
+    ],
+    "basins": [
+     "Tejo",
+     "Guadiana",
+     "Sado",
+     "Ribeiras do Algarve"
+    ]
+   },
+   "source_url": null,
+   "confidence": "recalled",
+   "verified_at": null,
+   "note": "portugal.gov.pt news URL recalled is dead (404); cite the RCM number from DRE once verified in a browser."
+  },
+  {
+   "id": "es-drought-2023",
+   "date": "2023-05-11",
+   "country": "ES",
+   "kind": "drought",
+   "title": "2023 drought — urgent measures for agriculture and water",
+   "citation": "Real Decreto-ley 4/2023, de 11 de mayo",
+   "summary": "≈€2.2bn package: direct aid to farmers and stock-keepers, tax relief, tariff exemptions, emergency works, expanded reuse. Eurostat has Spain's 2022 olive harvest at 3,940 kt against 8,257 kt the year before; extra-virgin producer prices more than doubled into 2023 (the price series is in the market layer).",
+   "scope": {
+    "regions": [
+     "all"
+    ],
+    "basins": [
+     "all"
+    ]
+   },
+   "source_url": "https://www.boe.es/eli/es/rdl/2023/05/11/4",
+   "confidence": "cited",
+   "verified_at": "2026-09-18",
+   "check": "BOE ELI resolved to the named act, 2026-09-18",
+   "source_state": "up",
+   "checked_at": "2026-09-18"
+  },
+  {
+   "id": "es-heat-plan-2004",
+   "date": "2004-06-01",
+   "country": "ES",
+   "kind": "climate",
+   "title": "National plan of preventive actions against excess temperatures",
+   "citation": "Plan Nacional de Actuaciones Preventivas de los Efectos del Exceso de Temperaturas sobre la Salud, Ministerio de Sanidad, first season 2004 (yearly since)",
+   "summary": "Spain's heat-health warning system, created after the August 2003 heatwave: daily threshold temperatures by province, alert levels, and health-service protocols each summer.",
+   "scope": {
+    "regions": [
+     "all"
+    ],
+    "basins": []
+   },
+   "source_url": "https://www.sanidad.gob.es/",
+   "confidence": "recalled",
+   "verified_at": null
+  },
+  {
+   "id": "pt-icaro-2004",
+   "date": "2004-05-15",
+   "country": "PT",
+   "kind": "climate",
+   "title": "ÍCARO — heat-wave health warning (Plano de Contingência)",
+   "citation": "Sistema de Vigilância ÍCARO (INSA/DGS), operational from 2004 after the 2003 heatwave; annual Plano de Contingência para Temperaturas Extremas Adversas",
+   "summary": "Portugal's daily forecast of heat-related mortality risk and the health service's summer contingency plan.",
+   "scope": {
+    "regions": [
+     "all"
+    ],
+    "basins": []
+   },
+   "source_url": "https://www.insa.min-saude.pt/",
+   "confidence": "recalled",
+   "verified_at": null
+  }
+ ],
+ "confidence_tiers": {
+  "recalled": "written from knowledge, with a citation; nothing opened",
+  "cited": "the citation resolved to an act of that name and date at the publisher (title checked, text not read)",
+  "read": "the source text was read and the summary checked against it"
+ }
+}

@@ -37,6 +37,9 @@ for (const [code, p] of Object.entries(placesFile.places)) {
 const alias = placesFile.aliases || {};
 const resolvePlace = (g) => places[g] ? g : alias[g] && places[alias[g]] ? alias[g] : null;
 
+// ── generic Eurostat marks (scripts/harvest-eurostat.mjs) ──
+const eus = existsSync(join(DIR, 'food/eurostat.json')) ? JSON.parse(readFileSync(join(DIR, 'food/eurostat.json'), 'utf8')) : null;
+
 // ── FAOSTAT (national only) and World Bank (series) ──
 const fao = existsSync(join(DIR, 'food/faostat.json')) ? JSON.parse(readFileSync(join(DIR, 'food/faostat.json'), 'utf8')) : null;
 const wb = existsSync(join(DIR, 'series/worldbank.json')) ? JSON.parse(readFileSync(join(DIR, 'series/worldbank.json'), 'utf8')) : null;
@@ -80,6 +83,7 @@ if (crops) for (const r of crops.rows) {
 const regionalCrops = new Set(); Object.values(marks).forEach((m) => Object.entries(m).forEach(([c, ys]) => { if (Object.values(ys).some((v) => v.p != null)) regionalCrops.add(c); }));
 const cropNames = { ...(crops?.crops || {}) }; const markUnits = {};
 if (fao) { for (const r of fao.rows) { (national[r.geo] = national[r.geo] || {})[r.crop] = national[r.geo][r.crop] || {}; national[r.geo][r.crop][r.year] = { p: r.production_kt ?? null, a: r.area_kha ?? null }; } for (const [c, n] of Object.entries(fao.crops)) { if (fao.rows.some((r) => r.crop === c && r.production_kt != null)) { cropNames[c] = n + ' — FAOSTAT'; markUnits[c] = 'kt'; } } }
+if (eus) { let f2 = 0, d2 = 0; for (const r of eus.rows) { if (placesFile.national[r.geo]) { (national[r.geo] = national[r.geo] || {})[r.crop] = national[r.geo][r.crop] || {}; national[r.geo][r.crop][r.year] = { p: r.production_kt, a: null }; continue; } const pl = resolvePlace(r.geo); if (!pl) { d2++; continue; } if (pl !== r.geo) f2++; const m = (marks[pl] = marks[pl] || {}); const c = (m[r.crop] = m[r.crop] || {}); const cur = c[r.year] || { p: null, a: null }; c[r.year] = { p: r.production_kt == null ? cur.p : (cur.p ?? 0) + r.production_kt, a: null }; regionalCrops.add(r.crop); } for (const [id, sdef] of Object.entries(eus.series)) { cropNames[id] = sdef.label; markUnits[id] = sdef.unit; } console.log(`eurostat marks: ${eus.rows.length} rows (${f2} folded, ${d2} dropped)`); }
 if (ownMarks) { for (const r of ownMarks.rows) { const m = (marks[r.place] = marks[r.place] || {}); const c = (m[r.series] = m[r.series] || {}); c[r.year] = { p: r.value, a: null }; regionalCrops.add(r.series); } for (const [id, sdef] of Object.entries(ownMarks.series)) { cropNames[id] = sdef.label; markUnits[id] = sdef.unit; } }
 
 // ── field ──
@@ -116,10 +120,11 @@ const findings = [];
 const pct = (v) => Math.round(v) + '%';
 if (field && ys.length) {
   const yrs = readings.years;
-  findings.push({ kind: 'field', text: `Driest water year ${readings.driest} (${pct(yrs[readings.driest].P_pct)} of normal), wettest ${readings.wettest} (${pct(yrs[readings.wettest].P_pct)}); most heat-stress days in ${readings.hottest} (${yrs[readings.hottest].D35} per grid point against a normal of ${yrs[readings.hottest].D35_n}).` });
+  const wy = (study.hydro_year_start_month || 10) === 1 ? 'year' : 'water year';
+  findings.push({ kind: 'field', text: `Driest ${wy} ${readings.driest} (${pct(yrs[readings.driest].P_pct)} of normal), wettest ${readings.wettest} (${pct(yrs[readings.wettest].P_pct)}); most heat-stress days in ${readings.hottest} (${yrs[readings.hottest].D35} per grid point against a normal of ${yrs[readings.hottest].D35_n}).` });
   // runs of dry years
   let run = [], best = []; for (let y = Y0; y <= Y1; y++) { if (yrs[y] && yrs[y].P_pct < 90) { run.push(y); if (run.length > best.length) best = [...run]; } else run = []; }
-  if (best.length >= 2) findings.push({ kind: 'field', text: `Longest run of dry water years (under 90% of normal): ${best[0]}–${best[best.length - 1]}, ${best.length} years, averaging ${pct(best.reduce((a, y) => a + yrs[y].P_pct, 0) / best.length)} of normal.` });
+  if (best.length >= 2) findings.push({ kind: 'field', text: `Longest run of dry ${wy}s (under 90% of normal): ${best[0]}–${best[best.length - 1]}, ${best.length} years, averaging ${pct(best.reduce((a, y) => a + yrs[y].P_pct, 0) / best.length)} of normal.` });
   // heat trend: mean D35 first third vs last third
   const third = Math.max(3, Math.floor(ys.length / 3)); const first = ys.slice(0, third), last = ys.slice(-third); const mD = (arr) => arr.reduce((a, [, r]) => a + r.D35, 0) / arr.length;
   if (mD(first) > 0) findings.push({ kind: 'field', text: `Heat-stress days per grid point averaged ${mD(first).toFixed(1)} over ${first[0][0]}–${first[first.length - 1][0]} and ${mD(last).toFixed(1)} over ${last[0][0]}–${last[last.length - 1][0]} (${mD(last) >= mD(first) ? '+' : ''}${Math.round((mD(last) / mD(first) - 1) * 100)}%).` });
@@ -135,7 +140,7 @@ if (field) for (const [code, m] of Object.entries(marks)) for (const [crop, ysr]
 rels.sort((a, b) => Math.abs(b.r) - Math.abs(a.r));
 for (const q of rels.slice(0, 5)) findings.push({ kind: 'relation', place: q.code, crop: q.crop, text: `${places[q.code]?.name || q.code}: ${cropNames[q.crop] || q.crop} against ${q.xl}, r = ${q.r.toFixed(2)} over ${q.n} years (${q.r < 0 ? 'inverse' : 'direct'}).` });
 // national harvest extremes vs the field
-for (const [cc, m] of Object.entries(national)) for (const [crop, ysr] of Object.entries(m).slice(0, 12)) { const vals = Object.entries(ysr).filter(([, v]) => v.p != null); if (vals.length < 10) continue; const mean = vals.reduce((a, [, v]) => a + v.p, 0) / vals.length; const [minY, minV] = vals.reduce((a, b) => b[1].p < a[1].p ? b : a); if (minV.p / mean < 0.7 && readings.years[minY]) findings.push({ kind: 'harvest', text: `${placesFile.national[cc] || cc}, ${(cropNames[crop] || crop).replace(/ — FAOSTAT/, '')}: lowest year ${minY} at ${Math.round(minV.p / mean * 100)}% of its mean; that water year's rain was ${pct(readings.years[minY].P_pct)} of normal${readings.years[minY].spr_pct != null ? `, its spring rain ${pct(readings.years[minY].spr_pct)}` : ''}.` }); }
+for (const [cc, m] of Object.entries(national)) for (const [crop, ysr] of Object.entries(m).slice(0, 12)) { const vals = Object.entries(ysr).filter(([, v]) => v.p != null); if (vals.length < 10) continue; const mean = vals.reduce((a, [, v]) => a + v.p, 0) / vals.length; const [minY, minV] = vals.reduce((a, b) => b[1].p < a[1].p ? b : a); if (minV.p / mean < 0.7 && readings.years[minY]) findings.push({ kind: 'harvest', text: `${placesFile.national[cc] || cc}, ${(cropNames[crop] || crop).replace(/ — FAOSTAT/, '')}: lowest year ${minY} at ${Math.round(minV.p / mean * 100)}% of its mean; that ${wy}'s rain was ${pct(readings.years[minY].P_pct)} of normal${readings.years[minY].spr_pct != null ? `, its spring rain ${pct(readings.years[minY].spr_pct)}` : ''}.` }); }
 
 
 if (crops && !Object.keys(placesFile.places).length && !fao) warnings.push('no places and no FAOSTAT: the harvest layer is national only from Eurostat');
@@ -148,7 +153,7 @@ const bundle = {
   places, national_names: placesFile.national, place_note: placesFile.note,
   field, marks, national, regional_crops: [...regionalCrops], crop_names: cropNames, mark_units: markUnits, mark_unit_default: crops ? 'kt' : '', crop_source: crops?.source || null,
   own: { marks: ownMarks ? ownMarks.source : null, series: [...(ownSeries ? ownSeries.series : []), ...(wb ? wb.series : [])], series_source: ownSeries ? ownSeries.source : null, events: ownEvents ? ownEvents.source : null, worldbank: wb ? wb.source : null },
-  fao_source: fao ? fao.source : null,
+  fao_source: fao ? fao.source : null, eurostat_source: eus ? { ...eus.source, series: eus.series } : null,
   trade: trade ? { products: trade.products, prices: trade.prices, sources: trade.sources, trade: trade.trade, price: trade.price } : null,
   events, event_kinds: kinds, confidence_tiers: pol?.confidence_tiers || { recalled: 'written from knowledge, with a citation; nothing opened', cited: 'the citation resolved to an act of that name and date at the publisher', read: 'the source text was read and the summary checked against it' }, readings,
   fade: study.frame.fade || null, market: study.market || {}, hydro_year_start_month: study.hydro_year_start_month || 10,
