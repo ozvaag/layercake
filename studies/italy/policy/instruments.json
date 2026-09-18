@@ -1,0 +1,10 @@
+{
+  "layer": "policy", "kind": "events",
+  "note": "A beginning, not a record: two instruments to show the shape. confidence `recalled` = written from knowledge with a citation, nothing opened.",
+  "kinds": { "water": "water law, basin plans", "drought": "drought decree or emergency", "climate": "climate framework law", "agri": "agricultural policy", "infra": "infrastructure" },
+  "confidence_tiers": { "recalled": "written from knowledge, with a citation; nothing opened", "cited": "the citation resolved to an act of that name and date at the publisher", "read": "the source text was read and the summary checked against it" },
+  "instruments": [
+    { "id": "it-po-drought-emergency-2022", "date": "2022-07-04", "country": "IT", "kind": "drought", "title": "State of emergency for drought in the Po basin", "citation": "Delibera del Consiglio dei Ministri, 4 luglio 2022 — stato di emergenza per deficit idrico (Emilia-Romagna, Friuli Venezia Giulia, Lombardia, Piemonte, Veneto)", "summary": "Declared after the driest winter and spring in seventy years on the Po; €36.5m of first relief, water rationing in the plain, salt-water intrusion to 30 km up the delta.", "scope": { "regions": ["all"], "basins": ["Po"] }, "source_url": "https://www.protezionecivile.gov.it/", "confidence": "recalled", "verified_at": null },
+    { "id": "it-drought-decree-2023", "date": "2023-04-14", "country": "IT", "kind": "drought", "title": "Drought decree — a national water commissioner", "citation": "Decreto-legge 14 aprile 2023, n. 39 (converted by Legge 13 giugno 2023, n. 68)", "summary": "Creates a control room and an extraordinary commissioner for water scarcity, simplifies authorisation of reservoirs, reuse and desalination.", "scope": { "regions": ["all"], "basins": ["all"] }, "source_url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2023-04-14;39", "confidence": "recalled", "verified_at": null }
+  ]
+}

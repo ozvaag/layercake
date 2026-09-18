@@ -34,6 +34,8 @@ const geo = JSON.parse(readFileSync(join(ROOT, 'studies', study.id, 'geo/frame.j
 const CACHE = join(ROOT, 'data/sources/power'); mkdirSync(CACHE, { recursive: true });
 const [Y0, Y1] = study.years, [N0, N1] = study.normal;
 
+const HM = study.hydro_year_start_month || 10;
+const START = `${Math.min(Y0, N0) - 1}${String(HM).padStart(2, '0')}01`, END = `${Y1}1231`;
 const PARAMS = 'PRECTOTCORR,T2M_MAX,T2M_MIN,T2M';
 const mask = Object.values(geo.mask);
 const excluded = (p) => (study.frame.exclude_boxes || []).some((b) => p[0] >= b.lon[0] && p[0] <= b.lon[1] && p[1] >= b.lat[0] && p[1] <= b.lat[1]);

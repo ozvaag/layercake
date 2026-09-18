@@ -1,0 +1,31 @@
+{
+  "id": "italy",
+  "title": "Italy",
+  "subtitle": "Begun from the builder — rain, heat, harvest and market, 2000–2025",
+  "years": [2000, 2025],
+  "normal": [1991, 2020],
+  "hydro_year_start_month": 10,
+  "frame": {
+    "window": { "lon": [6.0, 19.1], "lat": [36.1, 47.7] },
+    "mask": ["IT"],
+    "admin1_countries": ["IT"],
+    "fade": null,
+    "river_scalerank": 9,
+    "exclude_boxes": []
+  },
+  "layers": [
+    { "id": "rain", "kind": "field", "file": "natural/climate.json", "ink": "sea", "label": "Rain", "unit": "mm, hydrological year" },
+    { "id": "heat", "kind": "field", "file": "natural/climate.json", "ink": "oxblood", "label": "Heat stress", "unit": "days ≥ 35 °C" },
+    { "id": "crops", "kind": "marks", "file": "food/crops.json", "ink": "sepia", "label": "Harvest", "unit": "thousand tonnes, NUTS-2" },
+    { "id": "trade", "kind": "series", "file": "food/trade.json", "ink": "sepia", "label": "Exports", "unit": "€, HS4" },
+    { "id": "policy", "kind": "events", "file": "policy/instruments.json", "ink": "verdigris", "label": "Law", "unit": "instrument, dated" }
+  ],
+  "market": {
+    "O1000": { "hs": ["1509"], "price": "08100000", "pl": "olive oil" },
+    "W1000": { "hs": ["2204"], "price": "06490000", "pl": "wine" },
+    "C1100": { "hs": ["1001"], "price": "01120000", "pl": "wheat" },
+    "C2000": { "hs": ["1006"], "price": "01600000", "pl": "rice" },
+    "T0000": { "hs": ["0805"], "price": "06210000", "pl": "citrus" },
+    "V0000_S0000": { "hs": ["0702"], "price": "04121000", "pl": "tomatoes" }
+  }
+}

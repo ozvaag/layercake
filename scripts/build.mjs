@@ -28,6 +28,7 @@ if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
 // ── places: interior points from admin-1 poles, area-weighted ──
 const places = {};
 for (const [code, p] of Object.entries(placesFile.places)) {
+  if (p.lon != null && p.lat != null) { places[code] = { code, name: p.name, country: p.country || null, lon: p.lon, lat: p.lat, area: 0 }; continue; }
   let sx = 0, sy = 0, sa = 0;
   for (const u of p.units) { const a1 = geo.admin1[u]; if (!a1) { errors.push(`place ${code}: admin-1 unit ${u} not in frame`); continue; } sx += a1.label[0] * a1.area; sy += a1.label[1] * a1.area; sa += a1.area; }
   places[code] = { code, name: p.name, country: p.country, lon: Math.round(sx / sa * 1e3) / 1e3, lat: Math.round(sy / sa * 1e3) / 1e3, area: Math.round(sa * 1e3) / 1e3 };
@@ -35,14 +36,22 @@ for (const [code, p] of Object.entries(placesFile.places)) {
 const alias = placesFile.aliases || {};
 const resolvePlace = (g) => places[g] ? g : alias[g] && places[alias[g]] ? alias[g] : null;
 
+// ── own data (scripts/harvest-own.mjs) ──
+const ownMarks = existsSync(join(DIR, 'own/marks.json')) ? JSON.parse(readFileSync(join(DIR, 'own/marks.json'), 'utf8')) : null;
+const ownSeries = existsSync(join(DIR, 'own/series.json')) ? JSON.parse(readFileSync(join(DIR, 'own/series.json'), 'utf8')) : null;
+const ownEvents = existsSync(join(DIR, 'own/events.json')) ? JSON.parse(readFileSync(join(DIR, 'own/events.json'), 'utf8')) : null;
+if (ownMarks) for (const [code, p] of Object.entries(ownMarks.places)) { if (p.lat == null || p.lon == null) { errors.push(`own marks: place ${code} has no lat/lon`); continue; } places[code] = places[code] || { code, name: p.name, country: null, lon: p.lon, lat: p.lat, area: 0, own: true }; }
+
 // ── events (policy) ──
 const pol = layers.policy?.data;
 const events = [];
-if (pol) for (const i of pol.instruments) {
+const allInstruments = [...(pol ? pol.instruments : []), ...(ownEvents ? ownEvents.instruments : [])];
+const kinds = { ...(pol?.kinds || {}), ...(ownEvents?.kinds || {}) };
+for (const i of allInstruments) {
   for (const k of ['id', 'date', 'title', 'citation', 'confidence', 'kind', 'country']) if (!i[k]) errors.push(`instrument ${i.id || '?'}: no ${k}`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(i.date || '')) errors.push(`instrument ${i.id}: date not ISO`);
   if (!['recalled', 'cited', 'read'].includes(i.confidence)) errors.push(`instrument ${i.id}: confidence "${i.confidence}"`);
-  if (!pol.kinds[i.kind]) errors.push(`instrument ${i.id}: kind "${i.kind}" not declared`);
+  if (!kinds[i.kind]) errors.push(`instrument ${i.id}: kind "${i.kind}" not declared`);
   const regs = (i.scope?.regions || []);
   const bad = regs.filter((r) => r !== 'all' && !places[r]); if (bad.length) errors.push(`instrument ${i.id}: scope names unknown place(s) ${bad.join(',')}`);
   if (!i.source_url) warnings.push(`instrument ${i.id}: no source_url (${i.note || 'no note'})`);
@@ -64,6 +73,8 @@ if (crops) for (const r of crops.rows) {
 // Which crops have a REGIONAL series at all (Eurostat carries olives, citrus,
 // grapes, fruit and vegetables at national level only for ES/PT).
 const regionalCrops = new Set(); Object.values(marks).forEach((m) => Object.entries(m).forEach(([c, ys]) => { if (Object.values(ys).some((v) => v.p != null)) regionalCrops.add(c); }));
+const cropNames = { ...(crops?.crops || {}) }; const markUnits = {};
+if (ownMarks) { for (const r of ownMarks.rows) { const m = (marks[r.place] = marks[r.place] || {}); const c = (m[r.series] = m[r.series] || {}); c[r.year] = { p: r.value, a: null }; regionalCrops.add(r.series); } for (const [id, sdef] of Object.entries(ownMarks.series)) { cropNames[id] = sdef.label; markUnits[id] = sdef.unit; } }
 
 // ── field ──
 const clim = layers.rain?.data;
@@ -98,9 +109,10 @@ const bundle = {
   id: study.id, title: study.title, subtitle: study.subtitle, years: study.years, normal: study.normal, built: new Date().toISOString().slice(0, 10),
   layers: study.layers.map((L) => ({ id: L.id, kind: L.kind, ink: L.ink, label: L.label, unit: L.unit })),
   places, national_names: placesFile.national, place_note: placesFile.note,
-  field, marks, national, regional_crops: [...regionalCrops], crop_names: crops?.crops || {}, crop_source: crops?.source || null,
+  field, marks, national, regional_crops: [...regionalCrops], crop_names: cropNames, mark_units: markUnits, mark_unit_default: crops ? 'kt' : '', crop_source: crops?.source || null,
+  own: { marks: ownMarks ? ownMarks.source : null, series: ownSeries ? ownSeries.series : [], series_source: ownSeries ? ownSeries.source : null, events: ownEvents ? ownEvents.source : null },
   trade: trade ? { products: trade.products, prices: trade.prices, sources: trade.sources, trade: trade.trade, price: trade.price } : null,
-  events, event_kinds: pol?.kinds || {}, confidence_tiers: pol?.confidence_tiers || {}, readings,
+  events, event_kinds: kinds, confidence_tiers: pol?.confidence_tiers || { recalled: 'written from knowledge, with a citation; nothing opened', cited: 'the citation resolved to an act of that name and date at the publisher', read: 'the source text was read and the summary checked against it' }, readings,
   fade: study.frame.fade || null, market: study.market || {}, hydro_year_start_month: study.hydro_year_start_month || 10,
 };
 mkdirSync(join(ROOT, 'web/data'), { recursive: true });
@@ -119,7 +131,7 @@ const h = (s) => createHash('sha256').update(s).digest('hex').slice(0, 12);
 const regPath = join(ROOT, 'web/data/studies.js');
 const REG = existsSync(regPath) ? JSON.parse(readFileSync(regPath, 'utf8').replace(/^window\.STUDIES=/, '').replace(/;\s*$/, '')) : {};
 const reliefPng = join(ROOT, 'web/data', study.id + '-relief.png');
-REG[study.id] = { title: study.title, subtitle: study.subtitle, years: study.years, countries: study.frame.mask, window: study.frame.window, built: bundle.built, data: h(js), geo: h(geoJs), relief: existsSync(reliefPng) ? h(readFileSync(reliefPng)) : null, counts: { field: field ? field.points.length : 0, places: Object.keys(places).length, events: events.length, trade: trade ? trade.trade.length : 0 } };
+if (study.private) delete REG[study.id]; else REG[study.id] = { title: study.title, subtitle: study.subtitle, years: study.years, countries: study.frame.mask, window: study.frame.window, built: bundle.built, data: h(js), geo: h(geoJs), relief: existsSync(reliefPng) ? h(readFileSync(reliefPng)) : null, counts: { field: field ? field.points.length : 0, places: Object.keys(places).length, events: events.length, trade: trade ? trade.trade.length : 0 } };
 writeFileSync(regPath, 'window.STUDIES=' + JSON.stringify(REG) + ';');
 for (const page of ['index.html', 'study.html', 'builder.html']) {
   const f = join(ROOT, 'web', page); if (!existsSync(f)) continue;

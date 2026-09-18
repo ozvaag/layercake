@@ -46,6 +46,15 @@ kinds: { kind: description }
 Build fails on: missing id/date/title/citation/confidence/kind/country, a
 non-ISO date, an undeclared kind, a scope naming a place not in `places.json`.
 
+## own data — `own/*.csv` → `own/*.json` (scripts/harvest-own.mjs)
+```
+marks.csv   place,name,lat,lon,series,year,value[,unit][,label]   places are created from lat/lon
+series.csv  series,year,value[,unit][,label]                    drawn as a "Yours" lane
+events.csv  id,date,title,citation,source_url,lat,lon,scope,kind,summary   lat/lon → a pin; scope → region codes split by ;
+```
+`places.json` entries may carry `lon`/`lat` directly instead of `units`.
+`study.private: true` builds the study but keeps it out of the site's registry.
+
 ## series — `food/trade.json`
 ```
 trade[]: { country, product (HS), flow: export|import, year, eur, q_100kg }

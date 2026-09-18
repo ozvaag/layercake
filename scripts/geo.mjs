@@ -157,7 +157,7 @@ async function main() {
     const code = f.properties.iso_3166_2; if (!code) continue;
     const rs = rings(f.geometry).map((r) => clipRing(r, W)).filter(Boolean).sort((a, b) => ringArea(b) - ringArea(a));
     if (!rs[0]) continue;
-    out.admin1[code] = { name: f.properties.name, label: polylabel(rs[0]).map((v) => Math.round(v * 1e3) / 1e3), area: Math.round(ringArea(rs[0]) * 1e4) / 1e4 };
+    out.admin1[code] = { name: f.properties.name, region: f.properties.region || null, region_code: f.properties.region_cod || null, type: f.properties.type_en || null, label: polylabel(rs[0]).map((v) => Math.round(v * 1e3) / 1e3), area: Math.round(ringArea(rs[0]) * 1e4) / 1e4 };
   }
   const dir = join(ROOT, 'studies', study.id); mkdirSync(join(dir, 'geo'), { recursive: true });
   writeFileSync(join(dir, 'geo/frame.json'), JSON.stringify(out));

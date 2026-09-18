@@ -1,0 +1,40 @@
+{
+ "id": "_smoke",
+ "title": "Smoke",
+ "subtitle": "own data only",
+ "years": [
+  2015,
+  2020
+ ],
+ "normal": [
+  1991,
+  2020
+ ],
+ "frame": {
+  "window": {
+   "lon": [
+    -10,
+    4
+   ],
+   "lat": [
+    35.5,
+    44.5
+   ]
+  },
+  "mask": [
+   "PT"
+  ],
+  "admin1_countries": []
+ },
+ "layers": [
+  {
+   "id": "own-marks",
+   "kind": "marks",
+   "file": "own/marks.json",
+   "ink": "sepia",
+   "label": "Sites",
+   "unit": ""
+  }
+ ],
+ "private": true
+}

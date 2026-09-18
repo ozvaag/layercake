@@ -1,0 +1,6 @@
+place,name,lat,lon,series,year,value,unit,label
+alq,Alqueva,38.2,-7.5,storage,2015,2100,hm³,Reservoir storage
+alq,Alqueva,38.2,-7.5,storage,2016,3100,hm³,Reservoir storage
+alq,Alqueva,38.2,-7.5,storage,2017,2400,hm³,Reservoir storage
+cdb,"Castelo do Bode",39.55,-8.3,storage,2015,800,hm³,Reservoir storage
+cdb,"Castelo do Bode",39.55,-8.3,storage,2017,600,hm³,Reservoir storage

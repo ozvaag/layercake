@@ -1,0 +1,256 @@
+{
+ "note": "Proposed by scripts/places-from-frame.mjs from Natural Earth admin-1 regions matched to Eurostat NUTS-2 labels. Check the units of each place; move anything under `unmatched` by hand; add `aliases` for older NUTS codes the source still uses.",
+ "places": {
+  "ITC2": {
+   "name": "Valle d’Aosta/Vallée d’Aoste",
+   "country": "IT",
+   "units": [
+    "IT-AO"
+   ]
+  },
+  "ITC1": {
+   "name": "Piemonte",
+   "country": "IT",
+   "units": [
+    "IT-VB",
+    "IT-CN",
+    "IT-TO",
+    "IT-AT",
+    "IT-VC",
+    "IT-NO",
+    "IT-AL",
+    "IT-BI"
+   ]
+  },
+  "ITC4": {
+   "name": "Lombardia",
+   "country": "IT",
+   "units": [
+    "IT-VA",
+    "IT-CO",
+    "IT-SO",
+    "IT-BG",
+    "IT-BS",
+    "IT-CR",
+    "IT-MN",
+    "IT-MI",
+    "IT-LC",
+    "IT-MB",
+    "IT-LO",
+    "IT-PV"
+   ]
+  },
+  "ITH1": {
+   "name": "Provincia Autonoma di Bolzano/Bozen",
+   "country": "IT",
+   "units": [
+    "IT-BZ"
+   ]
+  },
+  "ITH2": {
+   "name": "Provincia Autonoma di Trento",
+   "country": "IT",
+   "units": [
+    "IT-TN"
+   ]
+  },
+  "ITC3": {
+   "name": "Liguria",
+   "country": "IT",
+   "units": [
+    "IT-IM",
+    "IT-SP",
+    "IT-GE",
+    "IT-SV"
+   ]
+  },
+  "ITH5": {
+   "name": "Emilia-Romagna",
+   "country": "IT",
+   "units": [
+    "IT-RN",
+    "IT-FE",
+    "IT-RA",
+    "IT-FC",
+    "IT-PC",
+    "IT-PR",
+    "IT-RE",
+    "IT-MO",
+    "IT-BO"
+   ]
+  },
+  "ITI3": {
+   "name": "Marche",
+   "country": "IT",
+   "units": [
+    "IT-PU",
+    "IT-AN",
+    "IT-MC",
+    "IT-FM",
+    "IT-AP"
+   ]
+  },
+  "ITH3": {
+   "name": "Veneto",
+   "country": "IT",
+   "units": [
+    "IT-BL",
+    "IT-VE",
+    "IT-PD",
+    "IT-RO",
+    "IT-VI",
+    "IT-VR",
+    "IT-TV"
+   ]
+  },
+  "ITH4": {
+   "name": "Friuli-Venezia Giulia",
+   "country": "IT",
+   "units": [
+    "IT-UD",
+    "IT-GO",
+    "IT-TS",
+    "IT-PN"
+   ]
+  },
+  "ITF1": {
+   "name": "Abruzzo",
+   "country": "IT",
+   "units": [
+    "IT-TE",
+    "IT-PE",
+    "IT-CH",
+    "IT-AQ"
+   ]
+  },
+  "ITF2": {
+   "name": "Molise",
+   "country": "IT",
+   "units": [
+    "IT-CB",
+    "IT-IS"
+   ]
+  },
+  "ITF4": {
+   "name": "Puglia",
+   "country": "IT",
+   "units": [
+    "IT-FG",
+    "IT-BT",
+    "IT-BA",
+    "IT-BR",
+    "IT-LE",
+    "IT-TA"
+   ]
+  },
+  "ITF5": {
+   "name": "Basilicata",
+   "country": "IT",
+   "units": [
+    "IT-MT",
+    "IT-PZ"
+   ]
+  },
+  "ITF6": {
+   "name": "Calabria",
+   "country": "IT",
+   "units": [
+    "IT-CS",
+    "IT-KR",
+    "IT-CZ",
+    "IT-RC",
+    "IT-VV"
+   ]
+  },
+  "ITF3": {
+   "name": "Campania",
+   "country": "IT",
+   "units": [
+    "IT-SA",
+    "IT-NA",
+    "IT-CE",
+    "IT-BN",
+    "IT-AV"
+   ]
+  },
+  "ITI4": {
+   "name": "Lazio",
+   "country": "IT",
+   "units": [
+    "IT-LT",
+    "IT-RM",
+    "IT-VT",
+    "IT-RI",
+    "IT-FR"
+   ]
+  },
+  "ITI1": {
+   "name": "Toscana",
+   "country": "IT",
+   "units": [
+    "IT-GR",
+    "IT-LI",
+    "IT-PI",
+    "IT-LU",
+    "IT-MS",
+    "IT-SI",
+    "IT-AR",
+    "IT-FI",
+    "IT-PT",
+    "IT-PO"
+   ]
+  },
+  "ITG1": {
+   "name": "Sicilia",
+   "country": "IT",
+   "units": [
+    "IT-TP",
+    "IT-ME",
+    "IT-PA",
+    "IT-AG",
+    "IT-CL",
+    "IT-RG",
+    "IT-SR",
+    "IT-CT",
+    "IT-EN"
+   ]
+  },
+  "ITG2": {
+   "name": "Sardegna",
+   "country": "IT",
+   "units": [
+    "IT-CI",
+    "IT-SS",
+    "IT-NU",
+    "IT-OT",
+    "IT-OR",
+    "IT-VS",
+    "IT-CA",
+    "IT-OG"
+   ]
+  },
+  "ITI2": {
+   "name": "Umbria",
+   "country": "IT",
+   "units": [
+    "IT-TR",
+    "IT-PG"
+   ]
+  }
+ },
+ "aliases": {
+  "ITD1": "ITH1",
+  "ITD2": "ITH2",
+  "ITD3": "ITH3",
+  "ITD4": "ITH4",
+  "ITD5": "ITH5",
+  "ITE1": "ITI1",
+  "ITE2": "ITI2",
+  "ITE3": "ITI3",
+  "ITE4": "ITI4"
+ },
+ "national": {
+  "IT": "Italy"
+ },
+ "unmatched": {}
+}

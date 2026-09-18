@@ -7,7 +7,7 @@ when* — and Layercake writes a study manifest, previews the frame, fetches a
 first field live, and (after five commands on your machine) renders a plate:
 one sheet, one time axis, every figure with its source.
 
-**Study #1:** `studies/iberia/` — rain, law and harvest on one peninsula, 2000–2025.
+**Studies:** `studies/iberia/` (rain, law and harvest on one peninsula, 2000–2025) · `studies/italy/` (begun from the builder's own output, the proof the printed commands work) · `studies/_smoke/` (own-CSV fixture, private).
 
 | page | what |
 |---|---|
@@ -52,6 +52,8 @@ source into the layer file shapes in `SCHEMA.md`,
 | `scripts/geo.mjs` | Natural Earth 10m land, coast, rivers, lakes, admin-0 mask, admin-1 label points → `studies/<id>/geo/frame.json` |
 | `scripts/relief.mjs` | Terrarium terrain tiles (AWS Open Data, z8) → hypsometric tint + hillshade PNG rendered in the page's own Albers projection (`scripts/proj.mjs`, `scripts/png.mjs`) |
 | `scripts/hydro.mjs` | HydroRIVERS v1.0 Europe shapefile (`scripts/shp.mjs`) → every reach of Strahler order ≥ 4 touching the landmass, with order and discharge |
+| `scripts/places-from-frame.mjs` | proposes `places.json`: Natural Earth admin-1 units grouped by their region, matched to Eurostat NUTS-2 labels (EU); unmatched listed for a person |
+| `scripts/harvest-own.mjs` | your CSVs in `studies/<id>/own/` (marks, series, events) → JSON in the study's shapes |
 | `scripts/harvest-climate.mjs` | NASA POWER daily (MERRA-2) → per-point per-year P, ET₀ (Hargreaves), D35, D40, Tmean; hydrological + calendar year; 1991–2020 normals |
 | `scripts/harvest-crops.mjs` | Eurostat `apro_cpshr` NUTS-2 crop production and area |
 | `scripts/harvest-trade.mjs` | Eurostat Comext HS exports/imports + `apri_ap_crpouta` producer prices |

@@ -179,7 +179,7 @@ button.play{font:inherit; font-size:11px; letter-spacing:.16em; text-transform:u
   <ul id="sources"></ul>
 </section>
 
-<script src="data/studies.js?v=c47bbfc2e6ee"></script>
+<script src="data/studies.js?v=420729790501"></script>
 
 <script>
 function runStudy(){
@@ -187,6 +187,7 @@ function runStudy(){
   const $ = (s) => document.querySelector(s);
   const [Y0, Y1] = S.years; const YEARS = []; for (let y = Y0; y <= Y1; y++) YEARS.push(y);
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const unitOf = (crop) => (S.mark_units && S.mark_units[crop]) || S.mark_unit_default || '';
   const fmt = (n, d = 0) => n == null ? '—' : Number(n).toLocaleString('en-GB', { maximumFractionDigits: d, minimumFractionDigits: d });
   const eur = (n) => n == null ? '—' : n >= 1e9 ? '€' + (n / 1e9).toFixed(2) + ' bn' : n >= 1e6 ? '€' + (n / 1e6).toFixed(1) + ' m' : '€' + fmt(n);
 
@@ -277,7 +278,8 @@ function runStudy(){
   const MARKET = S.market || {};
   const exportsOf = (crop, y, flow = 'export') => { const m = MARKET[crop]; if (!m || !S.trade) return null; let t = 0, any = false; for (const r of S.trade.trade) if (r.year === y && r.flow === flow && m.hs.includes(String(r.product)) && r.eur != null) { t += r.eur; any = true; } return any ? t : null; };
   const exportsSplit = (crop, y) => { const m = MARKET[crop]; if (!m || !S.trade) return ''; return Object.keys(S.national).map((cc) => { let t = 0, any = false; for (const r of S.trade.trade) if (r.year === y && r.flow === 'export' && r.country === cc && m.hs.includes(String(r.product)) && r.eur != null) { t += r.eur; any = true; } return `${cc} ${any ? eur(t) : '—'}`; }).join(' · '); };
-  const priceOf = (crop, y, cc = 'ES') => { const m = MARKET[crop]; if (!m || !m.price || !S.trade) return null; const r = S.trade.price.find((r) => r.year === y && r.country === cc && r.product === m.price); return r ? r.eur : null; };
+  const CC0 = Object.keys(S.national_names || {})[0] || 'XX';
+  const priceOf = (crop, y, cc = CC0) => { const m = MARKET[crop]; if (!m || !m.price || !S.trade) return null; const r = S.trade.price.find((r) => r.year === y && r.country === cc && r.product === m.price); return r ? r.eur : null; };
   const cropSplit = (crop, y) => Object.keys(S.national).map((cc) => `${cc} ${fmt(S.national[cc][crop]?.[y]?.p, 0)}`).join(' · ');
   const placeSeries = (place, crop) => { const out = {}; for (const y of YEARS) out[y] = S.marks[place]?.[crop]?.[y]?.p ?? null; return out; };
   const meanOf = (ser) => { const vs = Object.values(ser).filter((v) => v != null); return vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : null; };
@@ -294,14 +296,15 @@ function runStudy(){
         if (r) s += `<circle class="mark${on ? ' on' : ''}" data-p="${pl.code}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"><title>${esc(pl.name)} · ${esc(S.crop_names[crop])} ${state.year}: ${fmt(v, 1)} kt (mean ${fmt(m, 1)} kt)</title></circle>`;
         else s += `<circle class="hit" data-p="${pl.code}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9"><title>${esc(pl.name)} · no figure for ${state.year}</title></circle>`;
       } else s += `<circle class="hit" data-p="${pl.code}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9"><title>${esc(pl.name)}</title></circle><circle class="mark-n" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.2"/>`;
-      if (on || regional && (S.marks[pl.code]?.[crop]?.[state.year]?.p ?? 0) / maxP > .12) l += `<text class="pname" x="${x.toFixed(1)}" y="${(y + (regional ? 4 + 30 * Math.sqrt((S.marks[pl.code]?.[crop]?.[state.year]?.p ?? 0) / maxP) : 0) + 11).toFixed(1)}" text-anchor="middle">${esc(pl.name)}</text>`;
+      if (on || (regional && (S.marks[pl.code]?.[crop]?.[state.year]?.p ?? 0) / maxP > .12) || pl.own) l += `<text class="pname" x="${x.toFixed(1)}" y="${(y + (regional ? 4 + 30 * Math.sqrt((S.marks[pl.code]?.[crop]?.[state.year]?.p ?? 0) / maxP) : 0) + 11).toFixed(1)}" text-anchor="middle">${esc(pl.name)}</text>`;
     }
     g.innerHTML = s; lg.innerHTML = l;
   }
   function drawScope() {
     const g = $('#scopeg'); const e = state.event && S.events.find((e) => e.id === state.event); if (!e) { g.innerHTML = ''; return; }
     const regs = e.scope?.regions || []; let s = '';
-    if (regs.includes('all')) { const m = G.land; s = ''; for (const pl of Object.values(S.places)) { const [x, y] = P([pl.lon, pl.lat]); s += `<circle class="scope" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="13"/>`; } }
+    if (e.lat != null && e.lon != null) { const [x, y] = P([e.lon, e.lat]); s += `<circle class="scope-all" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.2" fill="var(--oxblood)"/>`; }
+    if (regs.includes('all')) { if (e.lat == null) for (const pl of Object.values(S.places)) { const [x, y] = P([pl.lon, pl.lat]); s += `<circle class="scope" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="13"/>`; } }
     else for (const r of regs) { const pl = S.places[r]; if (!pl) continue; const [x, y] = P([pl.lon, pl.lat]); s += `<circle class="scope" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="16"/>`; }
     g.innerHTML = s;
   }
@@ -316,17 +319,20 @@ function runStudy(){
     h += '<dl>';
     if (R) h += `<dt><span class="k verd"></span>Rain</dt><dd><b>${R.P_pct}%</b> of normal · ${fmt(R.P)} mm mean over ${R.n} points</dd><dt><span class="k ox"></span>Heat</dt><dd><b>${fmt(R.D35, 1)}</b> days ≥ 35 °C per point · normal ${fmt(R.D35_n, 1)}</dd><dt>Balance</dt><dd><b>${fmt(R.bal)}</b> mm P − ET₀ · normal ${fmt(R.bal_n)}</dd><dt>Mean T</dt><dd><b>${fmt(R.TM, 1)} °C</b> · normal ${fmt(R.TM_n, 1)}</dd>`;
     else h += `<dt>Field</dt><dd>no reanalysis year on record</dd>`;
-    const crop = state.crop, nat = cropSeries(crop), v = nat[y], m = meanOf(nat);
-    h += `<dt><span class="k sep"></span>Harvest</dt><dd><b>${fmt(v, 0)}</b> kt ${esc(S.crop_names[crop]).toLowerCase().replace(/ \(.*$/, '')}, Spain + Portugal${v != null && m ? ` · ${fmt(v / m * 100)}% of the ${Y0}–${Y1} mean` : v == null ? ' · <i>a country is missing this year</i>' : ''}<br><span style="color:var(--ink-soft)">${cropSplit(crop, y)}</span>${S.regional_crops.includes(crop) ? '' : '<br><i>national series only — Eurostat publishes no NUTS-2 row for this crop in ES or PT</i>'}</dd>`;
-    if (MARKET[crop]) { const ex = exportsOf(crop, y), pr = priceOf(crop, y), prPT = priceOf(crop, y, 'PT'); h += `<dt>Market</dt><dd>exports of ${esc(MARKET[crop].pl)} <b>${eur(ex)}</b><br><span style="color:var(--ink-soft)">${exportsSplit(crop, y)}</span>${MARKET[crop].price ? `<br>producer price ${esc(S.trade.prices[MARKET[crop].price]).replace(/,.*$/, '')}: <b>ES €${fmt(pr, 1)}</b> · PT €${fmt(prPT, 1)} ${esc(S.trade.prices[MARKET[crop].price]).replace(/^.*€/, '€')}` : ''}</dd>`; }
+    const crop = state.crop, nat = crop ? cropSeries(crop) : {}, v = nat[y], m = meanOf(nat);
+    const natNames = Object.values(S.national_names || {}).join(' + ');
+    if (crop && Object.keys(S.national).length) h += `<dt><span class="k sep"></span>Harvest</dt><dd><b>${fmt(v, 0)}</b> ${unitOf(crop)} ${esc(S.crop_names[crop] || crop).toLowerCase().replace(/ \(.*$/, '')}, ${esc(natNames)}${v != null && m ? ` · ${fmt(v / m * 100)}% of the ${Y0}–${Y1} mean` : v == null ? ' · <i>a country is missing this year</i>' : ''}<br><span style="color:var(--ink-soft)">${cropSplit(crop, y)}</span>${S.regional_crops.includes(crop) ? '' : '<br><i>national series only — the source publishes no regional row for this crop here</i>'}</dd>`;
+    else if (crop && S.regional_crops.includes(crop)) { const tot = Object.keys(S.places).reduce((t, pl) => { const vv = S.marks[pl]?.[crop]?.[y]?.p; return vv == null ? t : t + vv; }, 0); h += `<dt><span class="k sep"></span>${esc(S.crop_names[crop] || crop)}</dt><dd><b>${fmt(tot, 1)}</b> ${unitOf(crop)} across the marked places</dd>`; }
+    if (state.own && S.own && S.own.series.length) { const sr = S.own.series.find((x) => x.id === state.own); if (sr) h += `<dt>${esc(sr.label)}</dt><dd><b>${fmt(sr.values[y], 1)}</b> ${esc(sr.unit || '')}</dd>`; }
+    if (crop && MARKET[crop]) { const ex = exportsOf(crop, y); h += `<dt>Market</dt><dd>exports of ${esc(MARKET[crop].pl)} <b>${eur(ex)}</b><br><span style="color:var(--ink-soft)">${exportsSplit(crop, y)}</span>${MARKET[crop].price && S.trade.prices[MARKET[crop].price] ? `<br>producer price ${esc(S.trade.prices[MARKET[crop].price]).replace(/,.*$/, '')}: ${Object.keys(S.national_names).map((cc, i) => `${i ? '' : '<b>'}${cc} €${fmt(priceOf(crop, y, cc), 1)}${i ? '' : '</b>'}`).join(' · ')} ${esc(S.trade.prices[MARKET[crop].price]).replace(/^.*€/, '€')}` : ''}</dd>`; }
     const ev = S.events.filter((e) => e.year === y);
     h += `<dt><span class="k ink"></span>Law</dt><dd>${ev.length ? ev.map((e) => `<div class="ev" data-e="${e.id}"><span class="kind">${esc(e.kind)} · ${esc(e.country)}</span>${esc(e.title)}</div>`).join('') : '<i>no instrument dated this year on file</i>'}</dd>`;
     h += '</dl>';
     if (state.place && S.places[state.place]) {
       const pl = S.places[state.place], c = placeClimate(pl.code, y);
-      h += `<div class="panel"><h3>${esc(pl.name)}</h3><p class="sub">${esc(S.national_names[pl.country])} · NUTS-2 ${pl.code} · ${c ? c.n + ' grid points nearest' : 'no grid point'}</p>`;
+      h += `<div class="panel"><h3>${esc(pl.name)}</h3><p class="sub">${pl.country ? esc(S.national_names[pl.country] || pl.country) + ' · ' : ''}${pl.own ? 'your place' : pl.code} · ${c ? c.n + ' grid points nearest' : 'no grid point'}</p>`;
       if (c) h += `<dl><dt>Rain</dt><dd><b>${fmt(c.P_pct)}%</b> of normal (${fmt(c.P)} mm)</dd><dt>Heat</dt><dd><b>${fmt(c.D35, 1)}</b> days ≥ 35 °C · normal ${fmt(c.D35_n, 1)}</dd><dt>Balance</dt><dd><b>${fmt(c.bal)}</b> mm · normal ${fmt(c.bal_n)}</dd></dl>`;
-      const rows = S.regional_crops.map((cr) => { const s = placeSeries(pl.code, cr), vv = s[y], mm = meanOf(s); return vv == null && mm == null ? '' : `<dt>${esc(S.crop_names[cr]).replace(/ \(.*$/, '')}</dt><dd><b>${fmt(vv, 1)}</b> kt${mm ? ` · mean ${fmt(mm, 1)}` : ''}${S.marks[pl.code]?.[cr]?.[y]?.a != null ? ` · ${fmt(S.marks[pl.code][cr][y].a, 1)} kha` : ''}</dd>`; }).join('');
+      const rows = S.regional_crops.map((cr) => { const s = placeSeries(pl.code, cr), vv = s[y], mm = meanOf(s); return vv == null && mm == null ? '' : `<dt>${esc(S.crop_names[cr] || cr).replace(/ \(.*$/, '')}</dt><dd><b>${fmt(vv, 1)}</b> ${unitOf(cr)}${mm ? ` · mean ${fmt(mm, 1)}` : ''}${S.marks[pl.code]?.[cr]?.[y]?.a != null ? ` · ${fmt(S.marks[pl.code][cr][y].a, 1)} kha` : ''}</dd>`; }).join('');
       h += `<dl>${rows || '<dt>Harvest</dt><dd>no regional row</dd>'}</dl>`;
       const touching = S.events.filter((e) => (e.scope?.regions || []).includes(pl.code)).sort((a, b) => a.date.localeCompare(b.date));
       h += `<p class="sub">Instruments naming this region</p>${touching.map((e) => `<div class="ev" data-e="${e.id}"><span class="kind">${e.year}</span>${esc(e.title)}</div>`).join('') || '<p class="sub">none scoped to it (national instruments apply)</p>'}</div>`;
@@ -338,8 +344,8 @@ function runStudy(){
         h += `<p class="sub">Scope: ${regs.includes('all') ? 'the whole study' : regs.map((r) => S.places[r]?.name || r).join(', ')}${e.scope?.basins?.length ? ' · basins: ' + esc(e.scope.basins.join(', ')) : ''}</p>`;
         if (R2) h += `<p class="cite">The year it landed: rain ${R2.P_pct}% of normal, ${fmt(R2.D35, 1)} heat days per point.</p>`;
         const nxt = YEARS.filter((yy) => yy > e.year && yy <= e.year + 3); const before = YEARS.filter((yy) => yy < e.year && yy >= e.year - 3);
-        const cs = cropSeries(state.crop); const avg = (ys) => { const v = ys.map((yy) => cs[yy]).filter((v) => v != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
-        const b = avg(before), a = avg(nxt); if (b && a) h += `<p class="cite">${esc(S.crop_names[state.crop])}, ES + PT: three years before ${fmt(b)} kt/yr, three after ${fmt(a)} kt/yr (${a >= b ? '+' : ''}${fmt((a / b - 1) * 100)}%). Correlation is not attribution; the strip below shows the rain that ran alongside.</p>`;
+        const cs = state.crop ? cropSeries(state.crop) : {}; const avg = (ys) => { const v = ys.map((yy) => cs[yy]).filter((v) => v != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+        const b = avg(before), a = avg(nxt); if (b && a) h += `<p class="cite">${esc(S.crop_names[state.crop])}, ${esc(Object.values(S.national_names || {}).join(' + '))}: three years before ${fmt(b)} kt/yr, three after ${fmt(a)} kt/yr (${a >= b ? '+' : ''}${fmt((a / b - 1) * 100)}%). Correlation is not attribution; the strip below shows the rain that ran alongside.</p>`;
         h += '</div>'; }
     }
     if (!state.place && !state.event) h += `<div class="panel"><p class="sub"><b style="color:var(--ink)">Try:</b> click a brown harvest mark on the sheet to open its region here · click a tick on the strip below to read an instrument · press ▶ to run the years.</p><p class="sub"><span class="k verd"></span>wetter / above normal · <span class="k ox"></span>drier / hotter · <span class="k sep"></span>harvest (dashed ring = the ${Y0}–${Y1} mean) · <span class="k ring"></span>normal</p></div>`;
@@ -347,7 +353,7 @@ function runStudy(){
   }
 
   // ── the strip: four lanes on one axis ──
-  const strip = $('#strip'); const SW = 1120, LANE = [58, 58, 66, 60, 44], TOP = 14, LEFT = 96, RIGHT = 16, BOT = 22;
+  const strip = $('#strip'); const SW = 1120, LANE = (S.own && S.own.series && S.own.series.length) ? [58, 58, 66, 60, 56, 44] : [58, 58, 66, 60, 44], TOP = 14, LEFT = 96, RIGHT = 16, BOT = 22;
   const SH = TOP + LANE.reduce((a, b) => a + b, 0) + BOT; strip.setAttribute('viewBox', `0 0 ${SW} ${SH}`);
   const X = (y) => LEFT + (y - Y0 + .5) / (Y1 - Y0 + 1) * (SW - LEFT - RIGHT), BW = (SW - LEFT - RIGHT) / (Y1 - Y0 + 1);
   function drawStrip() {
@@ -355,6 +361,7 @@ function runStudy(){
     const lane = (i) => { const t = y0; y0 += LANE[i]; return [t, LANE[i]]; };
     // 1 rain
     { const [t, hgt] = lane(0); const mid = t + hgt / 2; s += `<text class="lane-l" x="6" y="${t + 12}">Rain</text><text class="lane-u" x="6" y="${t + 24}">% of normal</text><line class="norm" x1="${LEFT}" x2="${SW - RIGHT}" y1="${mid}" y2="${mid}"/>`;
+      if (!S.field) s += `<text class="nodata" x="${LEFT + 4}" y="${mid + 3}">no ground layer in this study</text>`;
       for (const y of YEARS) { const R = S.readings.years[y]; if (!R) continue; const d = R.P_pct - 100, hh = Math.min(hgt / 2 - 2, Math.abs(d) / 45 * (hgt / 2)); s += `<rect class="bar ${d >= 0 ? 'wet' : 'dry'}" x="${(X(y) - BW * .32).toFixed(1)}" y="${(d >= 0 ? mid - hh : mid).toFixed(1)}" width="${(BW * .64).toFixed(1)}" height="${hh.toFixed(1)}"><title>${y}: ${R.P_pct}% of normal</title></rect>`; } }
     // 2 heat
     { const [t, hgt] = lane(1); s += `<text class="lane-l" x="6" y="${t + 12}">Heat</text><text class="lane-u" x="6" y="${t + 24}">days ≥ 35 °C / pt</text>`;
@@ -363,21 +370,24 @@ function runStudy(){
       const pts = YEARS.filter((y) => S.readings.years[y]).map((y) => [X(y), yy(S.readings.years[y].D35)]);
       s += `<path class="heat" d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('')}"/>` + YEARS.filter((y) => S.readings.years[y]).map((y) => `<circle class="heat-d" cx="${X(y).toFixed(1)}" cy="${yy(S.readings.years[y].D35).toFixed(1)}" r="2"><title>${y}: ${fmt(S.readings.years[y].D35, 1)} days ≥ 35 °C per point</title></circle>`).join(''); }
     // 3 harvest
-    { const [t, hgt] = lane(2); const crop = state.crop; const regional = S.regional_crops.includes(crop) && state.place; const ser = regional ? placeSeries(state.place, crop) : cropSeries(crop); const who = regional ? S.places[state.place].name : 'ES + PT';
-      s += `<text class="lane-l" x="6" y="${t + 12}">Harvest</text><text class="lane-u" x="6" y="${t + 24}">${esc(S.crop_names[crop]).replace(/ \(.*$/, '').slice(0, 22)}</text><text class="lane-u" x="6" y="${t + 36}">${esc(who)}, kt</text>`;
+    { const [t, hgt] = lane(2); const crop = state.crop; const regional = S.regional_crops.includes(crop) && state.place; const own = S.own && S.own.series.find((x) => x.id === state.own); const sumPlaces = (cr) => { const o = {}; for (const y of YEARS) { let t = 0, any = false; for (const pl of Object.keys(S.places)) { const v = S.marks[pl]?.[cr]?.[y]?.p; if (v != null) { t += v; any = true; } } o[y] = any ? t : null; } return o; };
+      const ser = own && !crop ? own.values : regional ? placeSeries(state.place, crop) : crop ? (Object.keys(S.national).length ? cropSeries(crop) : sumPlaces(crop)) : {}; const who = regional ? S.places[state.place].name : Object.keys(S.national).length ? Object.values(S.national_names || {}).join(' + ') : 'all places';
+      s += `<text class="lane-l" x="6" y="${t + 12}">Harvest</text><text class="lane-u" x="6" y="${t + 24}">${esc(S.crop_names[crop] || crop || '—').replace(/ \(.*$/, '').slice(0, 22)}</text><text class="lane-u" x="6" y="${t + 36}">${esc(who)}${unitOf(crop) ? ', ' + esc(unitOf(crop)) : ''}</text>`;
       const vals = Object.values(ser).filter((v) => v != null); const mx = Math.max(1, ...vals), m = meanOf(ser); const yy = (v) => t + hgt - 4 - v / mx * (hgt - 12);
       if (m) s += `<line class="norm" x1="${LEFT}" x2="${SW - RIGHT}" y1="${yy(m).toFixed(1)}" y2="${yy(m).toFixed(1)}"/>`;
       if (!vals.length) s += `<text class="nodata" x="${LEFT + 4}" y="${t + hgt / 2}">no series</text>`;
-      for (const y of YEARS) { const v = ser[y]; if (v == null) continue; s += `<rect class="bar harv${y === state.year ? ' on' : ''}" x="${(X(y) - BW * .32).toFixed(1)}" y="${yy(v).toFixed(1)}" width="${(BW * .64).toFixed(1)}" height="${(t + hgt - 4 - yy(v)).toFixed(1)}"><title>${y}: ${fmt(v, 1)} kt</title></rect>`; } }
+      for (const y of YEARS) { const v = ser[y]; if (v == null) continue; s += `<rect class="bar harv${y === state.year ? ' on' : ''}" x="${(X(y) - BW * .32).toFixed(1)}" y="${yy(v).toFixed(1)}" width="${(BW * .64).toFixed(1)}" height="${(t + hgt - 4 - yy(v)).toFixed(1)}"><title>${y}: ${fmt(v, 1)} ${esc(unitOf(crop))}</title></rect>`; } }
+    // own series lane (only when the study carries one)
+    if (S.own && S.own.series.length && state.own) { const sr = S.own.series.find((x) => x.id === state.own); const [t, hgt] = lane(4); s += `<text class="lane-l" x="6" y="${t + 12}">Yours</text><text class="lane-u" x="6" y="${t + 24}">${esc(sr.label).slice(0, 22)}</text><text class="lane-u" x="6" y="${t + 36}">${esc(sr.unit || '')}</text>`; const vals = YEARS.map((y) => sr.values[y]).filter((v) => v != null); const mx = Math.max(1e-9, ...vals); const yy = (v) => t + hgt - 4 - v / mx * (hgt - 12); const pts = YEARS.filter((y) => sr.values[y] != null).map((y) => [X(y), yy(sr.values[y])]); s += `<path class="price" d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('')}"/>` + YEARS.filter((y) => sr.values[y] != null).map((y) => `<circle class="price-d" cx="${X(y).toFixed(1)}" cy="${yy(sr.values[y]).toFixed(1)}" r="2"><title>${y}: ${fmt(sr.values[y], 2)} ${esc(sr.unit || '')}</title></circle>`).join(''); }
     // 4 market: export value (bars, ES + PT) and producer price (line, ES)
-    { const [t, hgt] = lane(3); const crop = state.crop, m = MARKET[crop];
-      s += `<text class="lane-l" x="6" y="${t + 12}">Market</text><text class="lane-u" x="6" y="${t + 24}">${m ? 'exports ' + esc(m.pl).slice(0, 18) : 'no product mapped'}</text><text class="lane-u" x="6" y="${t + 36}">${m && m.price ? 'line: ES price' : ''}</text>`;
+    { const [t, hgt] = lane(3); const crop = state.crop, m = crop ? MARKET[crop] : null;
+      s += `<text class="lane-l" x="6" y="${t + 12}">Market</text><text class="lane-u" x="6" y="${t + 24}">${m ? 'exports ' + esc(m.pl).slice(0, 18) : 'no product mapped'}</text><text class="lane-u" x="6" y="${t + 36}">${m && m.price ? 'line: ' + CC0 + ' price' : ''}</text>`;
       if (m) { const ex = YEARS.map((y) => exportsOf(crop, y)); const mx = Math.max(1, ...ex.filter((v) => v != null)); const yy = (v) => t + hgt - 4 - v / mx * (hgt - 12);
         YEARS.forEach((y, i) => { const v = ex[i]; if (v == null) return; s += `<rect class="bar mkt${y === state.year ? ' on' : ''}" x="${(X(y) - BW * .32).toFixed(1)}" y="${yy(v).toFixed(1)}" width="${(BW * .64).toFixed(1)}" height="${(t + hgt - 4 - yy(v)).toFixed(1)}"><title>${y}: exports ${eur(v)} (ES + PT)</title></rect>`; });
         if (m.price) { const pr = YEARS.map((y) => priceOf(crop, y)); const pm = Math.max(1, ...pr.filter((v) => v != null)); const py = (v) => t + hgt - 4 - v / pm * (hgt - 12); const pts = YEARS.map((y, i) => pr[i] == null ? null : [X(y), py(pr[i])]).filter(Boolean);
-          s += `<path class="price" d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('')}"/>` + YEARS.map((y, i) => pr[i] == null ? '' : `<circle class="price-d" cx="${X(y).toFixed(1)}" cy="${py(pr[i]).toFixed(1)}" r="1.8"><title>${y}: ES producer price €${fmt(pr[i], 1)}</title></circle>`).join(''); } } }
-    // 5 law
-    { const [t, hgt] = lane(4); s += `<text class="lane-l" x="6" y="${t + 12}">Law</text><text class="lane-u" x="6" y="${t + 24}">${S.events.length} instruments</text>`;
+          s += `<path class="price" d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('')}"/>` + YEARS.map((y, i) => pr[i] == null ? '' : `<circle class="price-d" cx="${X(y).toFixed(1)}" cy="${py(pr[i]).toFixed(1)}" r="1.8"><title>${y}: ${CC0} producer price €${fmt(pr[i], 1)}</title></circle>`).join(''); } } }
+    // law (last lane)
+    { const [t, hgt] = lane(LANE.length - 1); s += `<text class="lane-l" x="6" y="${t + 12}">Law</text><text class="lane-u" x="6" y="${t + 24}">${S.events.length} instruments</text>`;
       const byY = {}; S.events.forEach((e) => { if (e.year < Y0 || e.year > Y1) return; (byY[e.year] = byY[e.year] || []).push(e); });
       for (const [y, es] of Object.entries(byY)) { const w = Math.min(BW * .8 / es.length, 9); es.forEach((e, i) => { const x = X(+y) - (es.length - 1) * w / 2 + i * w; s += `<line class="tick kind-${e.kind}${state.event === e.id ? ' on' : ''}" data-e="${e.id}" x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${t + 8}" y2="${t + hgt - 8}"><title>${esc(e.date)} · ${esc(e.title)}</title></line>`; }); } }
     // axis, cursor, hit areas
@@ -404,9 +414,14 @@ function runStudy(){
 
   // ── first paint ──
   const { reg, nat } = cropOptions();
+  const hasHarvest = reg.length + nat.length + Object.keys(MARKET).length > 0;
+  if (!hasHarvest) { cropSel.style.display = 'none'; cropSel.previousElementSibling.style.display = 'none'; }
+  // own series: a select beside Harvest, only when a study carries any
+  const ownSeries = (S.own && S.own.series) || [];
+  if (ownSeries.length) { const lab = document.createElement('span'); lab.className = 'ctl-l'; lab.textContent = 'Your series'; const sel = document.createElement('select'); sel.id = 'ownSel'; sel.innerHTML = ownSeries.map((x) => `<option value="${esc(x.id)}">${esc(x.label)}${x.unit ? ' (' + esc(x.unit) + ')' : ''}</option>`).join(''); cropSel.parentNode.insertBefore(lab, $('#sheetChips').previousElementSibling); cropSel.parentNode.insertBefore(sel, $('#sheetChips').previousElementSibling); state.own = ownSeries[0].id; sel.addEventListener('change', () => { state.own = sel.value; render(); }); }
   cropSel.innerHTML = `<optgroup label="By region">${reg.map((c) => `<option value="${c}">${esc(S.crop_names[c])}</option>`).join('')}</optgroup><optgroup label="National only (ES, PT)">${nat.map((c) => `<option value="${c}">${esc(S.crop_names[c])}</option>`).join('')}</optgroup>${Object.keys(MARKET).filter((c) => !S.crop_names[c]).length ? `<optgroup label="Exports only (no production series)">${Object.keys(MARKET).filter((c) => !S.crop_names[c]).map((c) => `<option value="${c}">${esc(MARKET[c].label || MARKET[c].pl)}</option>`).join('')}</optgroup>` : ''}`;
   Object.keys(MARKET).filter((c) => !S.crop_names[c]).forEach((c) => { S.crop_names[c] = (MARKET[c].label || MARKET[c].pl) + ' (exports only — no production row)'; });
-  state.crop = nat.includes('O1000') ? 'O1000' : reg[0]; cropSel.value = state.crop;
+  state.crop = nat.includes('O1000') ? 'O1000' : (reg[0] || nat[0] || Object.keys(MARKET)[0] || null); if (state.crop) cropSel.value = state.crop;
   document.title = `${S.title} — Layercake`; $('#title').firstChild.textContent = S.title + ' '; $('#subtitle').textContent = S.subtitle;
   $('#edition').innerHTML = `<span>Built <b>${S.built}</b></span><span>Field <b>${S.field ? S.field.points.length : 0}</b> points · ${S.field?.step}°</span><span>Places <b>${Object.keys(S.places).length}</b></span><span>Instruments <b>${S.events.length}</b></span><span>Trade rows <b>${S.trade ? S.trade.trade.length : 0}</b></span><span>Normal <b>${S.normal[0]}–${S.normal[1]}</b></span>`;
   const rd = S.readings; if (rd.driest) $('#reading').textContent = `From the field: the driest hydrological year was ${rd.driest} (${rd.years[rd.driest].P_pct}% of normal), the wettest ${rd.wettest} (${rd.years[rd.wettest].P_pct}%), and ${rd.hottest} carried the most days at or above 35 °C (${fmt(rd.years[rd.hottest].D35, 1)} per grid point against a normal of ${fmt(rd.years[rd.hottest].D35_n, 1)}).`;
@@ -414,8 +429,9 @@ function runStudy(){
     S.field ? `<li><b>Natural.</b> ${esc(S.field.source.name)} — ${esc(S.field.source.licence)}, fetched ${S.field.source.fetched_at}. Hydrological year ${esc(S.field.hydro_year)}. ET₀: ${esc(S.field.et0_method)}. Normals ${S.field.normal_period[0]}–${S.field.normal_period[1]}. A reanalysis is a model fitted to observations, not a rain gauge; "% of normal" is the grid point against its own 30-year mean. <a href="${esc(S.field.source.url)}" target="_blank" rel="noopener">source ↗</a></li>` : '',
     S.crop_source ? `<li><b>Harvest.</b> ${esc(S.crop_source.name)} — ${esc(S.crop_source.licence)}, Eurostat last updated ${esc(String(S.crop_source.updated).slice(0, 10))}, fetched ${S.crop_source.fetched_at}. Regional rows exist for ${S.regional_crops.map((c) => esc(S.crop_names[c]).replace(/ \(.*$/, '')).join(', ')}; olives, citrus, grapes, other fruit and vegetables are published for ES and PT nationally only. ${esc(S.place_note)} <a href="${esc(S.crop_source.url)}" target="_blank" rel="noopener">source ↗</a></li>` : '',
     S.trade ? S.trade.sources.map((s) => `<li><b>Market.</b> ${esc(s.name)} — ${esc(s.licence)}, fetched ${s.fetched_at}. <a href="${esc(s.url)}" target="_blank" rel="noopener">source ↗</a></li>`).join('') : '',
-    `<li><b>Law.</b> ${S.events.length} instruments, hand-curated with a citation each. Confidence: ${Object.entries(S.confidence_tiers).map(([k, v]) => `<i>${k}</i> — ${esc(v)}`).join('; ')}. Counts: ${['read', 'cited', 'recalled'].map((t) => `${S.events.filter((e) => e.confidence === t).length} ${t}`).join(', ')}. Portugal's Diário da República is a JavaScript application and cannot be checked by script; its citations are marked.</li>`,
-    `<li><b>Frame.</b> Coast, lakes, bathymetry, named rivers and surveyed peaks: ${esc(G.source)}. Drainage: ${esc(G.network ? G.network.source : '—')}, Strahler order ≥ ${G.network ? G.network.min_order : '—'} (${G.network ? fmt(G.network.reaches.length) : 0} reaches), line weight by order. Relief: ${esc(G.relief ? G.relief.source : '—')}. Physical names: ${esc(G.feature_note || '')} No political boundary is drawn; the land north of the Pyrenees fades rather than ends. Regions are marked at an interior point, not outlined.</li>`,
+    `<li><b>Law.</b> ${S.events.length} instruments, hand-curated with a citation each. Confidence: ${Object.entries(S.confidence_tiers).map(([k, v]) => `<i>${k}</i> — ${esc(v)}`).join('; ')}. Counts: ${['read', 'cited', 'recalled'].map((t) => `${S.events.filter((e) => e.confidence === t).length} ${t}`).join(', ')}. Publishers behind a JavaScript wall cannot be checked by script; those citations are marked.</li>`,
+    S.own && (S.own.marks || S.own.series.length || S.own.events) ? `<li><b>Your data.</b> ${[S.own.marks && 'marks (' + esc(S.own.marks.name) + ')', S.own.series.length && S.own.series.length + ' series (' + esc(S.own.series_source.name) + ')', S.own.events && 'events (' + esc(S.own.events.name) + ')'].filter(Boolean).join(', ')} — read by scripts/harvest-own.mjs from CSV in the study's own/ folder.</li>` : '',
+    `<li><b>Frame.</b> Coast, lakes, bathymetry, named rivers and surveyed peaks: ${esc(G.source)}. Drainage: ${esc(G.network ? G.network.source : '—')}, Strahler order ≥ ${G.network ? G.network.min_order : '—'} (${G.network ? fmt(G.network.reaches.length) : 0} reaches), line weight by order. Relief: ${esc(G.relief ? G.relief.source : '—')}. Physical names: ${esc(G.feature_note || '')} No political boundary is drawn${S.fade ? '; ' + esc(S.fade.note || 'land beyond the study fades rather than ends') : ''}. Regions are marked at an interior point, not outlined.</li>`,
     `<li><b>Engine.</b> A study is a manifest naming layers of three kinds — a <i>field</i> (values on grid points), <i>marks</i> (values on places), <i>events</i> (dated instruments with a scope) — on one frame and one year axis. This page renders any study of that shape.</li>`,
   ].join('');
   drawBase(); readHash(); render();
