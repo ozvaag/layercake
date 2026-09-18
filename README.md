@@ -1,0 +1,55 @@
+# Iberia — and the study engine under it
+
+**Study #1:** `studies/iberia/` — rain, law and harvest on one peninsula, 2000–2025.
+
+Built on the Film Commission Atlas's pattern (`~/dev/film-commission-atlas`):
+Natural Earth geometry as plain lon/lat rings projected in the browser, a
+`build.mjs` that validates and hash-stamps one bundle, the Atlas's ink-on-paper
+chrome (`web/atlas.css`; its `DESIGN.md` governs here too), no framework, no
+tile service, Cloudflare Pages at zero cost.
+
+## The idea, generalised
+
+A **study** is a question of the form *"how did these factors move over this
+land, across these years, and against each other?"* The engine knows three
+shapes of factor and nothing else:
+
+| kind | atom | example here | drawn as |
+|---|---|---|---|
+| `field` | a grid point with a value per year (and a normal) | rain, heat days, water balance | a dot field — size = magnitude, ink = sign against normal |
+| `marks` | a place with a value per year | crop production by NUTS-2 region | a proportional mark at the place's interior point; dashed ring = the period mean |
+| `events` | a dated instrument with a scope | laws, decrees, plans, dams | ticks on the axis; rings on the scoped places |
+| `series` | a national figure per year | exports, producer prices | a lane on the axis and a row in the cartouche |
+
+Everything joins on **one frame** (`geo/frame.json`) and **one year axis**
+(`study.years`). No region outlines, no political lines: a place is a point,
+a grid cell is a dot, the coast and the rivers are the only lines.
+
+To pose a new question: copy `studies/iberia/` → `studies/<id>/`, edit
+`study.json` (window, mask, years, normal, layers), write one reader per
+source into the layer file shapes in `SCHEMA.md`,
+`node scripts/build.mjs studies/<id>/study.json`.
+
+## Scripts
+
+| script | does |
+|---|---|
+| `scripts/geo.mjs` | Natural Earth 10m land, coast, rivers, lakes, admin-0 mask, admin-1 label points → `studies/<id>/geo/frame.json` |
+| `scripts/harvest-climate.mjs` | NASA POWER daily (MERRA-2) → per-point per-year P, ET₀ (Hargreaves), D35, D40, Tmean; hydrological + calendar year; 1991–2020 normals |
+| `scripts/harvest-crops.mjs` | Eurostat `apro_cpshr` NUTS-2 crop production and area |
+| `scripts/harvest-trade.mjs` | Eurostat Comext HS exports/imports + `apri_ap_crpouta` producer prices |
+| `scripts/check-sources.mjs` | probes every instrument URL; stamps `source_state` up / wall / dead; never touches `confidence` |
+| `scripts/build.mjs` | validate → `web/data/<id>.js` + `web/data/geo.js`; hash-stamps `index.html` |
+| `deploy.sh` | build → Cloudflare Pages |
+
+Raw source responses cache under `data/sources/` (gitignored); re-runs are free.
+
+## Rules carried over from the Atlas
+
+1. Never show a volatile value without its date and source.
+2. Draw absence: a missing year is a gap, not a zero (a national sum with one country missing is `null`).
+3. Confidence is a stamp a person sets (`recalled` → `cited` → `read`); a script can only say whether a URL answered.
+4. Cite on the face of the plate.
+5. Legible in greyscale.
+
+© Ozvåag LLC.

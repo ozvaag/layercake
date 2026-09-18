@@ -1,0 +1,100 @@
+/* atlas.css — shared chrome for every page of the Atlas.
+   Tokens and rules per DESIGN.md: ink on paper, three inks max,
+   confidence as weight, absence drawn. No sans-serif anywhere. */
+:root{
+  --paper:#F4EFE6; --paper-deep:#E8E0D2; --ink:#1C1A17; --ink-soft:#5A5349;
+  --rule:#B8AE9C; --sea:#DDE4E3;
+  --oxblood:#7A2E2E; --verdigris:#4A6B62; --sepia:#8B6F47;
+}
+html{background:var(--paper-deep)}
+body{
+  margin:0 auto; max-width:1080px; padding:34px 44px 60px;
+  background:var(--paper); color:var(--ink);
+  font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  font-size:15.5px; line-height:1.5;
+  border-left:1px solid var(--rule); border-right:1px solid var(--rule);
+  min-height:100vh; box-sizing:border-box;
+}
+.kicker{font-size:11px; letter-spacing:.28em; text-transform:uppercase;
+        color:var(--ink-soft); margin:0 0 10px; font-variant-numeric:lining-nums;}
+h1{font-size:44px; line-height:1.02; margin:0 0 8px; letter-spacing:-.015em; font-weight:600;}
+h1 small{display:block; font-size:19px; letter-spacing:.04em; color:var(--ink-soft);
+         font-style:italic; font-weight:400; margin-top:6px;}
+.edition{display:flex; gap:26px; flex-wrap:wrap; margin:14px 0 0;
+         font-size:12px; letter-spacing:.09em; text-transform:uppercase;
+         color:var(--ink-soft); font-variant-numeric:lining-nums;}
+.edition b{color:var(--ink); font-weight:600;}
+.plate-head{border-bottom:2.5px solid var(--ink); padding-bottom:18px; margin-bottom:6px;}
+
+/* Contents — the atlas's table of plates, not a navbar */
+.contents{display:flex; gap:22px; flex-wrap:wrap; margin:12px 0 0;
+          font-size:11px; letter-spacing:.2em; text-transform:uppercase;}
+.contents a{color:var(--ink-soft); text-decoration:none; padding-bottom:2px;
+            border-bottom:1px solid transparent;}
+.contents a:hover{color:var(--oxblood);}
+.contents a.here{color:var(--ink); border-bottom-color:var(--ink);}
+.contents.runner{justify-content:space-between; width:100%;}
+
+h2.section{font-size:13px; letter-spacing:.22em; text-transform:uppercase; font-weight:600;
+   margin:30px 0 10px; padding-bottom:5px; border-bottom:1px solid var(--ink);}
+
+/* The cartouche — a margin inset, never a modal */
+.cartouche{border:1px solid var(--ink); background:var(--paper);
+  box-shadow:3px 3px 0 var(--paper-deep); padding:16px 18px;}
+.cartouche .c-tier{font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-soft);}
+.cartouche h3{font-size:21px; margin:2px 0 2px; font-weight:600; line-height:1.15;}
+.cartouche .c-sub{font-size:12.5px; color:var(--ink-soft); font-style:italic; margin-bottom:10px;}
+.kv{margin:3px 0; font-size:13.5px;}
+.kv b{font-size:9px; letter-spacing:.16em; text-transform:uppercase;
+      font-weight:600; color:var(--ink-soft); margin-right:5px;}
+.unsurveyed{color:var(--ink-soft); font-style:italic;}
+.tie{margin:3px 0; font-size:13.5px; padding-left:12px; text-indent:-12px;}
+.tie .t-date{color:var(--ink-soft); font-style:italic; font-size:12px;}
+.srcnote{font-size:11px; color:var(--ink-soft); margin-top:12px; padding-top:8px;
+         border-top:1px solid var(--rule); line-height:1.55;}
+.srcnote a{color:var(--ink-soft);}
+.conf{font-size:9px; letter-spacing:.18em; text-transform:uppercase;}
+.conf.scraped{color:var(--ink-soft);}
+.conf.human-checked{color:var(--ink);}
+/* confirmed-by-office is the strongest thing the almanac can say: the body
+   itself said it, on a dated occasion. It had NO rule at all until 2026-08-27,
+   so the best-sourced facts rendered identically to the weakest. Weight, not
+   colour — the plates must hold in greyscale and in print. */
+.conf.confirmed-by-office{color:var(--ink); font-weight:600;}
+
+/* money entries — sepia is the ink for instruments */
+.inc{border:1px solid var(--sepia); border-left:4px solid var(--sepia);
+     padding:16px 20px; margin:18px 0; background:rgba(139,111,71,0.04);
+     page-break-inside:avoid;}
+.inc .i-name{font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+             color:var(--sepia); font-weight:600;}
+.inc .i-rate{font-size:20px; font-weight:600; margin:4px 0 6px; line-height:1.25;}
+.inc .i-admin{font-size:13.5px; margin:6px 0 2px;}
+.inc .i-admin b{font-weight:600;}
+.inc .i-admin .not-film{color:var(--oxblood); font-style:italic;}
+.warn{border-left:3px solid var(--oxblood); background:rgba(122,46,46,0.05);
+      padding:5px 11px; margin:8px 0 2px; font-size:12.5px;}
+
+/* gazetteer table */
+input.filter{font:inherit; font-size:15px; width:100%; box-sizing:border-box;
+  padding:9px 13px; border:1px solid var(--rule); background:#FDFBF7; color:var(--ink);
+  letter-spacing:.02em; margin:14px 0 4px;}
+input.filter:focus{outline:none; border-color:var(--ink);}
+table.gaz{border-collapse:collapse; width:100%; font-size:13.5px;}
+.gaz td,.gaz th{border-bottom:1px solid var(--rule); padding:6px 10px 6px 0;
+  text-align:left; vertical-align:baseline;}
+.gaz th{font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-soft);
+  border-bottom:1px solid var(--ink); font-weight:600; position:sticky; top:0; background:var(--paper);}
+.gaz tr{cursor:pointer;}
+.gaz tr:hover td{background:var(--paper-deep);}
+.gaz tr.sel td{background:var(--paper-deep); border-bottom-color:var(--ink);}
+.gaz td.g-cc{color:var(--ink-soft); font-size:11.5px; letter-spacing:.1em;}
+.gaz td.g-name{font-weight:600;}
+.gaz .alpha{font-size:12px; letter-spacing:.3em; color:var(--ink-soft); font-weight:600;
+  padding-top:16px;}
+
+.foot{font-size:11px; color:var(--ink-soft); margin-top:36px;
+      border-top:2.5px solid var(--ink); padding-top:9px; line-height:1.6;}
+.foot a{color:var(--ink-soft);}
+@media(max-width:820px){ body{padding:22px 18px 40px;} .split{display:block!important;}
+  .split>aside{position:static!important; max-height:none!important; margin-top:20px;} }

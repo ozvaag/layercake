@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Film Commission Atlas — engraved globe, ink on paper.
+       Tuned for 16px: equator + meridian only, no faint latitudes
+       (they mush at small sizes), accent large enough to survive. -->
+  <rect width="32" height="32" rx="6" fill="#F4EFE6"/>
+  <circle cx="16" cy="16" r="10.6" fill="#DDE4E3" stroke="#1C1A17" stroke-width="2"/>
+  <g fill="none" stroke="#1C1A17" stroke-width="1.5">
+    <line x1="5.4" y1="16" x2="26.6" y2="16"/>
+    <ellipse cx="16" cy="16" rx="4.8" ry="10.6"/>
+  </g>
+  <!-- one recorded entity -->
+  <circle cx="20.2" cy="10.6" r="3" fill="#7A2E2E" stroke="#F4EFE6" stroke-width="1.1"/>
+</svg>

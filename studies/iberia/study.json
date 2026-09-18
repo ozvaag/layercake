@@ -1,0 +1,24 @@
+{
+  "id": "iberia",
+  "title": "Iberia",
+  "subtitle": "Rain, law and harvest on one peninsula, 2000–2025",
+  "years": [2000, 2025],
+  "normal": [1991, 2020],
+  "frame": {
+    "window": { "lon": [-9.9, 3.6], "lat": [35.8, 44.2] },
+    "mask": ["ES", "PT"],
+    "admin1_countries": ["ES", "PT"],
+    "fade_north_of": 43.35,
+    "river_scalerank": 9,
+    "exclude_boxes": [
+      { "name": "Balearics", "lon": [1.0, 4.5], "lat": [38.5, 40.3] }
+    ]
+  },
+  "layers": [
+    { "id": "rain",   "kind": "field",  "file": "natural/climate.json", "ink": "sea",       "label": "Rain",        "unit": "mm, hydrological year Oct–Sep" },
+    { "id": "heat",   "kind": "field",  "file": "natural/climate.json", "ink": "oxblood",   "label": "Heat stress", "unit": "days ≥ 35 °C" },
+    { "id": "crops",  "kind": "marks",  "file": "food/crops.json",      "ink": "sepia",     "label": "Harvest",     "unit": "thousand tonnes, NUTS-2" },
+    { "id": "trade",  "kind": "series", "file": "food/trade.json",      "ink": "sepia",     "label": "Exports",     "unit": "€, HS4, reporter = country" },
+    { "id": "policy", "kind": "events", "file": "policy/instruments.json", "ink": "verdigris", "label": "Law",      "unit": "instrument, dated" }
+  ]
+}
