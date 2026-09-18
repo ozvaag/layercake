@@ -105,6 +105,20 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
   <div>
     <p class="plain">Every layer is one of four shapes: a <b>field</b> (values on a grid, like rain), <b>marks</b> (values on places, like a region's harvest), <b>events</b> (things with a date, like a law), or a <b>series</b> (one figure per year, like exports).</p>
     <div class="cards" id="cards"></div>
+    <div class="inst" id="euBox">
+      <h3 id="euTitle">Any Eurostat table as a layer <span style="font-weight:400;color:var(--ink-soft);font-size:12.5px">deaths by week, population, unemployment, nights spent, water abstraction — type the dataset code from the Eurostat browser and it is checked here, live.</span></h3>
+      <div class="form">
+        <div><label>dataset code</label><input type="text" id="e_ds" placeholder="e.g. demo_r_mwk2_ts"></div>
+        <div><label>filters (dim=value; …)</label><input type="text" id="e_f" placeholder="sex=T; age=TOTAL"></div>
+        <div><label>months to keep (blank = all)</label><input type="text" id="e_m" placeholder="6,7,8"></div>
+        <div><label>fold</label><select id="e_agg"><option value="sum">sum</option><option value="mean">mean</option></select></div>
+        <div><label>label</label><input type="text" id="e_l" placeholder="Deaths, June–August"></div>
+        <div><label>unit</label><input type="text" id="e_u" placeholder="deaths"></div>
+      </div>
+      <div class="row" style="margin-top:8px"><button class="go alt" id="e_check">Check the table</button><button class="go alt" id="e_add" disabled>Add as a layer</button><span class="status" id="e_status"></span></div>
+      <div id="e_dims" class="status"></div>
+      <table id="e_table"><thead><tr><th>id</th><th>dataset</th><th>filters</th><th>months</th><th>fold</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
     <div class="inst" id="instBox">
       <h3>Instruments — the dated layer <span style="font-weight:400;color:var(--ink-soft);font-size:12.5px">laws, plans, decrees, dams, programmes. A date, a title and a citation are required; a person marks confidence later.</span></h3>
       <div class="form">
@@ -161,7 +175,7 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
 </section>
 
 <script src="data/world.js?v=d5cd7d14214d"></script>
-<script src="data/studies.js?v=5316c472b08a"></script>
+<script src="data/studies.js?v=7a113d7aa6d0"></script>
 <script>
 (function(){
   const WD = window.WORLD; const $ = (s) => document.querySelector(s); const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -238,8 +252,18 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
   $('#i_add').addEventListener('click', () => { const date = $('#i_date').value, title = $('#i_title').value.trim(), cite = $('#i_cite').value.trim(); const st = $('#i_status'); if (!date || !title || !cite) { st.textContent = 'a date, a title and a citation are required'; return; } const id = slug(`${$('#i_cc').value}-${title}-${date.slice(0, 4)}`); INST.push({ id, date, country: $('#i_cc').value, kind: $('#i_kind').value, title, citation: cite, summary: $('#i_sum').value.trim(), scope: { regions: [...instScope], basins: $('#i_basins').value.split(';').map((x) => x.trim()).filter(Boolean) }, source_url: $('#i_url').value.trim() || null, confidence: 'recalled', verified_at: null }); ['i_title', 'i_cite', 'i_url', 'i_sum', 'i_basins'].forEach((k) => $('#' + k).value = ''); st.textContent = `added — ${INST.length} on file`; render(); });
   // a draft survives a reload (this browser only)
   const DRAFT = 'layercake-builder-draft';
-  function saveDraft() { try { localStorage.setItem(DRAFT, JSON.stringify({ sel: [...sel], name: $('#name').value, sub: $('#sub').value, y0: $('#y0').value, y1: $('#y1').value, n0: $('#n0').value, n1: $('#n1').value, hm: $('#hm').value, win: win(), far: $('#far').checked, layers: LAYERS.filter((L) => L.on).map((L) => L.id), inst: INST })); } catch (e) {} }
-  function loadDraft() { try { const d = JSON.parse(localStorage.getItem(DRAFT) || 'null'); if (!d || new URLSearchParams(location.search).get('cc')) return; d.sel.forEach((c) => WD.countries[c] && sel.add(c)); $('#name').value = d.name || ''; $('#sub').value = d.sub || ''; ['y0', 'y1', 'n0', 'n1', 'hm'].forEach((k) => { if (d[k]) $('#' + k).value = d[k]; }); $('#far').checked = !!d.far; if (d.win) { $('#lon0').value = d.win.lon[0]; $('#lon1').value = d.win.lon[1]; $('#lat0').value = d.win.lat[0]; $('#lat1').value = d.win.lat[1]; } if (d.layers) LAYERS.forEach((L) => L.on = d.layers.includes(L.id)); if (d.inst) INST.push(...d.inst); return true; } catch (e) { return false; } }
+  function saveDraft() { try { localStorage.setItem(DRAFT, JSON.stringify({ sel: [...sel], name: $('#name').value, sub: $('#sub').value, y0: $('#y0').value, y1: $('#y1').value, n0: $('#n0').value, n1: $('#n1').value, hm: $('#hm').value, win: win(), far: $('#far').checked, layers: LAYERS.filter((L) => L.on).map((L) => L.id), inst: INST, eus: EUS })); } catch (e) {} }
+  function loadDraft() { try { const d = JSON.parse(localStorage.getItem(DRAFT) || 'null'); if (!d || new URLSearchParams(location.search).get('cc')) return; d.sel.forEach((c) => WD.countries[c] && sel.add(c)); $('#name').value = d.name || ''; $('#sub').value = d.sub || ''; ['y0', 'y1', 'n0', 'n1', 'hm'].forEach((k) => { if (d[k]) $('#' + k).value = d[k]; }); $('#far').checked = !!d.far; if (d.win) { $('#lon0').value = d.win.lon[0]; $('#lon1').value = d.win.lon[1]; $('#lat0').value = d.win.lat[0]; $('#lat1').value = d.win.lat[1]; } if (d.layers) LAYERS.forEach((L) => L.on = d.layers.includes(L.id)); if (d.inst) INST.push(...d.inst); if (d.eus) EUS.push(...d.eus); return true; } catch (e) { return false; } }
+
+  // ── any Eurostat table, checked live ──
+  const EUS = []; let euOk = null;
+  const parseF = (t) => Object.fromEntries(String(t || '').split(/[;,]/).map((x) => x.trim()).filter(Boolean).map((x) => x.split('=').map((y) => y.trim())).filter((kv) => kv.length === 2));
+  $('#e_check').addEventListener('click', async () => { const ds = $('#e_ds').value.trim().toLowerCase(); const st = $('#e_status'); if (!ds) { st.textContent = 'type a dataset code'; return; } st.textContent = 'asking Eurostat…'; $('#e_add').disabled = true; euOk = null; const f = parseF($('#e_f').value); const y = +$('#y1').value - 1; const tries = [`${y}`, `${y}-W20`, `${y}-06`]; let last = '';
+    for (const t of tries) { try { const qs = Object.entries({ ...f, time: t }).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&'); const r = await fetch(`https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/${ds}?${qs}`); const j = await r.json(); if (j.error) { last = j.error[0]?.label || 'error'; continue; } const dims = j.id.map((d) => { const cat = j.dimension[d].category.label; const n = Object.keys(cat).length; return `<b>${esc(d)}</b> (${n}${n <= 6 ? ': ' + Object.keys(cat).join(', ') : ''})`; }).join(' · '); const geos = Object.keys(j.dimension.geo?.category.label || {}).filter((g) => [...sel].some((c) => g.startsWith(c))); const nuts2 = geos.filter((g) => g.length === 4).length; $('#e_dims').innerHTML = `<b>${esc(j.label)}</b> — updated ${String(j.updated).slice(0, 10)}. Dimensions: ${dims}. For your countries: ${geos.length} geo codes, ${nuts2} at NUTS-2. Time looks ${t.includes('W') ? 'weekly' : t.includes('-') ? 'monthly' : 'annual'}. ${j.id.filter((d) => !['freq', 'geo', 'time', 'unit'].includes(d) && Object.keys(j.dimension[d].category.label).length > 1 && !f[d]).length ? '<span style="color:var(--oxblood)">Unfiltered dimensions with several values will be summed together — add filters for ' + esc(j.id.filter((d) => !['freq', 'geo', 'time', 'unit'].includes(d) && Object.keys(j.dimension[d].category.label).length > 1 && !f[d]).join(', ')) + '.</span>' : 'Every other dimension is pinned.'}`; euOk = { ds, label: j.label, probe: t }; st.textContent = 'table found'; $('#e_add').disabled = false; return; } catch (e) { last = e.message; } }
+    st.textContent = 'not found: ' + last; $('#e_dims').textContent = ''; });
+  $('#e_add').addEventListener('click', () => { if (!euOk) return; const id = slug($('#e_l').value || euOk.ds); const months = $('#e_m').value.split(/[,\s]+/).map(Number).filter((m) => m >= 1 && m <= 12); EUS.push({ id, dataset: euOk.ds, filters: parseF($('#e_f').value), label: $('#e_l').value.trim() || euOk.label, unit: $('#e_u').value.trim(), ...(months.length ? { months } : {}), agg: $('#e_agg').value, probe_time: euOk.probe }); $('#e_status').textContent = `added — ${EUS.length} table${EUS.length > 1 ? 's' : ''}`; euOk = null; $('#e_add').disabled = true; render(); });
+  function renderEu() { $('#e_table tbody').innerHTML = EUS.map((e, k) => `<tr><td>${esc(e.id)}</td><td>${esc(e.dataset)}</td><td>${esc(Object.entries(e.filters).map(([a, b]) => a + '=' + b).join('; '))}</td><td>${(e.months || []).join(',') || 'all'}</td><td>${e.agg}</td><td><button data-edel="${k}">remove</button></td></tr>`).join(''); }
+  $('#e_table').addEventListener('click', (e) => { const b = e.target.closest('[data-edel]'); if (b) { EUS.splice(+b.dataset.edel, 1); render(); } });
 
   // ── the manifest ──
   const slug = (s) => (s || 'my-study').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'my-study';
@@ -248,10 +272,10 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
     $('#chips').innerHTML = [...sel].map((cc) => `<span class="chip" data-cc="${cc}"><b>${cc}</b> ${esc(WD.countries[cc].name)} ×</span>`).join('') || '<span style="color:var(--ink-soft);font-size:12.5px">none yet</span>';
     renderCards(); drawFrame();
     const id = slug($('#name').value); const W = win();
-    const study = { id, title: $('#name').value || 'My study', subtitle: $('#sub').value || '', years: [+$('#y0').value, +$('#y1').value], normal: [+$('#n0').value, +$('#n1').value], hydro_year_start_month: +$('#hm').value, frame: { window: { lon: W.lon.map((v) => +v.toFixed(1)), lat: W.lat.map((v) => +v.toFixed(1)) }, mask: [...sel], admin1_countries: [...sel], fade: null, river_scalerank: 9, exclude_boxes: [] }, market: {}, layers: LAYERS.filter((L) => L.on && L.avail(sel)).map(({ id, kind, file, ink, label, unit }) => ({ id, kind, file, ink, label, unit })) };
+    const study = { id, title: $('#name').value || 'My study', subtitle: $('#sub').value || '', years: [+$('#y0').value, +$('#y1').value], normal: [+$('#n0').value, +$('#n1').value], hydro_year_start_month: +$('#hm').value, ...(EUS.length ? { eurostat: EUS } : {}), frame: { window: { lon: W.lon.map((v) => +v.toFixed(1)), lat: W.lat.map((v) => +v.toFixed(1)) }, mask: [...sel], admin1_countries: [...sel], fade: null, river_scalerank: 9, exclude_boxes: [] }, market: {}, layers: [...LAYERS.filter((L) => L.on && L.avail(sel)).map(({ id, kind, file, ink, label, unit }) => ({ id, kind, file, ink, label, unit })), ...(EUS.length ? [{ id: 'eurostat', kind: 'marks', file: 'food/eurostat.json', ink: 'sepia', label: 'Eurostat tables', unit: 'per table' }] : [])] };
     const places = { note: 'The marks layer’s atoms. Map each place code to the Natural Earth admin-1 units (iso_3166_2) it is made of; scripts/geo.mjs lists the units it found under geo/frame.json → admin1. Eurostat NUTS-2 codes for EU masks.', places: {}, aliases: {}, national: Object.fromEntries([...sel].map((cc) => [cc, WD.countries[cc].name])) };
     const inst = { layer: 'policy', kind: 'events', note: 'Written by the builder. confidence `recalled` until a person opens the source and raises it to `cited` or `read`.', kinds: KINDS, instruments: INST.length ? INST : [] };
-    renderInst(); loadRegions(); saveDraft();
+    renderInst(); renderEu(); loadRegions(); saveDraft();
     const mj = JSON.stringify(study, null, 2); $('#manifest').textContent = mj; $('#extras').textContent = JSON.stringify(places, null, 2) + '\n\n' + JSON.stringify(inst, null, 2);
     LAST = { study, places, instruments: inst };
     const blob = (o) => URL.createObjectURL(new Blob([JSON.stringify(o, null, 2)], { type: 'application/json' })); $('#dlStudy').href = blob(study); $('#dlPlaces').href = blob(places); $('#dlInst').href = blob(inst);

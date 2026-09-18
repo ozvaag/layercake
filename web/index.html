@@ -70,7 +70,7 @@ body{max-width:1180px}
 <header class="plate-head">
   <p class="kicker">Open source · MIT · © Ozvåag LLC</p>
   <h1>Layercake <small>a place, its layers, its years</small></h1>
-  <p class="lead">Put your research on a map that moves through time. <b>Pick the place. Add the layers — climate, law, harvest, your own data. Set the years.</b> Layercake draws them on one sheet and one time axis so they can be read against each other, and every figure keeps its source. Free, open, and the files stay yours.</p>
+  <p class="lead">Put your research on a map that moves through time. <b>Pick the place. Add the layers — climate, law, harvest, deaths, tourism, any Eurostat table, your own data. Set the years.</b> Layercake draws them on one sheet and one time axis so they can be read against each other, and every figure keeps its source. Free, open, and the files stay yours.</p>
   <div class="howto"><div><b>1 · Click where you work</b><span>One country, or several to make a region.</span></div><div><b>2 · Answer three questions</b><span>Where, what, when. The builder writes the files.</span></div><div><b>3 · Read the plate</b><span>Scrub the years; the ground, the law and the harvest answer together.</span></div></div>
   <div class="edition" style="margin-top:12px"><span>Studies <b id="nStudies">0</b></span><span>Countries on the globe <b id="nCountries">0</b></span><span><a href="https://github.com/ozvaag/layercake" style="color:inherit">github.com/ozvaag/layercake</a></span></div>
 </header>
@@ -89,7 +89,7 @@ body{max-width:1180px}
 </div>
 
 <h2 class="section">Who it is for</h2>
-<p class="who">Anyone whose question has a <i>where</i>, a <i>what</i> and a <i>when</i>: a PhD on irrigation law and olive yields, a report on heat and hospital admissions by region, a history of a river basin's dams. You do not need to code to see your first field; you need Node on a laptop to build the full plate — one command, printed for you.</p>
+<p class="who">Anyone whose question has a <i>where</i>, a <i>what</i> and a <i>when</i>: a PhD on irrigation law and olive yields, a report on heat and summer deaths by region (study #4 here), a history of a river basin's dams. You do not need to code to see your first field; you need Node on a laptop to build the full plate — one command, printed for you.</p>
 <h2 class="section">The three questions</h2>
 <div class="steps">
   <div class="step"><span class="k">1 · Place</span><h3>Where?</h3><p>One country or several — the <code>mask</code>. The frame draws land, coast, relief and every river from open sources; no political line is drawn. The window is the mask's bounding box plus a margin.</p></div>
@@ -103,7 +103,7 @@ body{max-width:1180px}
 <div class="foot"><span>Frame: Natural Earth · Terrarium (AWS Open Data) · HydroRIVERS. Field: NASA POWER (MERRA-2). Harvest and market: Eurostat. Instruments: hand-curated, cited.</span><span>© <span id="yr"></span> Ozvåag LLC · <a href="https://github.com/ozvaag/layercake/blob/main/SCHEMA.md">the schema</a></span></div>
 
 <script src="data/world.js?v=d5cd7d14214d"></script>
-<script src="data/studies.js?v=5316c472b08a"></script>
+<script src="data/studies.js?v=7a113d7aa6d0"></script>
 <script>
 (function(){
   const WD = window.WORLD, ST = window.STUDIES || {}; const $ = (s) => document.querySelector(s);
