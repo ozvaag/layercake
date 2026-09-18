@@ -115,8 +115,12 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
 <section class="q" id="q4">
   <div><span class="k">4 · Take it</span><h2>Your files</h2><p class="why">Three small files describe your study. One command on a laptop with Node fetches the data, draws the ground and the rivers, and checks every figure. The result is a page like the Iberia example — yours to host anywhere.</p></div>
   <div>
-    <div class="next"><div><b>Download</b>the three files below</div><div><b>Run</b>one command — it prints each step and refuses a study that cannot be traced to a source</div><div><b>Open</b><code>web/study.html?s=your-id</code>, or deploy it</div></div>
-    <div class="row" style="margin-top:14px"><a class="go" id="dlStudy" download="study.json">study.json ↓</a><a class="go alt" id="dlPlaces" download="places.json">places.json ↓</a><a class="go alt" id="dlInst" download="instruments.json">instruments.json ↓</a></div>
+    <div class="next"><div><b>Submit</b>and Layercake builds it: your files become a pull request, a person merges, the readers run, the study appears on the globe — public, cited, yours</div><div><b>Or download</b>the three files and run one command on your own laptop</div><div><b>Then open</b>the study page, print the plate, cite the folder</div></div>
+    <div class="row" style="margin-top:14px"><button class="go" id="submitBtn">Submit to Layercake ▸</button><span class="status" id="submitStatus"></span></div>
+    <input type="text" id="note" placeholder="a line for the reviewer — who you are, what the study is for (optional)" style="margin-top:8px">
+    <input type="text" id="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
+    <p class="status">Submissions are public from the moment they are merged: the study folder lives in the open repository. Keep private data out; put it in as your own CSV on your own machine instead.</p>
+    <div class="row" style="margin-top:14px"><a class="go alt" id="dlStudy" download="study.json">study.json ↓</a><a class="go alt" id="dlPlaces" download="places.json">places.json ↓</a><a class="go alt" id="dlInst" download="instruments.json">instruments.json ↓</a></div>
     <label>Then, on your machine <button class="copy" id="copyCli">copy</button></label>
     <pre id="cli"></pre>
     <details><summary>Show the files</summary>
@@ -205,10 +209,24 @@ pre{font-family:ui-monospace,Menlo,monospace; font-size:12px; background:var(--p
     const places = { note: 'The marks layer’s atoms. Map each place code to the Natural Earth admin-1 units (iso_3166_2) it is made of; scripts/geo.mjs lists the units it found under geo/frame.json → admin1. Eurostat NUTS-2 codes for EU masks.', places: {}, aliases: {}, national: Object.fromEntries([...sel].map((cc) => [cc, WD.countries[cc].name])) };
     const inst = { layer: 'policy', kind: 'events', kinds: { water: 'water law, basin plans', drought: 'drought decree or emergency', climate: 'climate framework law', agri: 'agricultural policy', infra: 'infrastructure' }, instruments: [{ id: 'example-2015', date: '2015-01-01', country: [...sel][0] || 'XX', kind: 'water', title: 'Replace me', citation: 'Act number and date', summary: 'One or two sentences of what it did.', scope: { regions: ['all'], basins: [] }, source_url: null, confidence: 'recalled', verified_at: null }] };
     const mj = JSON.stringify(study, null, 2); $('#manifest').textContent = mj; $('#extras').textContent = JSON.stringify(places, null, 2) + '\n\n' + JSON.stringify(inst, null, 2);
+    LAST = { study, places, instruments: inst };
     const blob = (o) => URL.createObjectURL(new Blob([JSON.stringify(o, null, 2)], { type: 'application/json' })); $('#dlStudy').href = blob(study); $('#dlPlaces').href = blob(places); $('#dlInst').href = blob(inst);
     const readers = [...new Set(LAYERS.filter((L) => L.on && L.avail(sel) && L.reader).map((L) => L.reader))];
     $('#cli').textContent = `git clone https://github.com/ozvaag/layercake && cd layercake\nmkdir -p studies/${id}/policy && mv ~/Downloads/study.json ~/Downloads/places.json studies/${id}/ && mv ~/Downloads/instruments.json studies/${id}/policy/\nnode scripts/run.mjs studies/${id}/study.json\n# one command: frame → places → relief → drainage → ${readers.map((r) => r.replace(/^harvest-|\.mjs$/g, '')).join(' → ')}${LAYERS.some((L) => L.on && L.id.startsWith('own-')) ? ' → your CSVs' : ''} → build\n# then open web/study.html?s=${id} locally, or ./deploy.sh  (each step is also its own script under scripts/)`;
   }
+  let LAST = null;
+  $('#submitBtn').addEventListener('click', async () => {
+    const st = $('#submitStatus'); const b = $('#submitBtn'); if (!LAST) return;
+    if (!$('#name').value.trim()) { st.textContent = 'give the study a name first (question 3)'; $('#name').focus(); return; }
+    if (!sel.size) { st.textContent = 'pick at least one country (question 1)'; return; }
+    b.disabled = true; st.textContent = 'opening a pull request…';
+    try { const r = await fetch('/api/submit', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ...LAST, note: $('#note').value, website: $('#website').value }) }); const j = await r.json();
+      if (j.ok && j.pr) { st.innerHTML = `submitted — <a href="${j.pr}" target="_blank" rel="noopener">your pull request ↗</a>. When it is merged the build runs and the study appears on the globe.`; }
+      else if (r.status === 503) { st.textContent = 'submissions are not switched on yet — download the files and run the command below.'; }
+      else st.textContent = 'could not submit: ' + (j.error || r.status);
+    } catch (e) { st.textContent = 'could not reach the submit endpoint: ' + e.message; }
+    b.disabled = false;
+  });
   $('#copyCli').addEventListener('click', async () => { try { await navigator.clipboard.writeText($('#cli').textContent); $('#copyCli').textContent = 'copied'; setTimeout(() => $('#copyCli').textContent = 'copy', 1500); } catch (e) { $('#copyCli').textContent = 'select & copy'; } });
   autoWindow(); render();
 })();

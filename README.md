@@ -44,6 +44,17 @@ To pose a new question: the builder at `/builder` writes `study.json`,
 `places.json` and `instruments.json`; then `node scripts/run.mjs studies/<id>/study.json`.
 Or copy a study folder and edit by hand — `SCHEMA.md` is the contract.
 
+## Hosted builds — submit → pull request → CI → the globe
+
+The builder's **Submit** posts the three files to `functions/api/submit.js`
+(a Pages Function), which opens a pull request on this repo. A person merges;
+`.github/workflows/build-study.yml` runs `scripts/run.mjs` for the changed
+study, commits the outputs, and deploys. Nothing is published without the merge.
+Free on a public repo; studies are public. Secrets to set once: Pages
+`GITHUB_TOKEN` (fine-grained PAT, contents + pull requests on this repo) and,
+for CI deploys, repo secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`.
+Without them the button says so and the files still download.
+
 ## Scripts
 
 | script | does |

@@ -24,7 +24,7 @@ if (files.has('food/faostat.json')) steps.push(['faostat', 'harvest-faostat.mjs'
 if (files.has('series/worldbank.json')) steps.push(['worldbank', 'harvest-worldbank.mjs']);
 if (existsSync(join(DIR, 'own'))) steps.push(['own', 'harvest-own.mjs']);
 if (files.has('policy/instruments.json')) steps.push(['sources', 'check-sources.mjs', '--write']);
-steps.push(['build', 'build.mjs']);
+steps.push(['build', 'build.mjs'], ['readme', 'readme.mjs']);
 if (!existsSync(join(ROOT, 'web/data/world.js'))) steps.unshift(['world', 'world.mjs']);
 console.log(`layercake · ${study.title} · ${steps.length} steps: ${steps.map((s) => s[0]).join(' → ')}`);
 const t0 = Date.now();
