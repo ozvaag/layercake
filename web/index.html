@@ -34,7 +34,9 @@ body{max-width:1180px}
 .go[aria-disabled="true"]{opacity:.35; pointer-events:none}
 .win{font-size:11.5px; color:var(--ink-soft); font-variant-numeric:lining-nums; margin:4px 0 0}
 .studies{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; margin-top:8px}
-.card{border:1px solid var(--rule); padding:14px 16px; text-decoration:none; color:inherit; display:block}
+.card{border:1px solid var(--rule); padding:14px 16px; text-decoration:none; color:inherit; display:block; position:relative; overflow:hidden}
+.card .thumb{position:absolute; right:-10px; top:-6px; width:150px; height:110px; background-size:cover; background-position:center; opacity:.55; -webkit-mask-image:linear-gradient(to left, #000 40%, transparent); mask-image:linear-gradient(to left, #000 40%, transparent); pointer-events:none}
+.card h3, .card p{position:relative}
 .card:hover{border-color:var(--ink)}
 .card h3{margin:0 0 4px; font-size:18px; font-weight:600}
 .card p{margin:0; font-size:12.5px; color:var(--ink-soft)}
@@ -87,7 +89,7 @@ body{max-width:1180px}
 </div>
 
 <h2 class="section">Who it is for</h2>
-<p class="who">Anyone whose question has a <i>where</i>, a <i>what</i> and a <i>when</i>: a PhD on irrigation law and olive yields, a report on heat and hospital admissions by region, a history of a river basin's dams. You do not need to code to see your first field; you need Node on a laptop to build the full plate — five commands, all printed for you.</p>
+<p class="who">Anyone whose question has a <i>where</i>, a <i>what</i> and a <i>when</i>: a PhD on irrigation law and olive yields, a report on heat and hospital admissions by region, a history of a river basin's dams. You do not need to code to see your first field; you need Node on a laptop to build the full plate — one command, printed for you.</p>
 <h2 class="section">The three questions</h2>
 <div class="steps">
   <div class="step"><span class="k">1 · Place</span><h3>Where?</h3><p>One country or several — the <code>mask</code>. The frame draws land, coast, relief and every river from open sources; no political line is drawn. The window is the mask's bounding box plus a margin.</p></div>
@@ -164,7 +166,7 @@ body{max-width:1180px}
   }
   $('#selChips').addEventListener('click', (e) => { const c = e.target.closest('[data-cc]'); if (c) { sel.delete(c.dataset.cc); update(); } });
   // studies list
-  $('#studies').innerHTML = Object.entries(ST).map(([id, s]) => `<a class="card" href="study?s=${id}"><h3>${s.title}</h3><p>${s.subtitle || ''}</p><p class="n">${(s.countries || []).join(' + ')} · ${s.years[0]}–${s.years[1]} · ${s.counts.field} grid points · ${s.counts.places} places · ${s.counts.events} instruments · built ${s.built}</p></a>`).join('') + `<a class="card" href="builder" style="border-style:dashed"><h3>+ a new study</h3><p>Pick a place on the globe, or open the builder and type the countries.</p></a>`;
+  $('#studies').innerHTML = Object.entries(ST).map(([id, s]) => `<a class="card" href="study?s=${id}">${s.relief ? `<div class="thumb" style="background-image:url(data/${id}-relief.png?v=${s.relief})"></div>` : ''}<h3>${s.title}</h3><p>${s.subtitle || ''}</p><p class="n">${(s.countries || []).join(' + ')} · ${s.years[0]}–${s.years[1]} · ${s.counts.field} grid points · ${s.counts.places} places · ${s.counts.events} instruments · built ${s.built}</p></a>`).join('') + `<a class="card" href="builder" style="border-style:dashed"><h3>+ a new study</h3><p>Pick a place on the globe, or open the builder and type the countries.</p></a>`;
   draw();
 })();
 </script>

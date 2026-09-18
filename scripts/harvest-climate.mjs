@@ -29,7 +29,9 @@ import { pointInRings } from './geo.mjs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const studyPath = process.argv[2] || join(ROOT, 'studies/iberia/study.json');
 const study = JSON.parse(readFileSync(studyPath, 'utf8'));
-const STEP = Number((process.argv.find((a) => a.startsWith('--step=')) || '--step=0.5').slice(7));
+// Grid step: given, or in the manifest, or chosen so the field holds ~250 points
+// (0.5° for a peninsula; coarser for a continent — POWER's own grid is 0.5°×0.625°).
+const stepArg = process.argv.find((a) => a.startsWith('--step='));
 const geo = JSON.parse(readFileSync(join(ROOT, 'studies', study.id, 'geo/frame.json'), 'utf8'));
 const CACHE = join(ROOT, 'data/sources/power'); mkdirSync(CACHE, { recursive: true });
 const [Y0, Y1] = study.years, [N0, N1] = study.normal;
@@ -38,6 +40,9 @@ const HM = study.hydro_year_start_month || 10;
 const START = `${Math.min(Y0, N0) - 1}${String(HM).padStart(2, '0')}01`, END = `${Y1}1231`;
 const PARAMS = 'PRECTOTCORR,T2M_MAX,T2M_MIN,T2M';
 const mask = Object.values(geo.mask);
+const countAt = (st) => { let n = 0; for (let lat = Math.ceil(W0.lat[0] / st) * st; lat <= W0.lat[1]; lat += st) for (let lon = Math.ceil(W0.lon[0] / st) * st; lon <= W0.lon[1]; lon += st) if (pointInRings([Math.round(lon * 100) / 100, Math.round(lat * 100) / 100], mask)) n++; return n; };
+const W0 = study.frame.window;
+const STEP = stepArg ? Number(stepArg.slice(7)) : study.frame.field_step || [0.5, 0.75, 1, 1.5, 2, 3].find((st) => countAt(st) <= 320) || 3;
 const excluded = (p) => (study.frame.exclude_boxes || []).some((b) => p[0] >= b.lon[0] && p[0] <= b.lon[1] && p[1] >= b.lat[0] && p[1] <= b.lat[1]);
 
 const pts = [];

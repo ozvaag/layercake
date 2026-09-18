@@ -20,8 +20,11 @@ import { albers } from './proj.mjs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const study = JSON.parse(readFileSync(process.argv[2] || join(ROOT, 'studies/iberia/study.json'), 'utf8'));
 const arg = (k, d) => Number((process.argv.find((a) => a.startsWith(`--${k}=`)) || `--${k}=${d}`).split('=')[1]);
-const Z = arg('zoom', 8), SCALE = arg('scale', 2);
-const W = study.frame.window; const CACHE = join(ROOT, 'data/sources/terrain', String(Z)); mkdirSync(CACHE, { recursive: true });
+const W = study.frame.window; const SCALE = arg('scale', 2);
+// Zoom: the finest level that keeps the tile count near 120 (Iberia gets z8;
+// a continent-sized window steps down rather than pulling thousands of tiles).
+const autoZoom = () => { for (let z = 9; z >= 3; z--) { const N = 2 ** z, R = Math.PI / 180; const tx = (lon) => (lon + 180) / 360 * N, ty = (lat) => (1 - Math.log(Math.tan(lat * R) + 1 / Math.cos(lat * R)) / Math.PI) / 2 * N; const n = (Math.floor(tx(W.lon[1])) - Math.floor(tx(W.lon[0])) + 1) * (Math.floor(ty(W.lat[0])) - Math.floor(ty(W.lat[1])) + 1); if (n <= 130) return z; } return 3; };
+const Z = process.argv.some((a) => a.startsWith('--zoom=')) ? arg('zoom', 8) : (study.frame.relief_zoom || autoZoom()); const CACHE = join(ROOT, 'data/sources/terrain', String(Z)); mkdirSync(CACHE, { recursive: true });
 const N = 2 ** Z, R = Math.PI / 180;
 const tx = (lon) => (lon + 180) / 360 * N, ty = (lat) => (1 - Math.log(Math.tan(lat * R) + 1 / Math.cos(lat * R)) / Math.PI) / 2 * N;
 const x0 = Math.floor(tx(W.lon[0])), x1 = Math.floor(tx(W.lon[1])), y0 = Math.floor(ty(W.lat[1])), y1 = Math.floor(ty(W.lat[0]));

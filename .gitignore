@@ -2,3 +2,4 @@ data/sources/
 node_modules/
 .wrangler/
 *.log
+web/data/_smoke*

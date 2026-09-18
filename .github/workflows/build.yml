@@ -1,0 +1,24 @@
+name: build every study
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      # No pipes into tee: a piped step reports tee's exit code, never the build's.
+      - name: world bundle is present
+        run: test -s web/data/world.js
+      - name: build each study (data is in the repo; readers are not run here)
+        shell: bash
+        run: |
+          set -euo pipefail
+          for m in studies/*/study.json; do node scripts/build.mjs "$m"; done
+      - name: own-CSV reader round-trips the fixture
+        run: node scripts/harvest-own.mjs studies/_smoke/study.json && node scripts/build.mjs studies/_smoke/study.json
+      - name: engine parses
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in web/study.html web/index.html web/builder.html; do sed -n '/^<script>$/,/^<\/script>$/p' "$f" | sed '1d;$d' > /tmp/x.js; node --check /tmp/x.js; done
