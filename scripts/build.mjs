@@ -131,7 +131,11 @@ writeFileSync(join(ROOT, 'web/data', study.id + '.js'), js);
 const net = existsSync(join(DIR, 'geo/rivers.json')) ? JSON.parse(readFileSync(join(DIR, 'geo/rivers.json'), 'utf8')) : null;
 const feats = existsSync(join(DIR, 'features.json')) ? JSON.parse(readFileSync(join(DIR, 'features.json'), 'utf8')) : { features: [], peaks: [] };
 const basinsFile = existsSync(join(DIR, 'geo/basins.json')) ? JSON.parse(readFileSync(join(DIR, 'geo/basins.json'), 'utf8')) : null;
-const basins = basinsFile ? { source: basinsFile.source, level: basinsFile.level, basins: basinsFile.basins.map((b) => ({ ...b, label: polylabel(b.ring, 0.02).map((v) => Math.round(v * 1e3) / 1e3) })) } : null;
+// frame.basin_names: { "<HYBAS_ID>" | "<current name>": "official name" } — rename basins to the
+// units a study's instruments actually use (Portugal's RH1–RH8, Spain's demarcaciones).
+const BN = study.frame.basin_names || {};
+const basins = basinsFile ? { source: basinsFile.source, level: basinsFile.level, basins: basinsFile.basins.map((b) => ({ ...b, name: BN[b.id] || (b.name && BN[b.name]) || b.name, label: polylabel(b.ring, 0.02).map((v) => Math.round(v * 1e3) / 1e3) })) } : null;
+if (basins) for (const k of Object.keys(BN)) if (!basins.basins.some((b) => b.id === k || basinsFile.basins.some((o) => o.id === b.id && o.name === k))) warnings.push(`basin_names: "${k}" matches no basin id or name`);
 const relief = existsSync(join(DIR, 'geo/relief.json')) ? JSON.parse(readFileSync(join(DIR, 'geo/relief.json'), 'utf8')) : null;
 const peakSeen = new Set(); const peaks = [...(geo.peaks || []), ...(feats.peaks || [])].filter((p) => { const k = p.name.toLowerCase(); if (peakSeen.has(k)) return false; peakSeen.add(k); return true; });
 const geoJs = `window.STUDY_GEO=${JSON.stringify({ window: geo.window, land: geo.land, coast: geo.coast, rivers: geo.rivers, named_rivers: geo.named_rivers || [], lakes: geo.lakes, bathy: geo.bathy || {}, peaks, features: feats.features, feature_note: feats.note, network: net ? { source: net.source, min_order: net.min_order, reaches: net.reaches } : null, basins, relief, source: geo.source })};`;

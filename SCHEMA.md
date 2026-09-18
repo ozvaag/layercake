@@ -18,6 +18,7 @@ faostat_items: { itemCode: name } for scripts/harvest-faostat.mjs (defaults if a
 notes: [paragraphs]              printed under the title — the author's reading of the plate
 private: true                    build, but keep off the site's registry
 frame.basin_level: 5             HydroBASINS Pfafstetter level for scripts/basins.mjs
+frame.basin_names: { id|name: name }  rename basins to the official units the instruments use
 frame.relief_zoom, frame.field_step   override the auto-sized relief tiles / grid step
 ```
 `mask` = the admin-0 rings whose mainland defines "inside the study" (grid

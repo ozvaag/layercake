@@ -53,6 +53,9 @@
         42.42
       ],
       "note": "the land north of the Pyrenees fades rather than ends"
+    },
+    "basin_names": {
+      "Sorraia": "Tejo (lower) · Sorraia"
     }
   },
   "layers": [
