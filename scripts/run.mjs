@@ -3,7 +3,9 @@
 // it asks for: frame → places (if none yet) → relief → drainage → the readers
 // named by the layers → own CSVs (if present) → source check → build.
 // Every step is its own script and can be re-run alone; raw responses cache.
-// Usage: node scripts/run.mjs studies/<id>/study.json [--skip=relief,hydro]
+// Usage: node scripts/run.mjs studies/<id>/study.json [--skip=relief,hydro] [--force]
+// The frame steps (relief, hydro, basins) are skipped when their output already
+// exists in the study (or the study it borrows its frame from); --force redoes them.
 import { readFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
@@ -16,7 +18,11 @@ const files = new Set(study.layers.map((L) => L.file));
 const steps = [];
 steps.push(['geo', 'geo.mjs']);
 if (!existsSync(join(DIR, 'places.json')) || !Object.keys(JSON.parse(readFileSync(join(DIR, 'places.json'), 'utf8')).places || {}).length) steps.push(['places', 'places-from-frame.mjs']);
-steps.push(['relief', 'relief.mjs'], ['hydro', 'hydro.mjs'], ['basins', 'basins.mjs']);
+const force = process.argv.includes('--force');
+const have = (f) => existsSync(join(DIR, f)) || (study.frame_from && existsSync(join(ROOT, 'studies', study.frame_from, f)));
+const built = [];
+for (const [name, script, out] of [['relief', 'relief.mjs', 'geo/relief.json'], ['hydro', 'hydro.mjs', 'geo/rivers.json'], ['basins', 'basins.mjs', 'geo/basins.json']]) { if (!force && have(out)) built.push(name); else steps.push([name, script]); }
+if (built.length) console.log(`frame already built: ${built.join(', ')} (pass --force to redo)`);
 if ([...files].some((f) => f.startsWith('natural/'))) steps.push(['climate', 'harvest-climate.mjs']);
 if (files.has('food/crops.json')) steps.push(['crops', 'harvest-crops.mjs']);
 if (files.has('food/trade.json')) steps.push(['trade', 'harvest-trade.mjs']);
