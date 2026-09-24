@@ -20,7 +20,8 @@ jobs:
       - uses: actions/checkout@v4
         with: { fetch-depth: 2 }
       - uses: actions/setup-node@v4
-        with: { node-version: 22 }
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
       - name: which studies changed
         id: which
         shell: bash

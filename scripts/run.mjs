@@ -22,6 +22,7 @@ if (files.has('food/crops.json')) steps.push(['crops', 'harvest-crops.mjs']);
 if (files.has('food/trade.json')) steps.push(['trade', 'harvest-trade.mjs']);
 if (files.has('food/faostat.json')) steps.push(['faostat', 'harvest-faostat.mjs']);
 if (files.has('food/eurostat.json')) steps.push(['eurostat', 'harvest-eurostat.mjs']);
+if (files.has('natural/reservoirs.json')) steps.push(['reservoirs', 'harvest-reservoirs-es.mjs']);
 if (files.has('series/worldbank.json')) steps.push(['worldbank', 'harvest-worldbank.mjs']);
 if (existsSync(join(DIR, 'own'))) steps.push(['own', 'harvest-own.mjs']);
 if (files.has('policy/instruments.json')) steps.push(['sources', 'check-sources.mjs', '--write']);

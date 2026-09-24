@@ -72,6 +72,7 @@ Without them the button says so and the files still download.
 | `scripts/harvest-faostat.mjs` | FAOSTAT bulk file (34 MB, cached, streamed) → national harvests for ~28 crops, any country |
 | `scripts/harvest-worldbank.mjs` | World Bank API → any national indicator per year (`study.worldbank` list) |
 | `scripts/basins.mjs` | HydroBASINS (level 5 by default) → drainage basins, named after the rivers that drain them; instruments scoped to a basin fill it on the sheet |
+| `scripts/harvest-reservoirs-es.mjs` | MITECO BD-Embalses (Access, weekly since 1988, keyless) → reservoir storage per basin district per water year; the state variable Spain's drought decrees watch |
 | `scripts/harvest-eurostat.mjs` | ANY Eurostat dataset as marks, declared in `study.eurostat` (dataset, filters, months, sum/mean); weekly, monthly or annual time folded to years |
 | `scripts/harvest-climate.mjs` | NASA POWER daily (MERRA-2) → per-point per-year P, ET₀ (Hargreaves), D35, D40, Tmean; hydrological + calendar year; 1991–2020 normals |
 | `scripts/harvest-crops.mjs` | Eurostat `apro_cpshr` NUTS-2 crop production and area |

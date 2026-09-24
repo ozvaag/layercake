@@ -1,0 +1,10 @@
+{
+  "name": "layercake",
+  "version": "0.1.0",
+  "description": "A place, its layers, its years — an open engine and study format for reading geographic factors against each other over time.",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "scripts": { "build": "for m in studies/*/study.json; do node scripts/build.mjs \"$m\"; done", "run": "node scripts/run.mjs" },
+  "devDependencies": { "mdb-reader": "^3.0.0" }
+}

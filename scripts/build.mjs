@@ -125,7 +125,7 @@ if (ys.length) {
 }
 
 const trade = layers.trade?.data;
-
+const resv = existsSync(join(DIR, 'natural/reservoirs.json')) ? JSON.parse(readFileSync(join(DIR, 'natural/reservoirs.json'), 'utf8')) : null;
 // ── findings: what the numbers say on their own, as candidate sentences ──
 // Each carries its figures and its n; the wording claims a relation, never a
 // cause. A researcher deletes what is trivial and keeps what is worth a look.
@@ -142,6 +142,7 @@ if (field && ys.length) {
   const third = Math.max(3, Math.floor(ys.length / 3)); const first = ys.slice(0, third), last = ys.slice(-third); const mD = (arr) => arr.reduce((a, [, r]) => a + r.D35, 0) / arr.length;
   if (mD(first) > 0) findings.push({ kind: 'field', text: `Heat-stress days per grid point averaged ${mD(first).toFixed(1)} over ${first[0][0]}–${first[first.length - 1][0]} and ${mD(last).toFixed(1)} over ${last[0][0]}–${last[last.length - 1][0]} (${mD(last) >= mD(first) ? '+' : ''}${Math.round((mD(last) / mD(first) - 1) * 100)}%).` });
 }
+if (resv && Object.keys(resv.all).length) { const lows = Object.entries(resv.all).sort((a, b) => a[1].end_pct - b[1].end_pct); const [ly, lv] = lows[0], [hy, hv] = lows[lows.length - 1]; findings.push({ kind: 'reservoirs', text: `Spain's reservoirs ended the ${wy} lowest in ${ly} (${lv.end_pct}% of ${Math.round(lv.cap_hm3 / 1000)} km³ capacity) and highest in ${hy} (${hv.end_pct}%); ${readings.years[ly] ? `that ${wy}'s rain was ${pct(readings.years[ly].P_pct)} of normal` : ''}.` }); }
 // per-place: strongest ground↔harvest relations, r with n ≥ 15
 const placeClimate = (code, y) => { const rows = field ? field.points.filter((p) => p.place === code && p.hy[y] && p.n) : []; if (!rows.length) return null; const m = (i) => rows.reduce((s, p) => s + p.hy[y][i], 0) / rows.length, mn = (i) => rows.reduce((s, p) => s + p.n[i], 0) / rows.length; const hasS = rows.every((p) => p.hy[y][5] != null && p.n[5]); return { P_pct: m(0) / mn(0) * 100, D35: m(2), bal: (m(0) - m(1)), spr_pct: hasS ? m(5) / mn(5) * 100 : null }; };
 const rels = [];
@@ -157,6 +158,31 @@ for (const [cc, m] of Object.entries(national)) for (const [crop, ysr] of Object
 
 
 if (crops && !Object.keys(placesFile.places).length && !fao) warnings.push('no places and no FAOSTAT: the harvest layer is national only from Eurostat');
+// The physical sheet: frame + HydroRIVERS network + hand-placed features + relief legend.
+const fromOr = (f) => existsSync(join(DIR, f)) ? JSON.parse(readFileSync(join(DIR, f), 'utf8')) : FROM && existsSync(join(FROM, f)) ? JSON.parse(readFileSync(join(FROM, f), 'utf8')) : null;
+const net = fromOr('geo/rivers.json');
+const feats = fromOr('features.json') || { features: [], peaks: [] };
+const basinsFile = fromOr('geo/basins.json');
+// frame.basin_names: { "<HYBAS_ID>" | "<current name>": "official name" } — rename basins to the
+// units a study's instruments actually use (Portugal's RH1–RH8, Spain's demarcaciones).
+const BN = study.frame.basin_names || {};
+const basins = basinsFile ? { source: basinsFile.source, level: basinsFile.level, basins: basinsFile.basins.map((b) => ({ ...b, name: BN[b.id] || (b.name && BN[b.name]) || b.name, label: polylabel(b.ring, 0.02).map((v) => Math.round(v * 1e3) / 1e3) })) } : null;
+if (basins) for (const k of Object.keys(BN)) if (!basins.basins.some((b) => b.id === k || basinsFile.basins.some((o) => o.id === b.id && o.name === k))) warnings.push(`basin_names: "${k}" matches no basin id or name`);
+// ── reservoirs (scripts/harvest-reservoirs-es.mjs): districts matched to basins by name ──
+const normN = (x) => String(x).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]+/g, ' ').trim();
+let reservoirs = null;
+if (resv) {
+  const RB = study.reservoir_basins || {}; const byBasin = {};
+  for (const [amb, years] of Object.entries(resv.ambitos)) {
+    let target = RB[amb] || null;
+    if (!target && basins) { const a = normN(amb).split(' ')[0]; const hit = basins.basins.find((b) => b.name && normN(b.name).split(/ · | /).some((part) => part === a)); if (hit) target = hit.id; }
+    if (target) byBasin[target] = { ambito: amb, years }; else console.log(`reservoirs: district "${amb}" matches no basin (name it in study.reservoir_basins)`);
+  }
+  reservoirs = { source: resv.source, unit: resv.unit, country: resv.country, all: resv.all, by_basin: byBasin, districts: resv.ambitos };
+  console.log(`reservoirs: ${Object.keys(byBasin).length} of ${Object.keys(resv.ambitos).length} districts placed on basins`);
+  if (Object.keys(resv.all).length) { const lows = Object.entries(resv.all).sort((a, b) => a[1].end_pct - b[1].end_pct); readings.reservoir_low = lows[0][0]; }
+}
+
 if (errors.length) { console.error('BUILD FAILED\n' + errors.join('\n')); process.exit(1); }
 warnings.forEach((w) => console.warn('warn:', w));
 
@@ -170,21 +196,11 @@ const bundle = {
   trade: trade ? { products: trade.products, prices: trade.prices, sources: trade.sources, trade: trade.trade, price: trade.price } : null,
   events, event_kinds: kinds, confidence_tiers: pol?.confidence_tiers || { recalled: 'written from knowledge, with a citation; nothing opened', cited: 'the citation resolved to an act of that name and date at the publisher', read: 'the source text was read and the summary checked against it' }, readings,
   fade: study.frame.fade || null, market: study.market || {}, hydro_year_start_month: study.hydro_year_start_month || 10,
-  notes: study.notes || [], findings: findings.slice(0, 12),
+  notes: study.notes || [], findings: findings.slice(0, 12), reservoirs,
 };
 mkdirSync(join(ROOT, 'web/data'), { recursive: true });
 const js = `// ${study.title} — © ${new Date().getFullYear()} Ozvåag LLC. Sources are named inside; every figure carries its origin.\nwindow.STUDY=${JSON.stringify(bundle)};`;
 writeFileSync(join(ROOT, 'web/data', study.id + '.js'), js);
-// The physical sheet: frame + HydroRIVERS network + hand-placed features + relief legend.
-const fromOr = (f) => existsSync(join(DIR, f)) ? JSON.parse(readFileSync(join(DIR, f), 'utf8')) : FROM && existsSync(join(FROM, f)) ? JSON.parse(readFileSync(join(FROM, f), 'utf8')) : null;
-const net = fromOr('geo/rivers.json');
-const feats = fromOr('features.json') || { features: [], peaks: [] };
-const basinsFile = fromOr('geo/basins.json');
-// frame.basin_names: { "<HYBAS_ID>" | "<current name>": "official name" } — rename basins to the
-// units a study's instruments actually use (Portugal's RH1–RH8, Spain's demarcaciones).
-const BN = study.frame.basin_names || {};
-const basins = basinsFile ? { source: basinsFile.source, level: basinsFile.level, basins: basinsFile.basins.map((b) => ({ ...b, name: BN[b.id] || (b.name && BN[b.name]) || b.name, label: polylabel(b.ring, 0.02).map((v) => Math.round(v * 1e3) / 1e3) })) } : null;
-if (basins) for (const k of Object.keys(BN)) if (!basins.basins.some((b) => b.id === k || basinsFile.basins.some((o) => o.id === b.id && o.name === k))) warnings.push(`basin_names: "${k}" matches no basin id or name`);
 const relief = fromOr('geo/relief.json');
 if (FROM && !existsSync(join(ROOT, 'web/data', study.id + '-relief.png')) && existsSync(join(ROOT, 'web/data', study.frame_from + '-relief.png'))) { const { copyFileSync } = await import('node:fs'); copyFileSync(join(ROOT, 'web/data', study.frame_from + '-relief.png'), join(ROOT, 'web/data', study.id + '-relief.png')); }
 const peakSeen = new Set(); const peaks = [...(geo.peaks || []), ...(feats.peaks || [])].filter((p) => { const k = p.name.toLowerCase(); if (peakSeen.has(k)) return false; peakSeen.add(k); return true; });

@@ -55,7 +55,9 @@
       "note": "the land north of the Pyrenees fades rather than ends"
     },
     "basin_names": {
-      "Sorraia": "Tejo (lower) · Sorraia"
+      "Sorraia": "Tejo (lower) · Sorraia",
+      "2050018240": "Guadalete · Barbate",
+      "2050018370": "Tinto · Odiel"
     }
   },
   "layers": [
@@ -114,9 +116,22 @@
       "ink": "ink",
       "label": "Indicators",
       "unit": "per indicator"
+    },
+    {
+      "id": "reservoirs",
+      "kind": "basin-series",
+      "file": "natural/reservoirs.json",
+      "ink": "verdigris",
+      "label": "Reservoirs",
+      "unit": "% of capacity, by basin district"
     }
   ],
   "hydro_year_start_month": 10,
+  "reservoir_basins": {
+    "Cuencas Internas de Cataluña": "2050016520",
+    "Guadalete-Barbate": "2050018240",
+    "Tinto, Odiel y Piedras": "2050018370"
+  },
   "market": {
     "O1000": {
       "hs": [

@@ -9,7 +9,7 @@ years:  [Y0, Y1]           the axis; every layer is read on it
 normal: [N0, N1]           the reference period for anomalies (WMO 1991–2020)
 frame:  { window:{lon:[a,b], lat:[c,d]}, mask:[ISO-2…], admin1_countries:[ISO-2…],
           river_scalerank, exclude_boxes:[{name, lon, lat}] }
-layers: [{ id, kind: field|marks|events|series, file, ink, label, unit }]
+layers: [{ id, kind: field|marks|events|series|basin-series, file, ink, label, unit }]
 hydro_year_start_month: 10       the water year's first month (1 = calendar year)
 fade: { from:[lon,lat], to:[lon,lat] } | null   land beyond this line fades (Iberia: the Pyrenees)
 market: { <crop>: { hs:[…], price, pl, label? } }  ties a crop to its HS products and price code
@@ -22,6 +22,7 @@ notes: [paragraphs]              printed under the title — the author's readin
 private: true                    build, but keep off the site's registry
 frame.basin_level: 5             HydroBASINS Pfafstetter level for scripts/basins.mjs
 frame.basin_names: { id|name: name }  rename basins to the official units the instruments use
+reservoir_basins: { district: basin id }  place a reservoir district on a basin the name match misses (scripts/harvest-reservoirs-es.mjs)
 frame.relief_zoom, frame.field_step   override the auto-sized relief tiles / grid step
 ```
 `mask` = the admin-0 rings whose mainland defines "inside the study" (grid
@@ -73,10 +74,20 @@ products, prices: { code: label }   sources[]
 ```
 The page's `MARKET` map ties a crop to its HS products and price code.
 
+## basin-series — `natural/reservoirs.json`
+Reservoir storage by basin district, per water year: `{ country, unit, source,
+ambitos: { district: { year: { cap_hm3, mean_pct, end_pct, min_pct, min_week, weeks } } },
+all: { year: { cap_hm3, mean_pct, end_pct } } }` (capacity-weighted). Written by
+`scripts/harvest-reservoirs-es.mjs` from MITECO's BD-Embalses.mdb (Spain, weekly
+since 1988, read with `mdb-reader`); Portugal's SNIRH is not read yet. The build
+matches districts to the sheet's basins by name, then by `reservoir_basins`;
+unplaced districts are printed and stay in `districts` only.
+
 ## The bundle — `web/data/<id>.js`
 `window.STUDY = { id, title, subtitle, years, normal, built, layers, places,
 national_names, place_note, field, marks, national, regional_crops, crop_names,
-crop_source, trade, events, event_kinds, confidence_tiers, readings }`.
+crop_source, trade, events, event_kinds, confidence_tiers, readings, reservoirs }`.
+`reservoirs` = `{ source, unit, country, all, by_basin: { basin id: { ambito, years } }, districts }` or null.
 `findings[]` = candidate sentences computed at build (extremes, dry runs, heat trend, region × harvest relations with |r| ≥ 0.5 over ≥ 15 years, national harvest lows with that year's rain and spring rain).
 `readings.years[y]` = study-wide means of the field for the cartouche and
 the strip; `driest/wettest/hottest` = the years those extremes fall in.
