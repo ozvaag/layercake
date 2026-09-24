@@ -39,7 +39,7 @@ jobs:
         run: |
           set -euo pipefail
           git config user.name "layercake-ci"; git config user.email "ci@layercake"
-          git add -A studies web/data
+          git add -A studies web/data web/s web/index.html web/study.html web/builder.html
           git commit -m "refresh: sources re-read $(date -u +%F)" || { echo "nothing moved"; exit 0; }
           git status --short
           pushed=0
