@@ -2,7 +2,7 @@
 
 Begun from the builder — rain, heat, harvest and market, 2000–2025
 
-**Mask:** Italy (IT) · **Years:** 2000–2025 · **Normal:** 1991–2020 · **Built:** 2026-09-18
+**Mask:** Italy (IT) · **Years:** 2000–2025 · **Normal:** 1991–2020 · **Built:** 2026-10-03
 **Live:** https://layercake.pages.dev/study?s=italy
 
 This study was begun from the builder's own output and built with the printed commands, as a check that they work; its instruments are a beginning, not a record.
@@ -15,12 +15,12 @@ On the sheet the rice marks sit where rice is grown — the Po plain, Piemonte a
 
 ## Sources
 
-- **Ground (field):** NASA POWER daily API v2 (MERRA-2 / GEOS), parameters PRECTOTCORR, T2M_MAX, T2M_MIN, T2M, community AG — public domain (NASA); fetched 2026-09-18; 113 grid points at 0.5°; Oct–Sep, named by the year it ends; ET₀ Hargreaves–Samani (FAO-56 eq. 52) from MERRA-2 Tmax/Tmin/Tmean; normals 1991–2020.
-- **Harvest (marks, regional):** Eurostat apro_cpshr — Crop production in EU standard humidity by NUTS 2 region — CC BY 4.0; source updated 2026-09-08, fetched 2026-09-18; regional series for Cereals (grain), Grain maize, Rice, Sunflower seed, Potatoes.
-- **Harvest (national):** FAOSTAT Production: Crops and livestock products (bulk, normalized) — CC BY 4.0; fetched 2026-09-18.
-- **Market (series):** Eurostat Comext ds-045409 — EU trade since 1988 by HS2-4-6 and CN8 — CC BY 4.0; fetched 2026-09-18.
-- **Market (series):** Eurostat apri_ap_crpouta — Selling prices of crop products (absolute prices) — CC BY 4.0; fetched 2026-09-18.
-- **Indicators (series):** World Bank Indicators API v2 — CC BY 4.0; fetched 2026-09-18; 8 series.
+- **Ground (field):** NASA POWER daily API v2 (MERRA-2 / GEOS), parameters PRECTOTCORR, T2M_MAX, T2M_MIN, T2M, community AG — public domain (NASA); fetched 2026-10-03; 113 grid points at 0.5°; Oct–Sep, named by the year it ends; ET₀ Hargreaves–Samani (FAO-56 eq. 52) from MERRA-2 Tmax/Tmin/Tmean; normals 1991–2020.
+- **Harvest (marks, regional):** Eurostat apro_cpshr — Crop production in EU standard humidity by NUTS 2 region — CC BY 4.0; source updated 2026-09-08, fetched 2026-10-03; regional series for Cereals (grain), Grain maize, Rice, Sunflower seed, Potatoes.
+- **Harvest (national):** FAOSTAT Production: Crops and livestock products (bulk, normalized) — CC BY 4.0; fetched 2026-10-03.
+- **Market (series):** Eurostat Comext ds-045409 — EU trade since 1988 by HS2-4-6 and CN8 — CC BY 4.0; fetched 2026-10-03.
+- **Market (series):** Eurostat apri_ap_crpouta — Selling prices of crop products (absolute prices) — CC BY 4.0; fetched 2026-10-03.
+- **Indicators (series):** World Bank Indicators API v2 — CC BY 4.0; fetched 2026-10-03; 8 series.
 - **Law (events):** 2 instruments, hand-curated with a citation each — 2 recalled.
 - **Frame:** Natural Earth 1:10m (public domain) coast, lakes, bathymetry, named rivers, peaks; HydroRIVERS v1.0 (free with attribution) drainage; Terrarium terrain tiles (AWS Open Data) relief.
 
@@ -35,6 +35,6 @@ A reanalysis is a model fitted to observations, not a rain gauge. Correlation pr
 
 ## Cite
 
-> *Italy* — a Layercake study, built 2026-09-18. https://layercake.pages.dev/study?s=italy · https://github.com/ozvaag/layercake/tree/main/studies/italy
+> *Italy* — a Layercake study, built 2026-10-03. https://layercake.pages.dev/study?s=italy · https://github.com/ozvaag/layercake/tree/main/studies/italy
 
 Engine © Ozvåag LLC, MIT. Each source keeps its own licence, listed above.
